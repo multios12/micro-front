@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blogs Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./index.html">
+        <strong>micro-front</strong>
+        <span class="brand-subtitle">静的HTMLで配信する公開サイト</span>
+      </a>
+      <nav class="tabs" aria-label="サイトナビゲーション">
+        <a href="./index.html">Home</a>
+        <a class="is-active" href="./blogs.html">Blogs</a>
+        <a href="./about.html">About</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="shell">
+    <nav class="breadcrumb breadcrumb-tight" aria-label="パンくずリスト">
+      <a href="./index.html">Home</a>
+      <span> / </span>
+      <span>Blogs</span>
+    </nav>
+    <section class="hero blogs-hero">
+      <div class="hero-card">
+        <span class="chip">Blogs</span>
+        <h2>記事一覧</h2>
+        <p>公開サイトの記事一覧の見え方を確認するためのモックです。</p>
+      </div>
+    </section>
+    <section class="section blogs-section">
+      <div class="post-grid post-grid-2">
+        <a class="post-card post-card-link" href="./blog.html" aria-label="カードレイアウトの確認を開く">
+          <p class="meta">カテゴリ１</p>
+          <h3>カードレイアウトの確認</h3>
+          <p class="meta">2026-04-13</p>
+          <p>記事の概要が3〜4行ほど入る前提で、一覧カードの読みやすさを確認します。タイトルとの間隔、本文の密度、画像とのバランスを見ています。要約が少し長くなっても、全体が詰まりすぎないことを確かめるためのモックです。
+          </p>
+          <figure class="mock-figure">
+            <img class="mock-image" alt="記事一覧用のサンプル画像"
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 520'%3E%3Crect width='1200' height='520' fill='%23f6eadf'/%3E%3Cpath d='M80 390c120-140 220-170 320-90s180 120 280 40 180-120 440-20' fill='none' stroke='%23d97706' stroke-width='14' stroke-linecap='round'/%3E%3Ctext x='600' y='260' text-anchor='middle' font-family='Noto Sans JP, sans-serif' font-size='48' fill='%239a5b07'%3EList Image Mock%3C/text%3E%3C/svg%3E">
+          </figure>
+        </a>
+        <a class="post-card post-card-link" href="./blog.html" aria-label="3枚目のカード表示を確認するを開く">
+          <p class="meta">カテゴリ１</p>
+          <h3>3枚目のカード表示を確認する</h3>
+          <p class="meta">2026-04-11</p>
+          <p>
+            3枚目が追加されたときに、2行目へ自然に折り返されるかを確認するためのモックです。1行目と2行目で画像とテキストの高さ差があっても、一覧全体のリズムが崩れないことを見ています。縦に伸びたときの余白も合わせて確認します。
+          </p>
+        </a>
+        <a class="post-card post-card-link" href="./blog.html" aria-label="並びの密度を確認するを開く">
+          <p class="meta">カテゴリ２</p>
+          <h3>並びの密度を確認する</h3>
+          <p class="meta">2026-04-12</p>
+          <p>2カラム表示にしたとき、カード同士の間隔が広すぎないかを確認するためのモックです。短めの概要と画像の組み合わせで、一覧のリズムが崩れないかを見ています。本文が少し長くても、横並びの見え方が自然かどうかを確かめます。
+          </p>
+          <figure class="mock-figure">
+            <img class="mock-image" alt="記事一覧用の別サンプル画像"
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 520'%3E%3Crect width='1200' height='520' fill='%23fff1df'/%3E%3Ccircle cx='240' cy='260' r='120' fill='none' stroke='%23d97706' stroke-width='14'/%3E%3Crect x='440' y='120' width='560' height='280' fill='none' stroke='%23d97706' stroke-width='12' stroke-dasharray='18 14'/%3E%3Ctext x='600' y='270' text-anchor='middle' font-family='Noto Sans JP, sans-serif' font-size='48' fill='%239a5b07'%3EList Image Mock 2%3C/text%3E%3C/svg%3E">
+          </figure>
+        </a>
+        <a class="post-card post-card-link" href="./error.html" aria-label="エラーページの見え方を確認するを開く">
+          <p class="meta">カテゴリ３</p>
+          <h3>エラーページの見え方を確認する</h3>
+          <p class="meta">2026-04-10</p>
+          <p>意図しない遷移先やエラー画面に入ったときの見え方を確認するためのモックです。記事一覧の中に異なる種類のカードが混ざっても、全体のリズムが崩れないかも見ています。読み物というより、状態確認用のカードとして置いています。</p>
+        </a>
+      </div>
+      <nav class="pagination" aria-label="ページネーション">
+        <a class="pagination-link is-active" href="./blogs.html" aria-current="page">1</a>
+        <a class="pagination-link" href="./blogs.html?page=2">2</a>
+        <a class="pagination-link" href="./blogs.html?page=3">3</a>
+        <a class="pagination-link" href="./blogs.html?page=2" aria-label="次のページへ">Next</a>
+      </nav>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="shell">
+      <span>© 2026 micro-front</span>
+    </div>
+  </footer>
+</body>
+
+</html>

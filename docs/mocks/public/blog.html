@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Detail Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./index.html">
+        <strong>micro-front</strong>
+        <span class="brand-subtitle">静的HTMLで配信する公開サイト</span>
+      </a>
+      <nav class="tabs" aria-label="サイトナビゲーション">
+        <a href="./index.html">Home</a>
+        <a class="is-active" href="./blogs.html">Blogs</a>
+        <a href="./about.html">About</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="shell">
+    <nav class="breadcrumb breadcrumb-tight" aria-label="パンくずリスト">
+      <a href="./index.html">Home</a>
+      <span> / </span>
+      <a href="./blogs.html">Blogs</a>
+      <span> / </span>
+      <a href="./category.html">親カテゴリ1</a>
+      <span> / </span>
+      <a href="./category.html">子カテゴリ</a>
+    </nav>
+    <article class="section post-detail post-detail-tight">
+      <section class="hero blogs-hero">
+        <div class="hero-card">
+          <span class="chip">Article</span>
+          <h2>サンプル記事タイトル</h2>
+        </div>
+      </section>
+      <p class="meta">親カテゴリ1 / 子カテゴリ / 2026-04-13</p>
+      <figure class="mock-figure">
+        <img class="mock-image" alt="記事内のサンプル画像"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 640'%3E%3Crect width='1200' height='640' fill='%23f6eadf'/%3E%3Crect x='80' y='80' width='1040' height='480' fill='none' stroke='%23d97706' stroke-width='10' stroke-dasharray='24 18'/%3E%3Ctext x='600' y='305' text-anchor='middle' font-family='Noto Sans JP, sans-serif' font-size='54' fill='%239a5b07'%3EArticle Image Mock%3C/text%3E%3Ctext x='600' y='365' text-anchor='middle' font-family='Noto Sans JP, sans-serif' font-size='26' fill='%23846b4f'%3Eblog detail preview%3C/text%3E%3C/svg%3E">
+      </figure>
+      <div class="content">
+        ここに記事本文が入ります。
+        改行や余白、長文の見え方を確認するためのサンプルです。
+
+        1段落目は導入です。テンプレートに反映したときに、文字の詰まりや行間が窮屈にならないかを見ています。
+        2段落目は少し長めにして、スクロール量が自然に出るようにしています。画像やコードブロックを追加しても破綻しにくい余白にしています。
+        3段落目はさらにダミー文です。余白と可読性を確認するため、本文がある程度長く続く状態をわざと作っています。
+        4段落目も同様に、見た目が単調になりすぎないことを確認するためのテキストです。
+        5段落目は、ページ最下部までスクロールしたときにフッターとの距離感が極端にならないかを見るための補助文です。
+        6段落目は、テンプレート化の際にそのまま本文領域へ置ける長さの確認用です。
+        7段落目は、カテゴリの表示がひと目で分かるようにするための追加テキストです。
+        8段落目は、記事タイトルが小さめでも内容量が十分にあるときの見え方を確認するための補助です。
+        9段落目は、スクロール時に読点や改行が続いても詰まりすぎないかを見ています。
+        10段落目は、長文本文の最終確認用です。ここまで来ると、閲覧中に自然にスクロールが発生するはずです。
+      </div>
+    </article>
+  </main>
+  <footer class="footer">
+    <div class="shell">
+      <span>© 2026 micro-front</span>
+    </div>
+  </footer>
+</body>
+
+</html>

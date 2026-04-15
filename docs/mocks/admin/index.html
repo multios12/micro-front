@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+
+<body>
+  <div class="admin-shell">
+    <div class="admin-layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>micro-front</strong>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">Navigation</div>
+          <a class="nav-link active" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+          <a class="nav-link" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+          <a class="nav-link" href="./site.html"><span>Site</span></a>
+          <a class="nav-link" href="./about.html"><span>About</span></a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-title">
+            <h2>Dashboard</h2>
+          </div>
+          <a class="menu-toggle" href="#mobile-nav" aria-label="ナビゲーションを開く">
+            <span></span>
+            <span></span>
+            <span></span>
+          </a>
+        </header>
+
+        <section class="stats">
+          <article class="stat">
+            <span class="mini-label">公開中の記事</span>
+            <strong>86</strong>
+          </article>
+          <article class="stat">
+            <span class="mini-label">非公開の記事</span>
+            <strong>38</strong>
+          </article>
+          <article class="stat">
+            <span class="mini-label">カテゴリ数</span>
+            <strong>14</strong>
+            <span class="section-note">親 5 / 子 9</span>
+          </article>
+          <article class="stat">
+            <span class="mini-label">画像登録数</span>
+            <strong>241</strong>
+          </article>
+        </section>
+
+        <section class="table-wrap">
+          <div class="panel-head">
+            <div>
+              <h2>記事一覧</h2>
+            </div>
+            <div class="button-row">
+              <a class="button ghost" href="./blogs.html">一覧ページで開く</a>
+              <a class="button primary" href="./blog-edit.html">新規記事</a>
+            </div>
+          </div>
+          <table class="table article-table table-links">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>タイトル</th>
+                <th>カテゴリ</th>
+                <th>状態</th>
+                <th>公開日</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr tabindex="0" role="link" data-href="./blog-edit.html" aria-label="公開サイトの導線を見直すを編集する">
+                <td>42</td>
+                <td>
+                  <strong>公開サイトの導線を見直す</strong>
+                  <span class="table-meta">概要は本文から自動生成されます。</span>
+                </td>
+                <td>カテゴリ1</td>
+                <td><span class="badge chip success">public</span></td>
+                <td>2026-04-13</td>
+              </tr>
+              <tr tabindex="0" role="link" data-href="./blog-edit.html" aria-label="カテゴリ別一覧のページネーション確認を編集する">
+                <td>40</td>
+                <td>
+                  <strong>カテゴリ別一覧のページネーション確認</strong>
+                  <span class="table-meta">公開前の下書きです。</span>
+                </td>
+                <td>カテゴリ2</td>
+                <td><span class="badge chip">private</span></td>
+                <td>2026-04-10</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <a class="page-link active" href="./index.html">1</a>
+            <a class="page-link" href="./blogs.html">2</a>
+            <a class="page-link" href="./blogs.html">3</a>
+            <a class="page-link" href="./blogs.html">Next</a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>設定値一覧</h2>
+            </div>
+          </div>
+          <div class="stack">
+            <table class="table env-table">
+              <thead>
+                <tr>
+                  <th>環境変数</th>
+                  <th>値</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>STATIC_EXPORT_DIR</td>
+                  <td>./web/static</td>
+                </tr>
+                <tr>
+                  <td>DATA_DIR</td>
+                  <td>./data</td>
+                </tr>
+                <tr>
+                  <td>TOP_PAGE_BLOG_LIMIT</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td>BLOGS_PER_PAGE</td>
+                  <td>20</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav">
+    <a class="mobile-nav-backdrop" href="#"></a>
+    <section class="mobile-nav-panel">
+      <div class="mobile-nav-head">
+        <strong>micro-front</strong>
+        <a class="mobile-nav-close" href="#" aria-label="ナビゲーションを閉じる">×</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Navigation</div>
+        <a class="nav-link active" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+        <a class="nav-link" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+        <a class="nav-link" href="./site.html"><span>Site</span></a>
+        <a class="nav-link" href="./about.html"><span>About</span></a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.querySelectorAll('.table-links [data-href]').forEach((row) => {
+      const go = () => {
+        location.href = row.dataset.href;
+      };
+
+      row.addEventListener('click', go);
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          go();
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

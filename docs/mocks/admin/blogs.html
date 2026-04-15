@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Blogs Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+
+<body>
+  <div class="admin-shell">
+    <div class="admin-layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>micro-front</strong>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">Navigation</div>
+          <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+          <a class="nav-link active" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+          <a class="nav-link" href="./site.html"><span>Site</span></a>
+          <a class="nav-link" href="./about.html"><span>About</span></a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-title">
+            <h2>Blogs</h2>
+          </div>
+          <div class="topbar-actions">
+            <a class="button ghost" href="./index.html">ダッシュボードへ戻る</a>
+            <a class="button primary" href="./blog-edit.html">新規記事</a>
+          </div>
+          <a class="menu-toggle" href="#mobile-nav" aria-label="ナビゲーションを開く">
+            <span></span>
+            <span></span>
+            <span></span>
+          </a>
+        </header>
+
+        <section class="panel">
+          <div class="toolbar">
+            <div class="filters">
+              <div class="radio-group">
+                <span class="radio-label">公開状態</span>
+                <label class="radio-option"><input type="radio" name="status" checked> <span>すべて</span></label>
+                <label class="radio-option"><input type="radio" name="status"> <span>公開</span></label>
+                <label class="radio-option"><input type="radio" name="status"> <span>非公開</span></label>
+              </div>
+              <select class="select">
+                <option>カテゴリ: すべて</option>
+                <option>親カテゴリ1 / 子カテゴリ1</option>
+                <option>子カテゴリのみ</option>
+              </select>
+              <div class="search-stack">
+                <input class="control" type="text" value="公開サイト" aria-label="検索キーワード">
+                <a class="button ghost button-inline" href="./blogs.html">条件をクリア</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="table-wrap">
+          <div class="panel-head">
+            <div>
+              <h2>記事一覧</h2>
+            </div>
+            <span class="section-note">件数: 124</span>
+          </div>
+          <table class="table article-table table-links">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>タイトル</th>
+                <th>カテゴリ</th>
+                <th>公開状態</th>
+                <th>公開日</th>
+                <th>更新日</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr tabindex="0" role="link" data-href="./blog-edit.html" aria-label="公開サイトの導線を見直すを編集する">
+                <td>42</td>
+                <td>
+                  <strong>公開サイトの導線を見直す</strong>
+                  <span class="table-meta">公開サイトの Latest から記事一覧への導線を整理した変更です。</span>
+                </td>
+                <td>親カテゴリ1 / 子カテゴリ1</td>
+                <td><span class="badge chip success">public</span></td>
+                <td>2026-04-13</td>
+                <td>2026-04-13 09:12</td>
+              </tr>
+              <tr tabindex="0" role="link" data-href="./blog-edit.html" aria-label="カテゴリ別一覧と画像の代替テキストを見直すを編集する">
+                <td>40</td>
+                <td>
+                  <strong>カテゴリ別一覧と画像の代替テキストを見直す</strong>
+                  <span class="table-meta">2ページ目以降の公開見え方と、記事詳細に挿入された画像の管理方法をまとめて確認するための下書きです。</span>
+                </td>
+                <td>子カテゴリのみ</td>
+                <td><span class="badge chip">private</span></td>
+                <td>2026-04-10</td>
+                <td>2026-04-12 14:10</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <a class="page-link" href="./blogs.html">Prev</a>
+            <a class="page-link active" href="./blogs.html">1</a>
+            <a class="page-link" href="./blogs.html">2</a>
+            <a class="page-link" href="./blogs.html">3</a>
+            <a class="page-link" href="./blogs.html">Next</a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.table-links [data-href]').forEach((row) => {
+      const go = () => {
+        location.href = row.dataset.href;
+      };
+
+      row.addEventListener('click', go);
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          go();
+        }
+      });
+    });
+  </script>
+
+  <div class="mobile-nav" id="mobile-nav">
+    <a class="mobile-nav-backdrop" href="#"></a>
+    <section class="mobile-nav-panel">
+      <div class="mobile-nav-head">
+        <strong>micro-front</strong>
+        <a class="mobile-nav-close" href="#" aria-label="ナビゲーションを閉じる">×</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Navigation</div>
+        <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+        <a class="nav-link active" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+        <a class="nav-link" href="./site.html"><span>Site</span></a>
+        <a class="nav-link" href="./about.html"><span>About</span></a>
+      </div>
+    </section>
+  </div>
+</body>
+
+</html>

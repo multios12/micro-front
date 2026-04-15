@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Site Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./index.html">
+        <strong>micro-front</strong>
+        <span class="brand-subtitle">静的HTMLで配信する公開サイト</span>
+      </a>
+      <nav class="tabs" aria-label="サイトナビゲーション">
+        <a class="is-active" href="./index.html">Home</a>
+        <a href="./blogs.html">Blogs</a>
+        <a href="./about.html">About</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="shell">
+    <section class="hero home-hero">
+      <div class="hero-card">
+        <h1>静かに読ませる、ブログ向けの公開ページ。</h1>
+        <p>管理画面で更新された記事を、そのまま静的HTMLとして出力する前提のテンプレートモックです。</p>
+      </div>
+    </section>
+
+    <div class="panel grid-2">
+      <section class="section">
+        <section class="hero blogs-hero latest-hero">
+          <a class="hero-card hero-link" href="./blogs.html" aria-label="最新記事一覧を開く">
+            <span class="chip">Latest</span>
+            <h2>最新記事</h2>
+          </a>
+        </section>
+        <div class="post-grid">
+          <a class="post-card post-card-link" href="./blog.html" aria-label="公開サイトのトーンを整えるを開く">
+            <p class="meta">カテゴリ１</p>
+            <h3>公開サイトのトーンを整える</h3>
+            <p>余白、タイポグラフィ、行間のバランスを確認するためのモック記事です。</p>
+            <p class="meta">2026-04-13</p>
+          </a>
+          <a class="post-card post-card-link" href="./blog.html" aria-label="テンプレート化しやすい構造にするを開く">
+            <p class="meta">カテゴリ２</p>
+            <h3>テンプレート化しやすい構造にする</h3>
+            <p>Go 側のテンプレートに流し込みやすい、素直な HTML の構成を意識しています。</p>
+            <p class="meta">2026-04-13</p>
+          </a>
+        </div>
+      </section>
+
+      <aside class="section sidebar" aria-label="カテゴリ一覧">
+        <div class="category-tree">
+          <details class="category-group" open>
+            <summary class="category-root">
+              <span class="category-label"><span class="category-name">カテゴリ１</span><span class="category-count">(12)</span></span>
+            </summary>
+            <div class="category-branch">
+              <a href="./category.html"><span class="category-label"><span class="category-name">カテゴリ１-１</span><span class="category-count">(7)</span></span></a>
+              <a href="./category.html"><span class="category-label"><span class="category-name">カテゴリ１-２</span><span class="category-count">(5)</span></span></a>
+            </div>
+          </details>
+          <details class="category-group" open>
+            <summary class="category-root">
+              <span class="category-label"><span class="category-name">カテゴリ２</span><span class="category-count">(8)</span></span>
+            </summary>
+            <div class="category-branch">
+              <a href="./category.html"><span class="category-label"><span class="category-name">カテゴリ２-１</span><span class="category-count">(3)</span></span></a>
+              <a href="./category.html"><span class="category-label"><span class="category-name">カテゴリ２-２</span><span class="category-count">(2)</span></span></a>
+              <a href="./category.html"><span class="category-label"><span class="category-name">カテゴリ２-３</span><span class="category-count">(3)</span></span></a>
+            </div>
+          </details>
+          <details class="category-group">
+            <summary class="category-root">
+              <span class="category-label"><span class="category-name">カテゴリ３</span><span class="category-count">(5)</span></span>
+            </summary>
+            <div class="category-branch">
+              <a href="./category.html"><span class="category-label"><span class="category-name">カテゴリ３-１</span><span class="category-count">(5)</span></span></a>
+            </div>
+          </details>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">
+      <span>micro-front</span>
+      <span>© 2026 micro-front</span>
+    </div>
+  </footer>
+</body>
+</html>

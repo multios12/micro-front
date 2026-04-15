@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin About Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <div class="admin-layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>micro-front</strong>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">Navigation</div>
+          <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+          <a class="nav-link" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+          <a class="nav-link" href="./site.html"><span>Site</span></a>
+          <a class="nav-link active" href="./about.html"><span>About</span></a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-title">
+            <h2>ABOUT</h2>
+          </div>
+          <a class="menu-toggle" href="#mobile-nav" aria-label="ナビゲーションを開く">
+            <span></span>
+            <span></span>
+            <span></span>
+          </a>
+        </header>
+
+        <div class="stack">
+          <section class="editor">
+            <div class="editor-head">
+              <h2>記事</h2>
+            </div>
+            <div class="stack">
+              <div class="field-row two">
+                <div class="field">
+                  <label>公開状態</label>
+                  <div class="status-row">
+                    <span class="chip success">公開</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>記事ID: 41</label>
+                </div>
+              </div>
+            </div>
+            <div class="markdown-editor" data-component="MarkdownEditor">
+              <div class="editor-toolbar">
+                <span class="tool">H1</span>
+                <span class="tool">H2</span>
+                <span class="tool">B</span>
+                <span class="tool">I</span>
+                <span class="tool">Link</span>
+                <span class="tool">Image</span>
+                <span class="tool">Code</span>
+                <span class="tool">Quote</span>
+              </div>
+              <textarea class="textarea markdown">## about
+
+プロフィールページ用の本文です。
+
+- ブログの説明
+- 管理者プロフィール
+- リンク一覧
+
+![sample](/admin/images/41/1.png)</textarea>
+            </div>
+            <div class="button-row footer-actions">
+              <a class="button ghost" href="./index.html">キャンセル</a>
+              <a class="button primary" href="./about.html">保存する</a>
+              <a class="button danger" href="#delete-modal">削除</a>
+            </div>
+          </section>
+
+          <section class="dropzone">
+            <div class="panel-head">
+              <div>
+                <h2>画像</h2>
+              </div>
+            </div>
+            <div class="button-row">
+              <a class="button secondary" href="./about.html">画像を選択</a>
+              <span class="chip info">PNG / max 1920x1080</span>
+            </div>
+            <div class="upload-grid">
+              <article class="upload-item">
+                <div class="image-box">Image 1</div>
+                <div class="button-row">
+                  <a class="button ghost" href="./about.html">URLをコピー</a>
+                  <a class="button danger" href="./about.html">削除</a>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="delete-modal">
+    <section class="modal-card">
+      <div class="panel-head">
+        <div>
+          <h2>削除確認</h2>
+        </div>
+      </div>
+      <p class="section-note">about 記事を削除しますか。削除後は元に戻せません。</p>
+      <div class="button-row footer-actions">
+        <a class="button ghost" href="./about.html">キャンセル</a>
+        <a class="button danger" href="./about.html">削除する</a>
+      </div>
+    </section>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav">
+    <a class="mobile-nav-backdrop" href="#"></a>
+    <section class="mobile-nav-panel">
+      <div class="mobile-nav-head">
+        <strong>micro-front</strong>
+        <a class="mobile-nav-close" href="#" aria-label="ナビゲーションを閉じる">×</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Navigation</div>
+        <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+        <a class="nav-link" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+        <a class="nav-link" href="./site.html"><span>Site</span></a>
+        <a class="nav-link active" href="./about.html"><span>About</span></a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

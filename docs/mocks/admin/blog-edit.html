@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Blog Edit Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+
+<body>
+  <div class="admin-shell">
+    <div class="admin-layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>micro-front</strong>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">Navigation</div>
+          <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+          <a class="nav-link" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+          <a class="nav-link" href="./site.html"><span>Site</span></a>
+          <a class="nav-link" href="./about.html"><span>About</span></a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-title">
+            <h2>BLOG EDIT</h2>
+          </div>
+          <div class="topbar-actions">
+            <a class="button ghost" href="./blogs.html">一覧に戻る</a>
+          </div>
+          <a class="menu-toggle" href="#mobile-nav" aria-label="ナビゲーションを開く">
+            <span></span>
+            <span></span>
+            <span></span>
+          </a>
+        </header>
+
+        <div class="stack">
+          <section class="editor">
+            <div class="editor-head">
+              <h2>記事</h2>
+            </div>
+            <div class="stack">
+              <div class="field-row two">
+                <div class="field">
+                  <label>記事ID</label>
+                  <div class="control static-control">42</div>
+                </div>
+                <div class="field">
+                  <label>公開状態</label>
+                  <div class="status-row">
+                    <span class="chip success">公開</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="title">記事タイトル</label>
+                <input id="title" class="control" type="text" value="公開サイトの導線を見直す">
+              </div>
+              <div class="field-row two">
+                <div class="field">
+                  <label for="category">カテゴリ</label>
+                  <input id="category" class="control" type="text" value="親カテゴリ1 / 子カテゴリ1">
+                </div>
+                <div class="field">
+                  <label for="published-at">公開日</label>
+                  <input id="published-at" class="control" type="text" value="2026-04-13 09:00:00">
+                </div>
+              </div>
+            </div>
+            <div class="markdown-editor" data-component="MarkdownEditor">
+              <div class="editor-toolbar">
+                <span class="tool">H1</span>
+                <span class="tool">H2</span>
+                <span class="tool">B</span>
+                <span class="tool">I</span>
+                <span class="tool">Link</span>
+                <span class="tool">Image</span>
+                <span class="tool">Code</span>
+                <span class="tool">Quote</span>
+              </div>
+              <textarea class="textarea markdown">## 公開サイトの導線を見直す
+
+Latest セクションから記事一覧へ自然に遷移できるように調整しました。
+
+### 確認ポイント
+
+- トップページの見出し導線
+- 記事一覧でのカード選択範囲
+- カテゴリページとの役割分担
+
+![sample](/admin/images/42/3.png)</textarea>
+            </div>
+            <div class="button-row footer-actions">
+              <a class="button ghost" href="./blogs.html">キャンセル</a>
+              <a class="button primary" href="./blog-edit.html">保存する</a>
+              <a class="button secondary" href="./blog-edit.html">記事を公開</a>
+              <a class="button danger" href="#delete-modal">削除</a>
+            </div>
+          </section>
+
+          <section class="dropzone">
+            <div class="panel-head">
+              <div>
+                <h2>画像</h2>
+              </div>
+            </div>
+            <div class="button-row">
+              <a class="button secondary" href="./blog-edit.html">画像を選択</a>
+              <span class="section-note">画像サイズを1920x1080以下に変換して、PNGで表示します。</span>
+            </div>
+            <div class="upload-grid">
+              <article class="upload-item">
+                <div class="image-box">Image 3</div>
+                <div class="button-row">
+                  <a class="button ghost" href="./blog-edit.html">URLをコピー</a>
+                  <a class="button danger" href="./blog-edit.html">削除</a>
+                </div>
+              </article>
+              <article class="upload-item">
+                <div class="image-box">Image 4</div>
+                <div class="button-row">
+                  <a class="button ghost" href="./blog-edit.html">URLをコピー</a>
+                  <a class="button danger" href="./blog-edit.html">削除</a>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="delete-modal">
+    <section class="modal-card">
+      <div class="panel-head">
+        <div>
+          <h2>削除確認</h2>
+        </div>
+      </div>
+      <p class="section-note">この記事を削除しますか。削除後は元に戻せません。</p>
+      <div class="button-row footer-actions">
+        <a class="button ghost" href="./blog-edit.html">キャンセル</a>
+        <a class="button danger" href="./blog-edit.html">削除する</a>
+      </div>
+    </section>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav">
+    <a class="mobile-nav-backdrop" href="#"></a>
+    <section class="mobile-nav-panel">
+      <div class="mobile-nav-head">
+        <strong>micro-front</strong>
+        <a class="mobile-nav-close" href="#" aria-label="ナビゲーションを閉じる">×</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Navigation</div>
+        <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+        <a class="nav-link active" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+        <a class="nav-link" href="./site.html"><span>Site</span></a>
+        <a class="nav-link" href="./about.html"><span>About</span></a>
+      </div>
+    </section>
+  </div>
+</body>
+
+</html>

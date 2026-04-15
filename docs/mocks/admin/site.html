@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Site Mock</title>
+  <link rel="stylesheet" href="./mock.css">
+</head>
+
+<body>
+  <div class="admin-shell">
+    <div class="admin-layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>micro-front</strong>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">Navigation</div>
+          <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+          <a class="nav-link" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+          <a class="nav-link active" href="./site.html"><span>Site</span></a>
+          <a class="nav-link" href="./about.html"><span>About</span></a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-title">
+            <h2>Site</h2>
+          </div>
+          <div class="topbar-actions">
+            <a class="button ghost" href="./index.html">ダッシュボードへ戻る</a>
+          </div>
+          <a class="menu-toggle" href="#mobile-nav" aria-label="ナビゲーションを開く">
+            <span></span>
+            <span></span>
+            <span></span>
+          </a>
+        </header>
+
+        <section class="editor">
+          <div class="stack">
+            <div class="field">
+              <label for="site-title">タイトル</label>
+              <input id="site-title" class="control" type="text" value="micro-front">
+            </div>
+            <div class="field">
+              <label for="site-subtitle">サブタイトル</label>
+              <input id="site-subtitle" class="control" type="text" value="静的HTMLで配信する公開サイト">
+            </div>
+            <div class="field">
+              <label for="foot-information">フッタ情報</label>
+              <input id="foot-information" class="control" type="text" value="micro-front">
+            </div>
+            <div class="field">
+              <label for="copyright">コピーライト</label>
+              <input id="copyright" class="control" type="text" value="© 2026 micro-front">
+            </div>
+          </div>
+          <div class="markdown-editor" data-component="MarkdownEditor">
+            <div class="editor-toolbar">
+              <span class="tool">H1</span>
+              <span class="tool">B</span>
+              <span class="tool">I</span>
+              <span class="tool">Link</span>
+              <span class="tool">List</span>
+              <span class="tool">Quote</span>
+              <span class="tool">Code</span>
+            </div>
+            <textarea id="site-description" class="textarea markdown">## micro-front
+
+管理画面で更新した内容を、公開サイトの共通レイアウトへ反映するための説明文です。
+
+- サイトタイトル
+- サイトサブタイトル
+- フッタ情報</textarea>
+          </div>
+          <div class="button-row footer-actions">
+            <a class="button ghost" href="./index.html">キャンセル</a>
+            <a class="button primary" href="./site.html">保存する</a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>タブ</h2>
+            </div>
+            <a class="button secondary" href="./site.html">タブを追加</a>
+          </div>
+          <div class="stack">
+            <div class="tab-edit-row">
+              <div class="tab-row">
+                <div class="field">
+                  <label for="tab-label-1">タブラベル</label>
+                  <input id="tab-label-1" class="control" type="text" value="Home">
+                </div>
+                <div class="field">
+                  <label for="tab-url-1">タブURL</label>
+                  <input id="tab-url-1" class="control" type="text" value="/">
+                </div>
+              </div>
+              <a class="button danger" href="./site.html">削除</a>
+            </div>
+            <div class="tab-edit-row">
+              <div class="tab-row">
+                <div class="field">
+                  <label for="tab-label-2">タブラベル</label>
+                  <input id="tab-label-2" class="control" type="text" value="Blogs">
+                </div>
+                <div class="field">
+                  <label for="tab-url-2">タブURL</label>
+                  <input id="tab-url-2" class="control" type="text" value="/blogs">
+                </div>
+              </div>
+              <a class="button danger" href="./site.html">削除</a>
+            </div>
+            <div class="tab-edit-row">
+              <div class="tab-row">
+                <div class="field">
+                  <label for="tab-label-3">タブラベル</label>
+                  <input id="tab-label-3" class="control" type="text" value="About">
+                </div>
+                <div class="field">
+                  <label for="tab-url-3">タブURL</label>
+                  <input id="tab-url-3" class="control" type="text" value="/about">
+                </div>
+              </div>
+              <a class="button danger" href="./site.html">削除</a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav">
+    <a class="mobile-nav-backdrop" href="#"></a>
+    <section class="mobile-nav-panel">
+      <div class="mobile-nav-head">
+        <strong>micro-front</strong>
+        <a class="mobile-nav-close" href="#" aria-label="ナビゲーションを閉じる">×</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Navigation</div>
+        <a class="nav-link" href="./index.html"><span>Dashboard</span><span class="nav-badge">4</span></a>
+        <a class="nav-link" href="./blogs.html"><span>Blogs</span><span class="nav-badge">124</span></a>
+        <a class="nav-link active" href="./site.html"><span>Site</span></a>
+        <a class="nav-link" href="./about.html"><span>About</span></a>
+      </div>
+    </section>
+  </div>
+</body>
+
+</html>

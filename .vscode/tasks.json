@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "front: dev",
+      "type": "shell",
+      "command": "yarn --cwd front dev -- --host 0.0.0.0 --strictPort --port 3000",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": false
+      },
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": "^(?!)$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^VITE\\b|^vite\\b|^yarn\\s+run\\b",
+          "endsPattern": "localhost:3000"
+        }
+      }
+    }
+  ]
+}

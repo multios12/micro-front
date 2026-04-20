@@ -1,0 +1,35 @@
+{{define "blog-card"}}
+<a class="post-card post-card-link" href="{{.URL}}" aria-label="{{.Title}}を開く">
+  {{if .Category}}
+  <p class="meta">{{.Category}}</p>
+  {{end}}
+  <h3>{{.Title}}</h3>
+  <p>{{.Summary}}</p>
+  <p class="meta">{{.UpdatedAt}}</p>
+</a>
+{{end}}
+
+{{define "blog-list"}}
+{{if .Breadcrumbs}}
+<nav class="breadcrumb breadcrumb-tight" aria-label="パンくずリスト">
+  {{- range $i, $item := .Breadcrumbs -}}
+    {{- if $i }}<span> / </span>{{ end -}}
+    {{- if $item.URL -}}
+      <a href="{{$item.URL}}">{{$item.Label}}</a>
+    {{- else -}}
+      <span>{{$item.Label}}</span>
+    {{- end -}}
+  {{- end -}}
+</nav>
+{{end}}
+<section class="blogs-intro">
+  <span class="kicker list-kicker">{{.Kicker}}</span>
+  <h2>{{.Heading}}</h2>
+</section>
+<section class="section blogs-section">
+  <div class="post-grid post-grid-list">
+    {{range .Items}}{{template "blog-card" .}}{{end}}
+  </div>
+  {{.Pagination}}
+</section>
+{{end}}

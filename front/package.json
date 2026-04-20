@@ -1,0 +1,37 @@
+{
+  "name": "micro-front",
+  "type": "module",
+  "license": "MIT",
+  "version": "0.7.0",
+  "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": "24.14.1",
+    "yarn": "1.22.22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "postbuild": "mkdir -p ../web/static && cp ./dist/* ../web/static/ -R",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "@formkit/tempo": "0.1.2",
+    "@fortawesome/fontawesome-svg-core": "6.7.2",
+    "@fortawesome/free-solid-svg-icons": "6.7.2",
+    "@mateothegreat/svelte5-router": "^2.16.19",
+    "svelte": "^5.55.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "@tsconfig/svelte": "5.0.8",
+    "@types/node": "25.5.0",
+    "purgecss": "^8.0.0",
+    "svelte-check": "^4.4.6",
+    "tailwindcss": "^4.2.2",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
+  }
+}

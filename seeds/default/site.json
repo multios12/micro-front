@@ -1,0 +1,12 @@
+{
+  "site_title": "micro-front seed",
+  "site_subtitle": "seed データで確認する公開サイト",
+  "site_description": "## Seed Site\n\n編集しやすい JSON と Markdown から投入したサイト説明です。\n\n![サイト説明画像|50%](/admin/images/9999999/10.png)\n\nカテゴリ、画像、about ページの公開状態をまとめて確認できます。",
+  "tabs": [
+    { "tab_label": "Home", "tab_url": "/" },
+    { "tab_label": "Blogs", "tab_url": "/blogs" },
+    { "tab_label": "About", "tab_url": "/about" }
+  ],
+  "foot_information": "seed data",
+  "copyright": "© 2026 micro-front seed"
+}

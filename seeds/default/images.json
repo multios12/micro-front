@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "blog_id": 1,
+    "alt_text": "sample-md 確認用画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 2,
+    "blog_id": 2,
+    "alt_text": "画像サイズ指定の確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 3,
+    "blog_id": 3,
+    "alt_text": "公開サイト導線の確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 4,
+    "blog_id": 4,
+    "alt_text": "カテゴリ一覧の確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 5,
+    "blog_id": 5,
+    "alt_text": "未分類記事の確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 6,
+    "blog_id": 6,
+    "alt_text": "Markdown 表の確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 7,
+    "blog_id": 7,
+    "alt_text": "引用とリストの確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 8,
+    "blog_id": 8,
+    "alt_text": "パンくずリストの確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 9,
+    "blog_id": 9,
+    "alt_text": "非公開記事の確認画像",
+    "file": "files/images/sample.png"
+  },
+  {
+    "id": 10,
+    "blog_id": 9999999,
+    "alt_text": "about とサイト説明の確認画像",
+    "file": "files/images/sample.png"
+  }
+]

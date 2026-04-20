@@ -1,0 +1,251 @@
+[
+  {
+    "id": 1,
+    "title": "sample-md確認用の記事",
+    "content": "![サンプル画像|50%](/admin/images/1/1.png)\n\n",
+    "use_sample_content": true,
+    "category": "お知らせ",
+    "status": "public",
+    "published_at": "2026-04-20 09:00:00"
+  },
+  {
+    "id": 2,
+    "title": "画像サイズ指定の確認",
+    "content": "## 画像サイズ指定\n\nObsidian 風の記法で画像サイズを指定できます。\n\n![横幅半分|50%](/admin/images/2/2.png)\n\n`![alt|50%](url)` は本文幅に対する比率です。",
+    "category": "開発メモ",
+    "status": "public",
+    "published_at": "2026-04-19 09:00:00"
+  },
+  {
+    "id": 3,
+    "title": "公開サイトの導線を見直す",
+    "content": "## 導線メモ\n\nトップページから記事一覧へ自然に移動できるよう、見出しとカードの役割を整理しました。\n\n![導線の図|60%x220](/admin/images/3/3.png)",
+    "category": "設計",
+    "status": "public",
+    "published_at": "2026-04-18 09:00:00"
+  },
+  {
+    "id": 4,
+    "title": "カテゴリ一覧の表示確認",
+    "content": "## カテゴリ一覧\n\nカテゴリ別ページのパンくず、見出し、ページングを確認するための記事です。\n\n![カテゴリ画像|320](/admin/images/4/4.png)",
+    "category": "運用",
+    "status": "public",
+    "published_at": "2026-04-17 09:00:00"
+  },
+  {
+    "id": 5,
+    "title": "未分類記事の表示",
+    "content": "## 未分類\n\nカテゴリを設定しない記事が一覧でどのように見えるかを確認します。\n\n![未分類画像|40%](/admin/images/5/5.png)",
+    "category": "",
+    "status": "public",
+    "published_at": "2026-04-16 09:00:00"
+  },
+  {
+    "id": 6,
+    "title": "Markdown 表の確認",
+    "content": "## 表のサンプル\n\n| 項目 | 内容 |\n| --- | --- |\n| 速度 | 軽量な静的HTML |\n| 編集 | 管理画面から更新 |\n\n![表の画像|50%](/admin/images/6/6.png)",
+    "category": "お知らせ",
+    "status": "public",
+    "published_at": "2026-04-15 09:00:00"
+  },
+  {
+    "id": 7,
+    "title": "引用とリストの確認",
+    "content": "## 引用\n\n> これは引用の表示確認です。\n> 複数行でも読みやすさを確認します。\n\n- ひとつめ\n- ふたつめ\n\n![引用画像|300x180](/admin/images/7/7.png)",
+    "category": "開発メモ",
+    "status": "public",
+    "published_at": "2026-04-14 09:00:00"
+  },
+  {
+    "id": 8,
+    "title": "パンくずリストの確認",
+    "content": "## パンくず\n\n記事詳細ページで `Home / Blogs / カテゴリ / 記事タイトル` の並びを確認します。\n\n![パンくず画像|55%](/admin/images/8/8.png)",
+    "category": "設計",
+    "status": "public",
+    "published_at": "2026-04-13 09:00:00"
+  },
+  {
+    "id": 9,
+    "title": "公開前の記事サンプル",
+    "content": "## 非公開\n\nこのレコードは非公開記事の表示確認用です。\n\n![非公開画像|50%](/admin/images/9/9.png)",
+    "category": "運用",
+    "status": "private",
+    "published_at": "2026-04-12 09:00:00"
+  },
+  {
+    "id": 10,
+    "title": "短い本文の記事",
+    "content": "短い本文だけの記事です。カードの余白と一覧の見え方を確認します。",
+    "category": "",
+    "status": "public",
+    "published_at": "2026-04-11 09:00:00"
+  },
+  {
+    "id": 11,
+    "title": "運用ログ 01",
+    "content": "## 運用ログ\n\n公開後のチェックリストをまとめます。\n\n- index.html の更新\n- blogs/index.html の更新\n- assets/images のコピー",
+    "category": "運用",
+    "status": "public",
+    "published_at": "2026-04-10 09:00:00"
+  },
+  {
+    "id": 12,
+    "title": "設計ノート 01",
+    "content": "## 設計ノート\n\nテンプレートの責務を小さく保つため、本文生成とレイアウト生成を分けています。",
+    "category": "設計",
+    "status": "public",
+    "published_at": "2026-04-09 09:00:00"
+  },
+  {
+    "id": 13,
+    "title": "開発メモ 01",
+    "content": "## 開発メモ\n\nMarkdown の変換仕様を追加したときは、サンプルとテストを一緒に更新します。",
+    "category": "開発メモ",
+    "status": "public",
+    "published_at": "2026-04-08 09:00:00"
+  },
+  {
+    "id": 14,
+    "title": "お知らせ 01",
+    "content": "## お知らせ\n\nseed データで一覧件数とカテゴリの表示を確認できます。",
+    "category": "お知らせ",
+    "status": "public",
+    "published_at": "2026-04-07 09:00:00"
+  },
+  {
+    "id": 15,
+    "title": "未分類メモ 01",
+    "content": "## メモ\n\nカテゴリなしの記事として表示されます。",
+    "category": "",
+    "status": "public",
+    "published_at": "2026-04-06 09:00:00"
+  },
+  {
+    "id": 16,
+    "title": "運用ログ 02",
+    "content": "## 運用ログ\n\n部分 publish の挙動を確認するための記事です。",
+    "category": "運用",
+    "status": "public",
+    "published_at": "2026-04-05 09:00:00"
+  },
+  {
+    "id": 17,
+    "title": "設計ノート 02",
+    "content": "## 設計ノート\n\nパンくずリストの終端は記事タイトルをリンクなしで表示します。",
+    "category": "設計",
+    "status": "public",
+    "published_at": "2026-04-04 09:00:00"
+  },
+  {
+    "id": 18,
+    "title": "開発メモ 02",
+    "content": "## 開発メモ\n\n画像はアップロード時に PNG として保存されます。",
+    "category": "開発メモ",
+    "status": "public",
+    "published_at": "2026-04-03 09:00:00"
+  },
+  {
+    "id": 19,
+    "title": "お知らせ 02",
+    "content": "## お知らせ\n\nabout が非公開のとき、公開ナビゲーションから About を外します。",
+    "category": "お知らせ",
+    "status": "public",
+    "published_at": "2026-04-02 09:00:00"
+  },
+  {
+    "id": 20,
+    "title": "未分類メモ 02",
+    "content": "## メモ\n\n一覧のカード表示を確認するための未分類記事です。",
+    "category": "",
+    "status": "public",
+    "published_at": "2026-04-01 09:00:00"
+  },
+  {
+    "id": 21,
+    "title": "運用ログ 03",
+    "content": "## 運用ログ\n\n公開ファイルの出力先は `STATIC_EXPORT_DIR` で変更できます。",
+    "category": "運用",
+    "status": "public",
+    "published_at": "2026-03-31 09:00:00"
+  },
+  {
+    "id": 22,
+    "title": "設計ノート 03",
+    "content": "## 設計ノート\n\nサイト設定のタブは JSON として保存されます。",
+    "category": "設計",
+    "status": "public",
+    "published_at": "2026-03-30 09:00:00"
+  },
+  {
+    "id": 23,
+    "title": "開発メモ 03",
+    "content": "## 開発メモ\n\nテストデータは `seeds/default` を編集して調整できます。",
+    "category": "開発メモ",
+    "status": "public",
+    "published_at": "2026-03-29 09:00:00"
+  },
+  {
+    "id": 24,
+    "title": "お知らせ 03",
+    "content": "## お知らせ\n\n新しい記事を追加したい場合は `blogs.json` に追記します。",
+    "category": "お知らせ",
+    "status": "public",
+    "published_at": "2026-03-28 09:00:00"
+  },
+  {
+    "id": 25,
+    "title": "未分類メモ 03",
+    "content": "## メモ\n\nカテゴリ未設定でも公開できます。",
+    "category": "",
+    "status": "public",
+    "published_at": "2026-03-27 09:00:00"
+  },
+  {
+    "id": 26,
+    "title": "運用ログ 04",
+    "content": "## 運用ログ\n\n公開前には `go test ./internal/web` を実行しておくと安心です。",
+    "category": "運用",
+    "status": "public",
+    "published_at": "2026-03-26 09:00:00"
+  },
+  {
+    "id": 27,
+    "title": "設計ノート 04",
+    "content": "## 設計ノート\n\n公開ページの見た目は `layout.tmpl` に集約しています。",
+    "category": "設計",
+    "status": "public",
+    "published_at": "2026-03-25 09:00:00"
+  },
+  {
+    "id": 28,
+    "title": "開発メモ 04",
+    "content": "## 開発メモ\n\nMarkdown の画像サイズ指定は `|50%` のように書けます。",
+    "category": "開発メモ",
+    "status": "public",
+    "published_at": "2026-03-24 09:00:00"
+  },
+  {
+    "id": 29,
+    "title": "お知らせ 04",
+    "content": "## お知らせ\n\nテストデータの最終確認用記事です。",
+    "category": "お知らせ",
+    "status": "public",
+    "published_at": "2026-03-23 09:00:00"
+  },
+  {
+    "id": 30,
+    "title": "未分類メモ 04",
+    "content": "## メモ\n\n30件目の記事です。ページング確認に使います。",
+    "category": "",
+    "status": "public",
+    "published_at": "2026-03-22 09:00:00"
+  },
+  {
+    "id": 9999999,
+    "title": "about",
+    "content_file": "content/about.md",
+    "category": "",
+    "status": "public",
+    "published_at": "2026-04-20 08:00:00"
+  }
+]

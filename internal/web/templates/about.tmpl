@@ -1,0 +1,14 @@
+{{define "about"}}
+<section class="hero">
+  <div class="hero-card">
+    <p class="kicker">Profile</p>
+    <h1>About</h1>
+    <p>プロフィールページの見た目を確認するためのモックです。</p>
+  </div>
+</section>
+<section class="section">
+  <h2>{{.BodyTitle}}</h2>
+  {{if .LeadFigure}}{{.LeadFigure}}{{end}}
+  <div class="content">{{.Content}}</div>
+</section>
+{{end}}

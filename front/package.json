@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "mkdir -p ../internal/web && cp ./dist/index.html ../internal/web/admin.html",
+    "postbuild": "node -e \"const fs=require('fs');const path=require('path');const src=path.resolve('dist/index.html');const dst=path.resolve('../internal/web/admin.html');fs.mkdirSync(path.dirname(dst),{recursive:true});fs.copyFileSync(src,dst)\"",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },

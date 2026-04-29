@@ -19,7 +19,6 @@ export default defineConfig(() => {
       host: "0.0.0.0",
       port: 3000,
       proxy: {
-        "^/api/.*": "http://localhost:3001",
         "^/admin/api/.*": "http://localhost:3001",
         "^/admin/images/.*": "http://localhost:3001",
         "^/settings$": "http://localhost:3001",

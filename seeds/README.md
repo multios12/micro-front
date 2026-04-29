@@ -1,6 +1,10 @@
 # Seeds
 
-開発・確認用のテストデータを投入するための JSON ファイルを置く。
+seedとは、開発・確認用のテストデータをDBに投入するための機能である。
+テストデータは、`./seeds` 配下に置かれた、JSON ファイルを読み込む。
+
+## seed機能の起動方法
+seeds機能は、 `seed`サブコマンドで実行できる。
 
 ```sh
 go run ./cmd/micro-front seed
@@ -8,6 +12,16 @@ go run ./cmd/micro-front seed --profile default
 go run ./cmd/micro-front seed --seed-dir ./seeds/default
 go run ./cmd/micro-front seed --reset=false
 ```
+
+## seedサブコマンド
+
+| 引数         | 既定値    | 説明 |
+| ------------ | --------- | ------------------------------------------------ |
+| `--profile`  | `default` | `seeds/{profile}` を seed ディレクトリとして使う |
+| `--seed-dir` | 空        | 任意の seed ディレクトリを直接指定する |
+| `--reset`    | `true`    | 投入前に既存のブログ・画像を削除する |
+
+## テストデータの種類
 
 - `site.json`: サイト設定
 - `blogs.json`: 記事データ

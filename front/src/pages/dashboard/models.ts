@@ -35,7 +35,6 @@ export const dashboardBlogRows: readonly DashboardBlogRow[] = [
 ] as const
 
 export const dashboardSettings: readonly DashboardSettingRow[] = [
-  ['ADMIN_STATIC_DIR', './web/static'],
   ['STATIC_EXPORT_DIR', './data/publish'],
   ['DATA_DIR', './data'],
   ['TOP_PAGE_BLOG_LIMIT', '20'],

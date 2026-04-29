@@ -1,4 +1,7 @@
+/cmd/micro-front/__debug_bin*
 /data
 /node_modules
 /front/dist
 /front/node_modules
+/front/.env
+/micro-front

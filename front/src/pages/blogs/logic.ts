@@ -27,6 +27,8 @@ export type BlogsFilterState = {
   categoryValue: string
 }
 
+export const isProfileBlog = (title: string) => title.trim().toLowerCase() === 'about'
+
 export const blogsHeaderActions: readonly BlogsHeaderAction[] = [
   { label: 'ダッシュボードに戻る', href: '#/dashboard' },
   { label: '新規記事', href: '#/blog-edit', primary: true },
@@ -47,7 +49,7 @@ export function mapBlogsRows(items: Array<{
   published_at: string
   updated_at: string
 }>): BlogsRow[] {
-  return items.map((item) => ({
+  return items.filter((item) => !isProfileBlog(item.title)).map((item) => ({
     id: item.id,
     title: item.title,
     summary: item.summary,

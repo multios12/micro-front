@@ -110,10 +110,6 @@ export function extractValidationFields(error: unknown): Record<string, string> 
   return Object.keys(fields).length > 0 ? fields : null
 }
 
-const apiBaseUrl = (import.meta.env.VITE_ADMIN_API_BASE_URL ?? '').replace(/\/$/, '')
-
-const buildUrl = (path: string) => `${apiBaseUrl}${path}`
-
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !(value instanceof FormData) && !(value instanceof URLSearchParams)
 
@@ -151,7 +147,7 @@ async function requestJson<T>(path: string, init: Omit<RequestInit, 'body'> & { 
     body = JSON.stringify(init.body)
   }
 
-  const response = await fetch(buildUrl(path), {
+  const response = await fetch(path, {
     ...init,
     headers,
     body,
@@ -179,7 +175,7 @@ async function requestJson<T>(path: string, init: Omit<RequestInit, 'body'> & { 
 }
 
 async function requestFormData<T>(path: string, init: RequestInit & { body: FormData }): Promise<T> {
-  const response = await fetch(buildUrl(path), init)
+  const response = await fetch(path, init)
 
   if (!response.ok) {
     const error = await readErrorResponse(response)
@@ -199,11 +195,11 @@ async function requestFormData<T>(path: string, init: RequestInit & { body: Form
 }
 
 export async function fetchSiteSettings(): Promise<SiteApiResponse> {
-  return requestJson<SiteApiResponse>('/admin/api/site')
+  return requestJson<SiteApiResponse>('admin/api/site')
 }
 
 export async function updateSiteSettings(request: SiteApiRequest): Promise<SiteApiResponse> {
-  return requestJson<SiteApiResponse>('/admin/api/site', {
+  return requestJson<SiteApiResponse>('admin/api/site', {
     method: 'PUT',
     body: request,
   })
@@ -225,35 +221,35 @@ export async function fetchBlogList(params: {
     search.set('status', params.status)
   }
   const query = search.toString()
-  return requestJson<BlogListApiResponse>(`/admin/api/blogs${query ? `?${query}` : ''}`)
+  return requestJson<BlogListApiResponse>(`admin/api/blogs${query ? `?${query}` : ''}`)
 }
 
 export async function fetchBlogDetail(blogId: number): Promise<BlogDetailApiResponse> {
-  return requestJson<BlogDetailApiResponse>(`/admin/api/blogs/${blogId}`)
+  return requestJson<BlogDetailApiResponse>(`admin/api/blogs/${blogId}`)
 }
 
 export async function updateBlog(blogId: number, request: BlogUpsertApiRequest): Promise<BlogDetailApiResponse> {
-  return requestJson<BlogDetailApiResponse>(`/admin/api/blogs/${blogId}`, {
+  return requestJson<BlogDetailApiResponse>(`admin/api/blogs/${blogId}`, {
     method: 'PUT',
     body: request,
   })
 }
 
 export async function createBlog(request: BlogUpsertApiRequest): Promise<BlogDetailApiResponse> {
-  return requestJson<BlogDetailApiResponse>('/admin/api/blogs', {
+  return requestJson<BlogDetailApiResponse>('admin/api/blogs', {
     method: 'POST',
     body: request,
   })
 }
 
 export async function deleteBlog(blogId: number): Promise<{ id: number; result: string }> {
-  return requestJson<{ id: number; result: string }>(`/admin/api/blogs/${blogId}`, {
+  return requestJson<{ id: number; result: string }>(`admin/api/blogs/${blogId}`, {
     method: 'DELETE',
   })
 }
 
 export async function fetchBlogImages(blogId: number): Promise<BlogImageApiResponse> {
-  return requestJson<BlogImageApiResponse>(`/admin/api/blogs/${blogId}/images`)
+  return requestJson<BlogImageApiResponse>(`admin/api/blogs/${blogId}/images`)
 }
 
 export async function uploadBlogImage(
@@ -264,7 +260,7 @@ export async function uploadBlogImage(
   const formData = new FormData()
   formData.set('file', file)
   formData.set('alt_text', altText)
-  return requestFormData<BlogImageApiItem>(`/admin/api/blogs/${blogId}/images`, {
+  return requestFormData<BlogImageApiItem>(`admin/api/blogs/${blogId}/images`, {
     method: 'POST',
     body: formData,
   })
@@ -275,7 +271,7 @@ export async function deleteBlogImage(
   imageId: number,
 ): Promise<{ id: number; blog_id: number; result: string }> {
   return requestJson<{ id: number; blog_id: number; result: string }>(
-    `/admin/api/blogs/${blogId}/images/${imageId}`,
+    `admin/api/blogs/${blogId}/images/${imageId}`,
     {
       method: 'DELETE',
     },
@@ -283,7 +279,7 @@ export async function deleteBlogImage(
 }
 
 export async function publish(target: PublishTarget, blogId?: number): Promise<{ result: string }> {
-  return requestJson<{ result: string }>('/admin/api/publish', {
+  return requestJson<{ result: string }>('admin/api/publish', {
     method: 'POST',
     body: blogId === undefined ? { target } : { target, blog_id: blogId },
   })

@@ -9,6 +9,7 @@ import (
 // Handler は静的HTML出力APIと公開ファイル配信の HTTP ハンドラです。
 type Handler struct {
 	Store      *store.Store
+	DataDir    string
 	StaticDir  string
 	PublishDir string
 }

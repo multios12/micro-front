@@ -36,6 +36,8 @@ export type DashboardData = {
   totalPages: number
 }
 
+export const isProfileBlog = (title: string) => title.trim().toLowerCase() === 'about'
+
 export const dashboardTableActions: readonly DashboardAction[] = [
   { label: '一覧ページで開く', href: '#/blogs' },
   { label: '新規記事', href: '#/blog-edit', primary: true },
@@ -58,7 +60,7 @@ export function mapDashboardBlogRows(items: Array<{
   published_at: string
   updated_at: string
 }>): DashboardBlogRow[] {
-  return items.map((item) => ({
+  return items.filter((item) => !isProfileBlog(item.title)).map((item) => ({
     id: item.id,
     title: item.title,
     summary: item.summary,
@@ -144,9 +146,10 @@ export function createDashboardData(args: {
   }
 }): DashboardData {
   const blogRows = mapDashboardBlogRows(args.blogs)
+  const visibleBlogs = args.blogs.filter((item) => !isProfileBlog(item.title))
   return {
     blogRows,
-    statCards: buildDashboardStatCards(args.blogs),
+    statCards: buildDashboardStatCards(visibleBlogs),
     settings: buildDashboardSettings(args.site),
     totalPages: Math.max(1, Math.ceil(blogRows.length / dashboardPageSize)),
   }

@@ -18,6 +18,7 @@ func (s *Store) ListBlogs(ctx context.Context, filter BlogListFilter) (BlogListR
 
 	var args []any
 	var where []string
+	where = append(where, "title <> 'about'")
 	if filter.Status != "" {
 		where = append(where, "status = ?")
 		args = append(args, filter.Status)
@@ -84,6 +85,7 @@ func (s *Store) ListBlogsAll(ctx context.Context) ([]BlogEntitty, error) {
 	rows, err := s.DB.QueryContext(ctx, `
 		SELECT id, title, content, summary, category, status, published_at, updated_at
 		FROM blogs
+		WHERE title <> 'about'
 		ORDER BY published_at DESC, id DESC
 	`)
 	if err != nil {
@@ -106,7 +108,7 @@ func (s *Store) ListPublicBlogs(ctx context.Context) ([]BlogEntitty, error) {
 	rows, err := s.DB.QueryContext(ctx, `
 		SELECT id, title, content, summary, category, status, published_at, updated_at
 		FROM blogs
-		WHERE status = 'public'
+		WHERE status = 'public' AND title <> 'about'
 		ORDER BY published_at DESC, id DESC
 	`)
 	if err != nil {

@@ -1,0 +1,24 @@
+FROM alpine:3.22
+
+WORKDIR /app
+
+RUN apk add --no-cache ca-certificates tzdata
+
+ENV TZ=Asia/Tokyo
+
+# ホスト側でビルド済みの ./micro-front をコンテナに入れて実行する。
+COPY micro-front /app/micro-front
+
+# 設定変更が必要なら /app/.env を配置して、下記のコメントアウトを解除する。
+# COPY .env /app/.env
+
+# アプリの既定保存先は /app/data なので、永続化したい場合はここをホストと共有する。
+RUN mkdir -p /app/data /app/data/publish
+
+EXPOSE 3000
+
+VOLUME ["/app/data"]
+
+# VOLUME には README の例のようにホスト側 data ディレクトリを /app/data へ割り当てる。
+# .env には機密情報や環境ごとの差分をまとめる。
+ENTRYPOINT ["/app/micro-front"]

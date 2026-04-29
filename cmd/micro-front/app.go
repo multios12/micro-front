@@ -37,7 +37,7 @@ func run(ctx context.Context, args []string) error {
 	site.Handler{Store: st}.Init(&srv)
 	blogs.Handler{Store: st, DataDir: cfg.DataDir}.Init(&srv)
 	images.Handler{Store: st, DataDir: cfg.DataDir}.Init(&srv)
-	web.Handler{Store: st, StaticDir: cfg.AdminStaticDir, PublishDir: cfg.PublicStaticDir}.Init(&srv)
+	web.Handler{Store: st, DataDir: cfg.DataDir, PublishDir: cfg.PublicStaticDir}.Init(&srv)
 
 	return srv.Run(ctx)
 }

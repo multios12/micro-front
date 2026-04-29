@@ -10,6 +10,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+const defaultSiteTabsJSON = `[{"tab_label":"Home","tab_url":"/"},{"tab_label":"Blogs","tab_url":"/blogs"},{"tab_label":"About","tab_url":"/about"}]`
+
 func New(dataDir string) (*Store, error) {
 	if dataDir == "" {
 		dataDir = "./data"
@@ -93,7 +95,7 @@ func (s *Store) initSchema() error {
 	_, err := s.DB.Exec(`
 		INSERT OR IGNORE INTO site (id, site_title, site_subtitle, site_description, tabs, foot_information, copyright, updated_at)
 		VALUES (1, ?, ?, ?, ?, ?, ?, datetime('now'))
-	`, "micro-front", "静的HTMLで配信する公開サイト", "管理画面で更新された記事を、そのまま静的HTMLとして出力する前提のテンプレートモックです。", `[{"tab_label":"Home","tab_url":"/"},{"tab_label":"Blogs","tab_url":"/blogs"},{"tab_label":"About","tab_url":"/about"}]`, "micro-front", "© 2026 micro-front")
+	`, "micro-front", "静的HTMLで配信する公開サイト", "管理画面で更新された記事を、そのまま静的HTMLとして出力する前提のテンプレートモックです。", defaultSiteTabsJSON, "micro-front", "© 2026 micro-front")
 	if err != nil {
 		return fmt.Errorf("seed site settings: %w", err)
 	}

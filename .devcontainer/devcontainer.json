@@ -14,7 +14,6 @@
 			},
 			"extensions": [
 				"golang.go",
-				"reliutg.bulma-css-class-completion",
 				"dbaeumer.vscode-eslint",
 				"svelte.svelte-vscode"
 			]

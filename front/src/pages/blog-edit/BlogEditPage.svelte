@@ -5,7 +5,7 @@
   import FlashMessage from "../../components/FlashMessage.svelte";
   import FormActionButtons from "../../components/FormActionButtons.svelte";
   import ImageUploader from "../../components/ImageUploader.svelte";
-  import MarkdownEditor from "../../components/MarkdownEditor.svelte";
+  import MDInput from "../../components/MDInput/index.svelte";
   import Toast from "../../components/Toast.svelte";
   import {
     createBlogEditLabels,
@@ -185,6 +185,11 @@
       blogImages = [];
     }
   };
+
+  const getMarkdownImageUploadPath = () =>
+    resolvedBlogId === null
+      ? ""
+      : `admin/api/blogs/${resolvedBlogId}/images`;
 
   const handleImageSelect = async (file: File) => {
     if (resolvedBlogId === null) {
@@ -495,23 +500,33 @@
       </div>
     {/if}
 
-    <MarkdownEditor
-      id="blog-content"
-      label="本文"
-      bind:value={content}
-      error={validationFields.content ?? ""}
-    />
+    <div class="admin-field">
+      <label class="admin-label" for="blog-content">本文</label>
+      <MDInput
+        id="blog-content"
+        bind:value={content}
+        error={validationFields.content ?? ""}
+        imageUploadPath={getMarkdownImageUploadPath()}
+        onImageUploaded={() => {
+          if (resolvedBlogId !== null) {
+            void reloadBlogImages(resolvedBlogId);
+          }
+        }}
+      />
+    </div>
   </div>
 
-  <ImageUploader
-    title="画像"
-    note={imageNote}
-    buttonLabel="画像を選択"
-    items={blogImages}
-    onCopyItem={(item) => handleImageCopy(item)}
-    onSelectFile={handleImageSelect}
-    onDeleteItem={(item) => handleImageDelete(item.id)}
-  />
+  <div class="blog-edit-images">
+    <ImageUploader
+      title="画像"
+      note={imageNote}
+      buttonLabel="画像を選択"
+      items={blogImages}
+      onCopyItem={(item) => handleImageCopy(item)}
+      onSelectFile={handleImageSelect}
+      onDeleteItem={(item) => handleImageDelete(item.id)}
+    />
+  </div>
 
   <FormActionButtons
     items={[
@@ -552,3 +567,9 @@
     onConfirm={confirmDelete}
   />
 {/if}
+
+<style>
+  .blog-edit-images {
+    margin-top: 1.5rem;
+  }
+</style>

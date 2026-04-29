@@ -9,7 +9,7 @@
       "program": "${workspaceFolder}/cmd/micro-front",
       "cwd": "${workspaceFolder}",
       "env": {
-        "ADDR": ":3001"
+        "PORT": ":3001"
       }
     },
     {

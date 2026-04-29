@@ -6,7 +6,9 @@
   import BlogsPage from './pages/blogs/BlogsPage.svelte'
   import DashboardPage from './pages/dashboard/DashboardPage.svelte'
   import SitePage from './pages/site/SitePage.svelte'
+  import { fetchSiteSettings } from './lib/admin-api'
   import { blogCount, refreshBlogCount } from './lib/blog-count'
+  import { siteTitle } from './lib/site-title'
 
   type Route = 'dashboard' | 'blogs' | 'site' | 'blog-edit'
   type NavKey = 'dashboard' | 'blogs' | 'site' | 'about'
@@ -42,6 +44,15 @@
       location.hash = '#/dashboard'
     }
 
+    void (async () => {
+      try {
+        const site = await fetchSiteSettings()
+        siteTitle.set(site.site_title || 'micro-front')
+      } catch {
+        siteTitle.set('micro-front')
+      }
+    })()
+
     void refreshBlogCount()
 
     syncRoute()
@@ -58,7 +69,7 @@
   <meta name="description" content="micro-front の管理画面" />
 </svelte:head>
 
-<AdminShell active={activeNav} blogCount={$blogCount}>
+<AdminShell active={activeNav} blogCount={$blogCount} siteTitle={$siteTitle}>
   {#if route === 'dashboard'}
     <DashboardPage />
   {:else if route === 'blogs'}

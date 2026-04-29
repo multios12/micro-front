@@ -12,6 +12,7 @@
     updateSiteSettings,
     type SiteApiResponse,
   } from "../../lib/admin-api";
+  import { siteTitle as siteTitleStore } from "../../lib/site-title";
   import {
     addSiteTab,
     buildSiteUpdateRequest,
@@ -103,6 +104,7 @@
         }),
       );
       applySite(saved);
+      siteTitleStore.set(saved.site_title || "micro-front");
       messageTone = "success";
       toastTitle = "保存完了";
       toastMessage = "サイト設定を保存しました。";

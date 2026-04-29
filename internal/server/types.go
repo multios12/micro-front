@@ -8,6 +8,7 @@ import (
 
 // Server は HTTP ルーティングと実行設定をまとめたサーバ本体です。
 type Server struct {
-	cfg config.Config
-	mux *http.ServeMux
+	cfg    config.Config
+	mux    *http.ServeMux
+	routes []string
 }

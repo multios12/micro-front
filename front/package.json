@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "mkdir -p ../web/static && cp ./dist/* ../web/static/ -R",
+    "postbuild": "mkdir -p ../internal/web && cp ./dist/index.html ../internal/web/admin.html",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },

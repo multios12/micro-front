@@ -3,6 +3,7 @@
 
   export let active: NavKey = 'dashboard'
   export let blogCount = 0
+  export let siteTitle = 'micro-front'
   let items: Array<{ key: NavKey; label: string; href: string; badge?: string }> = []
 
   $: items = [
@@ -14,7 +15,7 @@
 </script>
 
 <nav class="flex flex-col gap-2">
-  <div class="admin-label">Navigation</div>
+  <div class="admin-label">{siteTitle}</div>
 
   {#each items as item}
     <a

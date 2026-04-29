@@ -82,7 +82,7 @@ jobs:
           set -euo pipefail
           outdir="dist/${{ matrix.goos }}-${{ matrix.goarch }}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
-            (cd "$outdir" && zip -r "../micro-front-${{ matrix.goos }}-${{ matrix.goarch }}.zip" .)
+            powershell.exe -NoLogo -NoProfile -Command "Compress-Archive -Path '$outdir/*' -DestinationPath 'dist/micro-front-${{ matrix.goos }}-${{ matrix.goarch }}.zip' -Force"
           else
             (cd "$outdir" && tar -czf "../micro-front-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" .)
           fi

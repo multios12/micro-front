@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -57,7 +58,10 @@ func TestServeAdminHTMLFallsBackToStaticIndex(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	serveAdminHTML(rr, req)
 
-	if body := rr.Body.String(); !strings.Contains(body, "micro-front 管理画面") {
-		t.Fatalf("body does not contain embedded fallback HTML")
+	if got := rr.Header().Get("Content-Type"); got != "text/html; charset=utf-8" {
+		t.Fatalf("content type = %q, want %q", got, "text/html; charset=utf-8")
+	}
+	if !bytes.Equal(rr.Body.Bytes(), embeddedAdminHTML) {
+		t.Fatalf("body does not match embedded fallback HTML")
 	}
 }

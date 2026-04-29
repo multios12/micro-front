@@ -93,6 +93,22 @@ go test ./...
 GOCACHE=/tmp/gocache GOMODCACHE=/tmp/gomodcache go test ./...
 ```
 
+## GitHub Releases での公開
+
+このリポジトリでは、タグを作成すると GitHub Actions がアプリケーションの配布物を作成し、GitHub Releases にアップロードします。
+
+公開手順は次のとおりです。
+
+1. `main` ブランチに必要な変更をマージします
+1. バージョンタグを作成して push します
+   ```sh
+   git tag v0.7.0
+   git push origin v0.7.0
+   ```
+1. GitHub の Releases ページで、Actions が作成したリリース資材を確認します
+
+Release には、各 OS 向けの `micro-front` バイナリを含めます。必要に応じて、管理画面のビルド成果物や公開 HTML を別途添付する運用にも拡張できます。
+
 ## 環境変数(ビルド用)
 
 | 環境変数                  | 既定値 | 説明 |

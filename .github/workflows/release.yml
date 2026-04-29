@@ -9,9 +9,39 @@ permissions:
   contents: write
 
 jobs:
+  build-front:
+    name: build admin page
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.14.1"
+          cache: yarn
+          cache-dependency-path: front/yarn.lock
+
+      - name: Install front dependencies
+        working-directory: front
+        run: yarn install --frozen-lockfile
+
+      - name: Build admin page
+        working-directory: front
+        run: yarn build
+
+      - name: Upload admin page artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-html
+          path: internal/web/admin.html
+          if-no-files-found: error
+
   build:
     name: build (${{ matrix.goos }}/${{ matrix.goarch }})
     runs-on: ${{ matrix.runner }}
+    needs: build-front
     strategy:
       fail-fast: false
       matrix:
@@ -28,38 +58,32 @@ jobs:
             goos: windows
             goarch: amd64
             archive_ext: zip
-          - runner: macos-latest
-            goos: darwin
-            goarch: amd64
-            archive_ext: tar.gz
-          - runner: macos-latest
-            goos: darwin
-            goarch: arm64
-            archive_ext: tar.gz
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Download admin page artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: admin-html
+          path: internal/web
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.25.0"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Restore Go cache
+        uses: actions/cache@v4
         with:
-          node-version: "24.14.1"
-          cache: yarn
-          cache-dependency-path: front/yarn.lock
-
-      - name: Install front dependencies
-        working-directory: front
-        run: yarn install --frozen-lockfile
-
-      - name: Build admin page
-        working-directory: front
-        run: yarn build
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ matrix.goos }}-${{ matrix.goarch }}-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.goos }}-${{ matrix.goarch }}-
+            ${{ runner.os }}-go-
 
       - name: Build binary
         shell: bash

@@ -8,6 +8,7 @@ type PageTemplateData struct {
 	SiteTitle       string
 	SiteSubtitle    string
 	SiteDescription string
+	SiteDescriptionHTML template.HTML
 	HomeURL         string
 	Tabs            []PageTab
 	Body            template.HTML
@@ -27,10 +28,12 @@ type IndexPageData struct {
 	SiteTitle       string
 	SiteSubtitle    string
 	SiteDescription string
+	SiteDescriptionHTML template.HTML
 	HomeURL         string
 	Tabs            []PageTab
 	LatestPosts     []IndexPostCard
 	Categories      []IndexCategoryGroup
+	FootInformation string
 	Copyright       string
 }
 
@@ -79,9 +82,10 @@ type BlogListCard struct {
 
 // AboutPageData は About ページの body テンプレートに渡すデータです。
 type AboutPageData struct {
-	BodyTitle  string
-	Content    template.HTML
-	LeadFigure template.HTML
+	Breadcrumbs []PageBreadcrumb
+	BodyTitle   string
+	Content     template.HTML
+	LeadFigure  template.HTML
 }
 
 // BlogDetailPageData は記事詳細ページの body テンプレートに渡すデータです。

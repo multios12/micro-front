@@ -11,7 +11,7 @@
 
 {{define "blog-list"}}
 {{if .Breadcrumbs}}
-<nav class="breadcrumb breadcrumb-tight" aria-label="パンくずリスト">
+<nav class="breadcrumb" aria-label="パンくずリスト">
   {{- range $i, $item := .Breadcrumbs -}}
     {{- if $i }}<span> / </span>{{ end -}}
     {{- if $item.URL -}}
@@ -26,8 +26,8 @@
   <span class="kicker list-kicker">{{.Kicker}}</span>
   <h2>{{.Heading}}</h2>
 </section>
-<section class="section blogs-section">
-  <div class="post-grid post-grid-list">
+<section class="section">
+  <div class="post-grid">
     {{range .Items}}{{template "blog-card" .}}{{end}}
   </div>
   {{.Pagination}}

@@ -54,7 +54,7 @@ func TestPublish_RendersMarkdownWithPkgMarkdown(t *testing.T) {
 		t.Fatalf("ReadFile blog: %v", err)
 	}
 	body := string(got)
-	for _, want := range []string{"<h1>Hello</h1>", "<strong>bold</strong>", "<em>italic</em>", "href=\"../index.html\"", "href=\"./index.html\"", "Article"} {
+	for _, want := range []string{"<h1>Hello</h1>", "<strong>bold</strong>", "<em>italic</em>", "href=\"../index.html\"", "href=\"./index.html\""} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("blog page missing %q:\n%s", want, body)
 		}

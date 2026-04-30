@@ -1,11 +1,21 @@
 {{define "about"}}
-
-  <section class="hero blogs-hero latest-hero">
+{{if .Breadcrumbs}}
+<nav class="breadcrumb" aria-label="パンくずリスト">
+  {{- range $i, $item := .Breadcrumbs -}}
+    {{- if $i }}<span> / </span>{{ end -}}
+    {{- if $item.URL -}}
+      <a href="{{$item.URL}}">{{$item.Label}}</a>
+    {{- else -}}
+      <span>{{$item.Label}}</span>
+    {{- end -}}
+  {{- end -}}
+</nav>
+{{end}}
+  <section class="hero blogs-hero">
+    <span class="chip">&nbsp;</span>
     <h2>About</h2>
-  </div>
-</section>
+  </section>
 <section class="section">
-  <h2>{{.BodyTitle}}</h2>
   {{if .LeadFigure}}{{.LeadFigure}}{{end}}
   <div class="content">{{.Content}}</div>
 </section>

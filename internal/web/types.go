@@ -12,6 +12,7 @@ type Handler struct {
 	DataDir    string
 	StaticDir  string
 	PublishDir string
+	PreviewDir string
 }
 
 // Usecase は静的HTMLの生成処理を扱うユースケースです。
@@ -128,4 +129,21 @@ type WebPublishRequest struct {
 // WebPublishResponse は静的HTML出力APIのレスポンスです。
 type WebPublishResponse struct {
 	Result string `json:"result"`
+}
+
+// WebPreviewRequest は記事プレビュー生成APIのリクエストです。
+type WebPreviewRequest struct {
+	BlogID int64 `json:"blog_id"`
+}
+
+// WebSitePreviewResponse はサイトトップページのプレビュー生成APIのレスポンスです。
+type WebSitePreviewResponse struct {
+	Result string `json:"result"`
+	URL    string `json:"url"`
+}
+
+// WebPreviewResponse は記事プレビュー生成APIのレスポンスです。
+type WebPreviewResponse struct {
+	Result string `json:"result"`
+	URL    string `json:"url"`
 }

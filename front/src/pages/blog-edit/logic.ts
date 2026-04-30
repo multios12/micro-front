@@ -3,7 +3,6 @@ export type BlogEditMode = 'blog' | 'about' | 'new'
 export type BlogEditViewModel = {
   mode: BlogEditMode
   headerTitle: string
-  pageBodyTitle: string
   articleId: string
   cancelHref: string
   saveHref: string
@@ -21,7 +20,6 @@ export const createBlogEditViewModel = (blogId: string): BlogEditViewModel => {
   return {
     mode,
     headerTitle: 'BLOG EDIT',
-    pageBodyTitle: '記事',
     articleId: mode === 'about' ? '9999999' : mode === 'new' ? '...' : '42',
     cancelHref: mode === 'about' ? '#/dashboard' : '#/blogs',
     saveHref: mode === 'about' ? '#/blog-edit/about' : mode === 'new' ? '#/blog-edit' : `#/blog-edit/${blogId}`,
@@ -82,7 +80,6 @@ export function createBlogEditLabels(blogId: string) {
 
   return {
     headerTitle: mode === 'about' ? 'ABOUT' : mode === 'new' ? 'NEW BLOG' : 'BLOG EDIT',
-    pageBodyTitle: mode === 'about' ? 'ABOUT' : mode === 'new' ? '新規記事' : '記事',
     cancelHref: mode === 'about' ? '#/dashboard' : '#/blogs',
     imageNote: '画像サイズを1920x1080以下に変換して、PNGで表示します。',
     deleteMessage:

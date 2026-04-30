@@ -18,6 +18,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"micro-front/internal/store"
 	"micro-front/pkg/markdown"
@@ -34,7 +35,9 @@ var blogBodyTemplate = template.Must(template.ParseFS(templateFS, "templates/blo
 
 var publicImagePattern = regexp.MustCompile(`/admin/images/(\d+)/(\d+)\.png`)
 
-// Publish は設計書 3.10 の静的HTML出力処理を行います。
+const previewTTL = 24 * time.Hour // プレビューデータの有効期限
+
+// Publish は公開HTMLの出力処理を行います。
 func (uc Usecase) Publish(ctx context.Context, req WebPublishRequest) (WebPublishResponse, map[string]string, error) {
 	if req.Target != "all" && req.Target != "index" && req.Target != "blogs" && req.Target != "blog" && req.Target != "about" {
 		return WebPublishResponse{}, map[string]string{
@@ -53,6 +56,95 @@ func (uc Usecase) Publish(ctx context.Context, req WebPublishRequest) (WebPublis
 	}
 	log.Printf("[publish] done target=%s blog_id=%d output_dir=%s", req.Target, req.BlogID, uc.PublishDir)
 	return WebPublishResponse{Result: "success"}, nil, nil
+}
+
+// PreviewBlog は保存済み記事のプレビュー用HTMLを一時ディレクトリへ生成します。
+func (uc Usecase) PreviewBlog(ctx context.Context, blogID int64, previewRoot string) (WebPreviewResponse, map[string]string, error) {
+	if blogID == 0 {
+		return WebPreviewResponse{}, map[string]string{
+			"blog_id": "記事IDを入力してください。",
+		}, nil
+	}
+
+	token := strconv.FormatInt(blogID, 10) + "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	outputDir := filepath.Join(previewRoot, token)
+	if err := cleanupPreviewRoot(previewRoot, previewTTL); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+	previewUsecase := Usecase{
+		Store:      uc.Store,
+		StaticDir:  uc.StaticDir,
+		PublishDir: outputDir,
+	}
+
+	if err := os.RemoveAll(outputDir); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+	if err := previewUsecase.renderBlog(ctx, blogID); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+
+	return WebPreviewResponse{
+		Result: "success",
+		URL:    filepath.ToSlash(filepath.Join("/admin/preview", token, "blogs", strconv.FormatInt(blogID, 10)+".html")),
+	}, nil, nil
+}
+
+// PreviewAbout は about 記事のプレビュー用HTMLを一時ディレクトリへ生成します。
+func (uc Usecase) PreviewAbout(ctx context.Context, previewRoot string) (WebPreviewResponse, map[string]string, error) {
+	blog, err := uc.Store.GetBlogByTitle(ctx, "about")
+	if err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+
+	token := "about-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	outputDir := filepath.Join(previewRoot, token)
+	if err := cleanupPreviewRoot(previewRoot, previewTTL); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+	previewUsecase := Usecase{
+		Store:      uc.Store,
+		StaticDir:  uc.StaticDir,
+		PublishDir: outputDir,
+	}
+
+	if err := os.RemoveAll(outputDir); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+	if err := previewUsecase.renderAboutPreview(ctx, blog); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+
+	return WebPreviewResponse{
+		Result: "success",
+		URL:    filepath.ToSlash(filepath.Join("/admin/preview", token, "about", "index.html")),
+	}, nil, nil
+}
+
+// PreviewIndex はトップページのプレビュー用HTMLを一時ディレクトリへ生成します。
+func (uc Usecase) PreviewIndex(ctx context.Context, previewRoot string) (WebPreviewResponse, map[string]string, error) {
+	token := "index-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	outputDir := filepath.Join(previewRoot, token)
+	if err := cleanupPreviewRoot(previewRoot, previewTTL); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+	previewUsecase := Usecase{
+		Store:      uc.Store,
+		StaticDir:  uc.StaticDir,
+		PublishDir: outputDir,
+	}
+
+	if err := os.RemoveAll(outputDir); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+	if err := previewUsecase.renderIndex(ctx); err != nil {
+		return WebPreviewResponse{}, nil, err
+	}
+
+	return WebPreviewResponse{
+		Result: "success",
+		URL:    filepath.ToSlash(filepath.Join("/admin/preview", token, "index.html")),
+	}, nil, nil
 }
 
 // render は target に応じて公開用 HTML を再生成します。
@@ -282,13 +374,21 @@ func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
 
 // renderAbout はプロフィールページを生成します。
 func (uc Usecase) renderAbout(ctx context.Context) error {
-	settings, err := uc.Store.GetSiteSettings(ctx)
-	if err != nil {
-		return err
-	}
 	blog, err := uc.Store.GetBlogByTitle(ctx, "about")
 	if err != nil || blog.Status != "public" {
 		return os.RemoveAll(filepath.Join(uc.PublishDir, "about"))
+	}
+	return uc.renderAboutPage(ctx, blog)
+}
+
+func (uc Usecase) renderAboutPreview(ctx context.Context, blog store.BlogEntitty) error {
+	return uc.renderAboutPage(ctx, blog)
+}
+
+func (uc Usecase) renderAboutPage(ctx context.Context, blog store.BlogEntitty) error {
+	settings, err := uc.Store.GetSiteSettings(ctx)
+	if err != nil {
+		return err
 	}
 	leadFigure, err := uc.renderLeadImageFigure(ctx, "about/index.html", blog.ID, blog.Title)
 	if err != nil {
@@ -506,11 +606,21 @@ func buildIndexBlogCards(blogs []store.BlogEntitty) []IndexPostCard {
 			Title:       blog.Title,
 			Summary:     blog.Summary,
 			Category:    blog.Category,
-			PublishedAt: blog.PublishedAt,
+			PublishedAt: formatDateOnly(blog.PublishedAt),
 			URL:         relURL("index.html", filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html"))),
 		})
 	}
 	return cards
+}
+
+func formatDateOnly(value string) string {
+	if value == "" {
+		return ""
+	}
+	if len(value) >= 10 {
+		return value[:10]
+	}
+	return value
 }
 
 func buildIndexCategories(blogs []store.BlogEntitty) []IndexCategoryGroup {
@@ -890,6 +1000,28 @@ func copyFile(src, dst string) error {
 		return err
 	}
 	log.Printf("[publish] copied %s -> %s", src, dst)
+	return nil
+}
+
+func cleanupPreviewRoot(previewRoot string, ttl time.Duration) error {
+	entries, err := os.ReadDir(previewRoot)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	cutoff := time.Now().Add(-ttl)
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			continue
+		}
+		if info.ModTime().Before(cutoff) {
+			_ = os.RemoveAll(filepath.Join(previewRoot, entry.Name()))
+		}
+	}
 	return nil
 }
 

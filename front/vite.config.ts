@@ -20,6 +20,7 @@ export default defineConfig(() => {
       port: 3000,
       proxy: {
         "^/admin/api/.*": "http://localhost:3001",
+        "^/admin/preview/.*": "http://localhost:3001",
         "^/admin/images/.*": "http://localhost:3001",
         "^/settings$": "http://localhost:3001",
       },

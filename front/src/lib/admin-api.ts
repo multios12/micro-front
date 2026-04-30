@@ -284,3 +284,16 @@ export async function publish(target: PublishTarget, blogId?: number): Promise<{
     body: blogId === undefined ? { target } : { target, blog_id: blogId },
   })
 }
+
+export async function createBlogPreview(blogId: number | 'about'): Promise<{ result: string; url: string }> {
+  return requestJson<{ result: string; url: string }>(`admin/api/blogs/${blogId}/preview`, {
+    method: 'POST',
+    body: typeof blogId === 'number' ? { blog_id: blogId } : { blog_id: 0 },
+  })
+}
+
+export async function createSitePreview(): Promise<{ result: string; url: string }> {
+  return requestJson<{ result: string; url: string }>('admin/api/site/preview', {
+    method: 'POST',
+  })
+}

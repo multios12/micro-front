@@ -8,6 +8,7 @@
   import MarkdownEditor from "../../components/MarkdownEditor.svelte";
   import {
     fetchSiteSettings,
+    createSitePreview,
     extractValidationFields,
     updateSiteSettings,
     type SiteApiResponse,
@@ -24,6 +25,7 @@
 
   let loading = true;
   let saving = false;
+  let previewing = false;
   let messageTone: "success" | "warning" | "error" = "success";
   let validationFields: Record<string, string> = {};
   let toastOpen = false;
@@ -128,6 +130,41 @@
     }
   };
 
+  const previewSite = async () => {
+    const previewWindow = window.open("about:blank", "_blank");
+    if (!previewWindow) {
+      messageTone = "error";
+      toastTitle = "エラー";
+      toastMessage =
+        "ポップアップがブロックされました。ブラウザ設定を確認してください。";
+      toastOpen = true;
+      return;
+    }
+
+    previewWindow.opener = null;
+    previewing = true;
+    validationFields = {};
+    toastOpen = false;
+
+    try {
+      const preview = await createSitePreview();
+      previewWindow.location.href = preview.url;
+      messageTone = "success";
+      toastTitle = "プレビュー生成";
+      toastMessage = "プレビューを新しいタブで開きました。";
+      toastOpen = true;
+    } catch (err) {
+      previewWindow.close();
+      messageTone = "error";
+      toastTitle = "エラー";
+      toastMessage =
+        err instanceof Error ? err.message : "プレビューの生成に失敗しました";
+      toastOpen = true;
+    } finally {
+      previewing = false;
+    }
+  };
+
   onMount(() => {
     void loadSite();
   });
@@ -139,6 +176,13 @@
 
 <AdminHeader title="Site">
   <svelte:fragment slot="actions">
+    <button
+      class="admin-button admin-button-secondary"
+      type="button"
+      on:click={previewSite}
+    >
+      {previewing ? "プレビュー生成中..." : "プレビューを表示"}
+    </button>
     <a class="admin-button" href={siteHeaderAction.href}
       >{siteHeaderAction.label}</a
     >
@@ -263,7 +307,9 @@
                 )}
             />
             {#if getTabFieldError(index, "tab_label")}
-              <p class="admin-error-message">{getTabFieldError(index, "tab_label")}</p>
+              <p class="admin-error-message">
+                {getTabFieldError(index, "tab_label")}
+              </p>
             {/if}
           </div>
           <div class="admin-field">
@@ -284,7 +330,9 @@
                 )}
             />
             {#if getTabFieldError(index, "tab_url")}
-              <p class="admin-error-message">{getTabFieldError(index, "tab_url")}</p>
+              <p class="admin-error-message">
+                {getTabFieldError(index, "tab_url")}
+              </p>
             {/if}
           </div>
         </div>
@@ -302,6 +350,11 @@
   <FormActionButtons
     items={[
       { label: "キャンセル", href: siteHeaderAction.href, variant: "ghost" },
+      {
+        label: previewing ? "プレビュー生成中..." : "プレビューを表示",
+        variant: "secondary",
+        onClick: previewSite,
+      },
       {
         label: saving ? "保存中..." : "保存する",
         variant: "primary",

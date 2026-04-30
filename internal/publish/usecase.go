@@ -32,8 +32,8 @@ var templateFuncs = template.FuncMap{
 	"dateOnly": formatDateOnly,
 }
 
-var layoutTemplate = mustParseTemplate("layout", "templates/layout.tmpl")
-var indexBodyTemplate = mustParseTemplate("index", "templates/index.tmpl")
+var layoutTemplate = mustParseTemplate("layout", "templates/styles.tmpl", "templates/layout.tmpl")
+var indexBodyTemplate = mustParseTemplate("index", "templates/styles.tmpl", "templates/index.tmpl")
 var listBodyTemplate = mustParseTemplate("blog-list", "templates/list.tmpl")
 var aboutBodyTemplate = mustParseTemplate("about", "templates/about.tmpl")
 var blogBodyTemplate = mustParseTemplate("blog", "templates/blog.tmpl")
@@ -42,8 +42,8 @@ var publicImagePattern = regexp.MustCompile(`/admin/images/(\d+)/(\d+)\.png`)
 
 const previewTTL = 24 * time.Hour
 
-func mustParseTemplate(name string, pattern string) *template.Template {
-	return template.Must(template.New(name).Funcs(templateFuncs).ParseFS(templateFS, pattern))
+func mustParseTemplate(name string, patterns ...string) *template.Template {
+	return template.Must(template.New(name).Funcs(templateFuncs).ParseFS(templateFS, patterns...))
 }
 
 // run は公開対象に応じて静的HTMLを再生成します。
@@ -182,7 +182,7 @@ func (uc Usecase) renderIndexWithLimit(ctx context.Context, topLimit int) error 
 	if err != nil {
 		return err
 	}
-	page, err := renderIndexDocument(IndexPageData{SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, HomeURL: "./index.html", Tabs: pageTabs("index.html", tabs), LatestPosts: buildIndexBlogCards(limit(blogs, topLimit)), Categories: buildIndexCategories(blogs), Copyright: settings.Copyright})
+	page, err := renderIndexDocument(IndexPageData{SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, SiteDescriptionHTML: template.HTML(markdown.ToHTML(settings.SiteDescription)), HomeURL: "./index.html", Tabs: pageTabs("index.html", tabs), LatestPosts: buildIndexBlogCards(limit(blogs, topLimit)), Categories: buildIndexCategories(blogs), FootInformation: settings.FootInformation, Copyright: settings.Copyright})
 	if err != nil {
 		return err
 	}
@@ -342,7 +342,12 @@ func (uc Usecase) renderAboutPage(ctx context.Context, blog store.BlogEntitty) e
 	if err != nil {
 		return err
 	}
-	body, err := renderAboutDocument(AboutPageData{BodyTitle: blog.Title, Content: template.HTML(publicMarkdownHTML("about/index.html", blog.ID, blog.Content)), LeadFigure: template.HTML(leadFigure)})
+	body, err := renderAboutDocument(AboutPageData{
+		Breadcrumbs: []PageBreadcrumb{{Label: "Home", URL: "../index.html"}, {Label: "About"}},
+		BodyTitle:   blog.Title,
+		Content:     template.HTML(publicMarkdownHTML("about/index.html", blog.ID, blog.Content)),
+		LeadFigure:  template.HTML(leadFigure),
+	})
 	if err != nil {
 		return err
 	}
@@ -479,7 +484,7 @@ func (uc Usecase) renderPageAt(ctx context.Context, settings store.SiteEntitty, 
 		return "", err
 	}
 	var buf bytes.Buffer
-	err = layoutTemplate.ExecuteTemplate(&buf, "layout", PageTemplateData{Title: title, SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, HomeURL: relURL(pageFile, "index.html"), Tabs: pageTabs(pageFile, tabs), Body: template.HTML(body), FootInformation: settings.FootInformation, Copyright: settings.Copyright})
+	err = layoutTemplate.ExecuteTemplate(&buf, "layout", PageTemplateData{Title: title, SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, SiteDescriptionHTML: template.HTML(markdown.ToHTML(settings.SiteDescription)), HomeURL: relURL(pageFile, "index.html"), Tabs: pageTabs(pageFile, tabs), Body: template.HTML(body), FootInformation: settings.FootInformation, Copyright: settings.Copyright})
 	if err != nil {
 		return "", err
 	}

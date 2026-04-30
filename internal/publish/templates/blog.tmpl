@@ -1,6 +1,6 @@
 {{define "blog"}}
 {{if .Breadcrumbs}}
-<nav class="breadcrumb breadcrumb-tight" aria-label="パンくずリスト">
+<nav class="breadcrumb" aria-label="パンくずリスト">
   {{- range $i, $item := .Breadcrumbs -}}
     {{- if $i }}<span> / </span>{{ end -}}
     {{- if $item.URL -}}
@@ -11,17 +11,12 @@
   {{- end -}}
 </nav>
 {{end}}
-<section class="hero blogs-hero">
-  <div class="hero-card">
-    <span class="chip">Article</span>
+<section class="blogs-intro">
+    <span class="kicker list-kicker">{{.Meta}}</span>
     <h2>{{.Title}}</h2>
     {{if .PublishedAt}}<p class="meta">{{dateOnly .PublishedAt}}</p>{{end}}
-  </div>
 </section>
-<article class="section post-detail post-detail-tight">
-  <header>
-    {{if .Meta}}<p class="meta">{{.Meta}}</p>{{end}}
-  </header>
+<article class="section post-detail">
   {{if .LeadFigure}}{{.LeadFigure}}{{end}}
   <div class="content">{{.Content}}</div>
 </article>

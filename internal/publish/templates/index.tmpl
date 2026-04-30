@@ -6,167 +6,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{{.SiteDescription}}">
   <title>{{.SiteTitle}}</title>
+  {{template "styles" .}}
   <style>
-    :root {
-      color-scheme: light;
-      --bg: #fafafa;
-      --bg-elev: #ffffff;
-      --text: #191919;
-      --muted: #6b6b6b;
-      --brand: #d97706;
-      --brand-weak: #fff1df;
-      --line: rgba(217, 119, 6, 0.30);
-      --shadow: none;
-      --radius-xl: 0;
-      --radius-lg: 0;
-      --radius-md: 0;
-      --max: 1120px;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; }
-    body {
-      font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.7;
-    }
-    a { color: inherit; text-decoration: none; }
-    .shell { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
-    .topbar { position: sticky; top: 0; z-index: 10; background: rgba(250, 250, 250, 0.96); border-bottom: 1.5px solid var(--line); }
-    .topbar-inner { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; display: flex; gap: 20px; align-items: center; justify-content: space-between; padding: 16px 0; }
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding-left: 10px;
-      border-left: 3px solid var(--brand);
-    }
-    .brand strong { font-size: 1rem; line-height: 1.05; letter-spacing: 0.02em; }
-    .brand-subtitle,
-    .brand span {
-      font-size: 0.76rem;
-      line-height: 1.2;
-      letter-spacing: 0.02em;
-      color: var(--muted);
-    }
-    .tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
-    .tabs a { padding: 6px 0; border-bottom: 1px solid transparent; }
-    .tabs a:hover { border-bottom-color: var(--brand); }
-    .tabs a.is-active {
-      color: var(--brand);
-      border-bottom-color: var(--brand);
-      font-weight: 700;
-    }
-    .hero { padding: 34px 0 10px; }
-    .home-hero { padding-top: 0; }
-    .home-hero .hero-card { padding-top: 8px; padding-bottom: 12px; }
-    .blogs-hero { padding-top: 0; padding-bottom: 10px; }
-    .blogs-hero .hero-card { padding: 0 0 12px; border-bottom: 0; }
-    .blogs-hero .chip {
-      color: var(--brand);
-      font-size: 0.82rem;
-      font-weight: 700;
-      line-height: 1;
-    }
-    .blogs-hero h2 {
+    .hero-card { padding-top: 8px; padding-bottom: 8px; }
+    .latest-hero h2,
+    .latest-kicker {
       margin: 0;
+      font-weight: 700;
+    }
+    .latest-hero h2 {
       font-size: 1.35rem;
       line-height: 1.22;
-      font-weight: 700;
     }
-    .latest-hero { padding-top: 0; padding-bottom: 0; margin-bottom: 0; display: grid; gap: 0; }
+    .latest-hero { display: grid; gap: 0; margin-bottom: 0; padding-bottom: 0; }
     .latest-kicker {
-      margin: 0 0 2px;
       font-size: 0.82rem;
       line-height: 1;
       letter-spacing: 0;
       text-transform: none;
+      color: var(--brand);
     }
-    .hero-link { display: block; width: 100%; color: inherit; }
-    .hero-link:hover .chip,
-    .hero-link:hover h2 { color: var(--brand); }
-    .hero-card, .section {
-      background: transparent;
-      border: 0;
-      border-bottom: 1.5px solid var(--line);
-      border-radius: 0;
-      box-shadow: none;
-      padding: 22px 0;
-      overflow: visible;
-      position: relative;
-    }
-    .hero-card::after { content: none; }
-    .kicker { margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.72rem; color: var(--brand); font-weight: 700; }
+    .kicker, .meta { letter-spacing: 0.03em; text-transform: uppercase; line-height: 1.2; }
+    .kicker { margin: 0 0 8px; letter-spacing: 0.18em; font-size: 0.78rem; color: var(--brand); font-weight: 700; }
     .hero h1 { margin: 0; font-size: clamp(1.7rem, 3vw, 2.6rem); line-height: 1.22; font-weight: 700; }
     .hero p { margin: 8px 0 0; max-width: 58ch; color: var(--muted); }
-    .hero-card p {
-      max-width: none;
-      width: 100%;
-    }
+    .site-description p { margin: 0; }
+    .latest-kicker { font-size: 0.82rem; line-height: 1; letter-spacing: 0; text-transform: none; color: var(--brand); }
     .panel { margin: 0; display: grid; gap: 0; }
-    .grid-2 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, .9fr); gap: 28px; }
-    .section { padding: 11px 0; }
-    .section h2 { margin: 0 0 8px; font-size: 1.05rem; font-weight: 700; }
-    .post-grid { display: grid; gap: 0; }
-    .post-card {
-      position: relative;
-      display: grid;
-      gap: 2px;
-      padding: 0 0 4px;
-      min-height: 0;
-      border-top: 1.5px solid var(--line);
-      align-content: start;
-    }
-    .post-card:first-child { border-top: 0; }
-    .panel .post-card { padding: 10px 0 12px; }
-    .post-card h3, .post-card h4 { margin: 0; font-size: 0.92rem; line-height: 1.4; font-weight: 700; }
-    .post-card p, .meta, .note { margin: 0; color: var(--muted); font-size: 0.95rem; }
-    .meta {
-      font-size: 0.68rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      color: rgba(107, 107, 107, 0.68);
-      line-height: 1.2;
-    }
-    .post-card-link:hover { background: rgba(217, 119, 6, 0.04); }
-    .post-card > * { position: relative; z-index: 1; }
+    .meta { font-size: 0.68rem; color: rgba(107, 107, 107, 0.68); }
     .sidebar { display: grid; gap: 16px; }
     .category-tree { display: block; }
-    .category-group {
-      margin: 0;
-      padding: 0 0 2px;
-      border-bottom: 1.5px solid var(--line);
-    }
+    .category-group { margin: 0; padding: 0 0 2px; border-bottom: 1.5px solid var(--line); }
     .category-group:last-child { border-bottom: 0; }
     .category-group > summary {
-      cursor: default;
+      cursor: pointer;
       list-style: none;
       padding: 0 0 4px;
     }
     .category-group > summary::-webkit-details-marker { display: none; }
     .category-root,
-    .category-branch a,
-    .category-root-link {
+    .category-branch a {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 0;
-      border: 0;
-      background: transparent;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.86);
     }
-    .category-branch {
-      display: grid;
-      gap: 2px;
-      margin-top: 2px;
-      padding-left: 10px;
-    }
-    .category-label {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .category-branch { display: grid; gap: 2px; margin-top: 2px; padding-left: 10px; }
+    .category-label { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .category-name {
       text-decoration: underline;
       text-decoration-color: var(--brand);
@@ -174,41 +62,8 @@
       text-underline-offset: 3px;
     }
     .category-count { color: var(--muted); font-size: 0.85rem; }
-    .category-root-link {
-      font-weight: 700;
-    }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: var(--brand-weak);
-      color: var(--brand);
-      font-size: 0.86rem;
-      font-weight: 700;
-    }
-    .footer {
-      padding: 18px 0 22px;
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-    .footer .shell {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: space-between;
-      border-top: 1px solid var(--line);
-      padding-top: 10px;
-    }
-    @media (max-width: 860px) {
-      .topbar-inner, .footer .shell {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .grid-2 { grid-template-columns: 1fr; }
-      .hero-card, .section { padding: 22px; }
-    }
+    .category-root-link { font-weight: 700; }
+    .category-root-link:hover { background: rgba(217, 119, 6, 0.04); }
   </style>
 </head>
 <body>
@@ -227,15 +82,15 @@
   </div>
 
   <main class="shell">
-    <section class="hero home-hero">
+    <section class="hero">
       <div class="hero-card">
-        <p>{{.SiteDescription}}</p>
+        <div class="site-description">{{.SiteDescriptionHTML}}</div>
       </div>
     </section>
 
     <div class="panel grid-2">
       <section class="section">
-        <section class="hero blogs-hero latest-hero">
+        <section class="hero latest-hero">
           <span class="kicker latest-kicker">Latest</span>
           <h2>最新記事</h2>
         </section>
@@ -291,7 +146,7 @@
 
   <footer class="footer">
     <div class="shell">
-      <span>micro-front</span>
+      <span>{{.FootInformation}}</span>
       <span>{{.Copyright}}</span>
     </div>
   </footer>

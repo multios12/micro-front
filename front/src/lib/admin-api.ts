@@ -8,6 +8,7 @@ export type SiteApiResponse = {
   site_title: string
   site_subtitle: string
   site_description: string
+  site_url: string
   tabs: SiteApiTab[]
   foot_information: string
   copyright: string
@@ -18,6 +19,7 @@ export type SiteApiRequest = {
   site_title: string
   site_subtitle: string
   site_description: string
+  site_url: string
   tabs: SiteApiTab[]
   foot_information: string
   copyright: string

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -55,6 +56,7 @@ func (s *Store) initSchema() error {
 			site_title TEXT NOT NULL,
 			site_subtitle TEXT NOT NULL,
 			site_description TEXT NOT NULL,
+			site_url TEXT NOT NULL DEFAULT '',
 			tabs TEXT NOT NULL,
 			foot_information TEXT NOT NULL,
 			copyright TEXT NOT NULL,
@@ -92,10 +94,14 @@ func (s *Store) initSchema() error {
 		}
 	}
 
+	if _, err := s.DB.Exec(`ALTER TABLE site ADD COLUMN site_url TEXT NOT NULL DEFAULT ''`); err != nil && !strings.Contains(err.Error(), "duplicate column name") {
+		return fmt.Errorf("migrate site schema: %w", err)
+	}
+
 	_, err := s.DB.Exec(`
-		INSERT OR IGNORE INTO site (id, site_title, site_subtitle, site_description, tabs, foot_information, copyright, updated_at)
-		VALUES (1, ?, ?, ?, ?, ?, ?, datetime('now'))
-	`, "micro-front", "静的HTMLで配信する公開サイト", "管理画面で更新された記事を、そのまま静的HTMLとして出力する前提のテンプレートモックです。", defaultSiteTabsJSON, "micro-front", "© 2026 micro-front")
+		INSERT OR IGNORE INTO site (id, site_title, site_subtitle, site_description, site_url, tabs, foot_information, copyright, updated_at)
+		VALUES (1, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+	`, "micro-front", "静的HTMLで配信する公開サイト", "管理画面で更新された記事を、そのまま静的HTMLとして出力する前提のテンプレートモックです。", "", defaultSiteTabsJSON, "micro-front", "© 2026 micro-front")
 	if err != nil {
 		return fmt.Errorf("seed site settings: %w", err)
 	}

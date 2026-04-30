@@ -35,6 +35,7 @@
   let siteTitle = "";
   let siteSubtitle = "";
   let siteDescription = "";
+  let siteUrl = "";
   let footInformation = "";
   let copyright = "";
   let tabs: SiteTab[] = [];
@@ -69,6 +70,7 @@
     siteTitle = site.site_title;
     siteSubtitle = site.site_subtitle;
     siteDescription = site.site_description;
+    siteUrl = site.site_url;
     footInformation = site.foot_information;
     copyright = site.copyright;
     tabs = normalizeSiteTabs(site.tabs);
@@ -100,6 +102,7 @@
           siteTitle,
           siteSubtitle,
           siteDescription,
+          siteUrl,
           tabs,
           footInformation,
           copyright,
@@ -233,6 +236,21 @@
       />
       {#if validationFields.site_subtitle}
         <p class="admin-error-message">{validationFields.site_subtitle}</p>
+      {/if}
+    </div>
+
+    <div class="admin-field">
+      <label class="admin-label" for="site-url">サイトURL</label>
+      <input
+        id="site-url"
+        class="admin-input"
+        class:admin-input-error={Boolean(validationFields.site_url)}
+        type="url"
+        placeholder="https://example.com"
+        bind:value={siteUrl}
+      />
+      {#if validationFields.site_url}
+        <p class="admin-error-message">{validationFields.site_url}</p>
       {/if}
     </div>
 

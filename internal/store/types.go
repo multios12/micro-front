@@ -20,6 +20,7 @@ type SiteEntitty struct {
 	SiteTitle       string `json:"site_title"`
 	SiteSubtitle    string `json:"site_subtitle"`
 	SiteDescription string `json:"site_description"`
+	SiteURL         string `json:"site_url"`
 	Tabs            []Tab  `json:"tabs"`
 	FootInformation string `json:"foot_information"`
 	Copyright       string `json:"copyright"`

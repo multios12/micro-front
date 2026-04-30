@@ -38,6 +38,7 @@ export function buildSiteUpdateRequest(args: {
   siteTitle: string
   siteSubtitle: string
   siteDescription: string
+  siteUrl: string
   tabs: SiteTab[]
   footInformation: string
   copyright: string
@@ -45,6 +46,7 @@ export function buildSiteUpdateRequest(args: {
   site_title: string
   site_subtitle: string
   site_description: string
+  site_url: string
   tabs: SiteTab[]
   foot_information: string
   copyright: string
@@ -53,6 +55,7 @@ export function buildSiteUpdateRequest(args: {
     site_title: args.siteTitle,
     site_subtitle: args.siteSubtitle,
     site_description: args.siteDescription,
+    site_url: args.siteUrl,
     tabs: args.tabs,
     foot_information: args.footInformation,
     copyright: args.copyright,

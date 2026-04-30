@@ -59,7 +59,7 @@ func TestPublish_RendersMarkdownWithPkgMarkdown(t *testing.T) {
 			t.Fatalf("blog page missing %q:\n%s", want, body)
 		}
 	}
-	if !strings.Contains(body, blog.PublishedAt) {
+	if !strings.Contains(body, formatDateOnly(blog.PublishedAt)) {
 		t.Fatalf("blog page did not show publishedAt near title:\n%s", body)
 	}
 	if strings.Contains(body, "# Hello") || strings.Contains(body, "**bold**") || strings.Contains(body, "*italic*") {
@@ -87,6 +87,7 @@ func TestPublish_RendersMarkdownWithPkgMarkdown(t *testing.T) {
 func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	t.Setenv("TOP_PAGE_BLOG_LIMIT", "1")
 	t.Setenv("BLOGS_PER_PAGE", "1")
+	t.Setenv("SITE_URL", "https://example.com")
 	ctx := context.Background()
 	dataDir := t.TempDir()
 	s, err := store.New(dataDir)
@@ -120,13 +121,28 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	if _, err := s.CreateBlog(ctx, store.BlogEntitty{Title: "about", Content: "## About", Summary: "about summary", Category: "", Status: "public", PublishedAt: "2026-04-18 12:00:00"}); err != nil {
 		t.Fatalf("CreateBlog about: %v", err)
 	}
+	if _, err := s.UpdateSiteSettings(ctx, store.SiteEntitty{
+		SiteTitle:       "micro-front",
+		SiteSubtitle:    "subtitle",
+		SiteDescription: "description",
+		SiteURL:         "https://example.com",
+		Tabs: []store.Tab{
+			{TabLabel: "Home", TabURL: "/"},
+			{TabLabel: "Blogs", TabURL: "/blogs"},
+			{TabLabel: "About", TabURL: "/about"},
+		},
+		FootInformation: "foot",
+		Copyright:       "copyright",
+	}); err != nil {
+		t.Fatalf("UpdateSiteSettings: %v", err)
+	}
 
 	uc := Usecase{Store: s, PublishDir: filepath.Join(dataDir, "public")}
 	if _, _, err := uc.Run(ctx, Request{Target: "blogs"}); err != nil {
 		t.Fatalf("Run blogs: %v", err)
 	}
 
-	for _, path := range []string{filepath.Join(uc.PublishDir, "index.html"), filepath.Join(uc.PublishDir, "blogs", "index.html"), filepath.Join(uc.PublishDir, "blogs", "page2.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "index.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "page2.html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog1.ID, 10)+".html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog2.ID, 10)+".html"), filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".png")} {
+	for _, path := range []string{filepath.Join(uc.PublishDir, "index.html"), filepath.Join(uc.PublishDir, "blogs", "index.html"), filepath.Join(uc.PublishDir, "blogs", "page2.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "index.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "page2.html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog1.ID, 10)+".html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog2.ID, 10)+".html"), filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".png"), filepath.Join(uc.PublishDir, "robots.txt"), filepath.Join(uc.PublishDir, "sitemap.xml")} {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("expected file %s: %v", path, err)
 		}
@@ -164,8 +180,31 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	if strings.Contains(string(blogPage), ">"+blog1.Title+"</a>") {
 		t.Fatalf("blog page breadcrumb title should not be linked:\n%s", blogPage)
 	}
-	if !strings.Contains(string(blogPage), blog1.PublishedAt) {
+	if !strings.Contains(string(blogPage), formatDateOnly(blog1.PublishedAt)) {
 		t.Fatalf("blog page did not show publishedAt:\n%s", blogPage)
+	}
+
+	robots, err := os.ReadFile(filepath.Join(uc.PublishDir, "robots.txt"))
+	if err != nil {
+		t.Fatalf("ReadFile robots: %v", err)
+	}
+	if !strings.Contains(string(robots), "User-agent: *") || !strings.Contains(string(robots), "Sitemap: https://example.com/sitemap.xml") {
+		t.Fatalf("robots.txt missing expected directives:\n%s", robots)
+	}
+
+	sitemap, err := os.ReadFile(filepath.Join(uc.PublishDir, "sitemap.xml"))
+	if err != nil {
+		t.Fatalf("ReadFile sitemap: %v", err)
+	}
+	for _, want := range []string{
+		"<loc>https://example.com/index.html</loc>",
+		"<loc>https://example.com/blogs/index.html</loc>",
+		"<loc>https://example.com/blogs/" + strconv.FormatInt(blog1.ID, 10) + ".html</loc>",
+		"<loc>https://example.com/blogs/category/news/index.html</loc>",
+	} {
+		if !strings.Contains(string(sitemap), want) {
+			t.Fatalf("sitemap.xml missing %q:\n%s", want, sitemap)
+		}
 	}
 }
 

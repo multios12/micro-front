@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"micro-front/internal/apiutil"
+	"micro-front/internal/publish"
 	"micro-front/internal/server"
 )
 
@@ -66,7 +67,7 @@ func (h Handler) handlerPostPublish(w http.ResponseWriter, r *http.Request) {
 	if publishDir == "" {
 		publishDir = h.StaticDir
 	}
-	resp, fields, err := Usecase{Store: h.Store, StaticDir: h.StaticDir, PublishDir: publishDir}.Publish(r.Context(), req)
+	resp, fields, err := publish.Usecase{Store: h.Store, PublishDir: publishDir}.Run(r.Context(), publish.Request(req))
 	if len(fields) > 0 {
 		apiutil.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "入力内容を確認してください", fields)
 		return
@@ -85,9 +86,8 @@ func (h Handler) handlerPostSitePreview(w http.ResponseWriter, r *http.Request) 
 	if previewDir == "" {
 		previewDir = filepath.Join(h.DataDir, "preview")
 	}
-	resp, fields, err := Usecase{
-		Store:     h.Store,
-		StaticDir: h.StaticDir,
+	resp, fields, err := publish.Usecase{
+		Store: h.Store,
 	}.PreviewIndex(r.Context(), previewDir)
 	if len(fields) > 0 {
 		apiutil.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "入力内容を確認してください", fields)
@@ -131,9 +131,8 @@ func (h Handler) handlerPostBlogPreview(w http.ResponseWriter, r *http.Request) 
 		if previewDir == "" {
 			previewDir = filepath.Join(h.DataDir, "preview")
 		}
-		resp, fields, err := Usecase{
-			Store:     h.Store,
-			StaticDir: h.StaticDir,
+		resp, fields, err := publish.Usecase{
+			Store: h.Store,
 		}.PreviewBlog(r.Context(), id, previewDir)
 		if len(fields) > 0 {
 			apiutil.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "入力内容を確認してください", fields)
@@ -159,9 +158,8 @@ func (h Handler) handlerPostBlogPreview(w http.ResponseWriter, r *http.Request) 
 	if previewDir == "" {
 		previewDir = filepath.Join(h.DataDir, "preview")
 	}
-	resp, fields, err := Usecase{
-		Store:     h.Store,
-		StaticDir: h.StaticDir,
+	resp, fields, err := publish.Usecase{
+		Store: h.Store,
 	}.PreviewAbout(r.Context(), previewDir)
 	if len(fields) > 0 {
 		apiutil.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "入力内容を確認してください", fields)

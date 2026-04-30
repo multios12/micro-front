@@ -9,6 +9,7 @@ import (
 	"micro-front/internal/blogs"
 	"micro-front/internal/config"
 	"micro-front/internal/images"
+	"micro-front/internal/publish"
 	"micro-front/internal/seed"
 	"micro-front/internal/server"
 	"micro-front/internal/site"
@@ -88,11 +89,11 @@ func runPublish(ctx context.Context, cfg config.Config, args []string) error {
 	}
 	defer st.Close()
 
-	uc := web.Usecase{
+	uc := publish.Usecase{
 		Store:      st,
 		PublishDir: *outputDir,
 	}
-	_, fields, err := uc.Publish(ctx, web.WebPublishRequest{
+	_, fields, err := uc.Run(ctx, publish.Request{
 		Target: *target,
 		BlogID: *blogID,
 	})

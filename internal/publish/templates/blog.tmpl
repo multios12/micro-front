@@ -15,7 +15,7 @@
   <div class="hero-card">
     <span class="chip">Article</span>
     <h2>{{.Title}}</h2>
-    {{if .UpdatedAt}}<p class="meta">{{.UpdatedAt}}</p>{{end}}
+    {{if .PublishedAt}}<p class="meta">{{dateOnly .PublishedAt}}</p>{{end}}
   </div>
 </section>
 <article class="section post-detail post-detail-tight">

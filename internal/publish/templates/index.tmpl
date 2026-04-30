@@ -247,7 +247,7 @@
               {{if .Category}}<p class="meta">{{.Category}}</p>{{else}}<p class="meta">ARTICLE</p>{{end}}
               <h3>{{.Title}}</h3>
               <p>{{.Summary}}</p>
-              <p class="meta">{{.PublishedAt}}</p>
+              <p class="meta">{{dateOnly .PublishedAt}}</p>
             </a>
             {{end}}
           {{else}}

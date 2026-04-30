@@ -14,6 +14,7 @@
   } from "./logic";
   import {
     createBlog,
+    createBlogPreview,
     deleteBlog,
     deleteBlogImage,
     ApiError,
@@ -34,6 +35,7 @@
   let loading = true;
   let saving = false;
   let publishing = false;
+  let previewing = false;
   let deleting = false;
   let message = "";
   let messageTone: "success" | "warning" | "error" = "success";
@@ -50,7 +52,6 @@
   let content = "";
   let status: "public" | "private" = "private";
   let headerTitle = "";
-  let pageBodyTitle = "";
   let cancelHref = "";
   let showPublishButton = false;
   let showDeleteButton = false;
@@ -93,7 +94,6 @@
     }));
 
   $: headerTitle = labels.headerTitle;
-  $: pageBodyTitle = labels.pageBodyTitle;
   $: cancelHref = labels.cancelHref;
   $: showPublishButton = mode === "blog";
   $: showDeleteButton = mode !== "new";
@@ -187,9 +187,7 @@
   };
 
   const getMarkdownImageUploadPath = () =>
-    resolvedBlogId === null
-      ? ""
-      : `admin/api/blogs/${resolvedBlogId}/images`;
+    resolvedBlogId === null ? "" : `admin/api/blogs/${resolvedBlogId}/images`;
 
   const handleImageSelect = async (file: File) => {
     if (resolvedBlogId === null) {
@@ -266,9 +264,7 @@
     }
   };
 
-  const handleImageCopy = async (item: {
-    imageUrl: string;
-  }) => {
+  const handleImageCopy = async (item: { imageUrl: string }) => {
     if (resolvedBlogId === null) {
       scrollToTop();
       showErrorToast("画像を保存するためには、一度記事を保存してください。");
@@ -336,11 +332,15 @@
     validationFields = {};
 
     try {
-      const saved = await updateBlog(resolvedBlogId, buildBlogPayload("public"));
+      const saved = await updateBlog(
+        resolvedBlogId,
+        buildBlogPayload("public"),
+      );
       applyBlog(saved);
       await publish("blog", resolvedBlogId);
       toastTitle = "公開開始";
-      toastMessage = "記事を公開状態に更新し、公開用 HTML の再生成を開始しました。";
+      toastMessage =
+        "記事を公開状態に更新し、公開用 HTML の再生成を開始しました。";
       toastTone = "success";
       toastOpen = true;
     } catch (err) {
@@ -349,6 +349,32 @@
       );
     } finally {
       publishing = false;
+    }
+  };
+
+  const previewBlog = async () => {
+    if (resolvedBlogId === null) {
+      return;
+    }
+
+    previewing = true;
+    validationFields = {};
+
+    try {
+      const preview = await createBlogPreview(
+        mode === "about" ? "about" : (resolvedBlogId as number),
+      );
+      window.open(preview.url, "_blank", "noopener,noreferrer");
+      toastTitle = "プレビュー生成";
+      toastMessage = "プレビューを新しいタブで開きました。";
+      toastTone = "success";
+      toastOpen = true;
+    } catch (err) {
+      showErrorToast(
+        err instanceof Error ? err.message : "プレビューの生成に失敗しました",
+      );
+    } finally {
+      previewing = false;
     }
   };
 
@@ -429,10 +455,6 @@
 {/if}
 
 <section class="admin-editor">
-  <div class="admin-panel-head">
-    <h2>{pageBodyTitle}</h2>
-  </div>
-
   <div class="admin-stack">
     <div class="admin-grid-2">
       <div class="admin-field">
@@ -531,6 +553,15 @@
   <FormActionButtons
     items={[
       { label: "キャンセル", href: cancelHref, variant: "ghost" },
+      ...(resolvedBlogId !== null
+        ? [
+            {
+              label: previewing ? "プレビュー生成中..." : "プレビューを表示",
+              variant: "secondary" as const,
+              onClick: previewBlog,
+            },
+          ]
+        : []),
       {
         label: saving ? "保存中..." : mode === "new" ? "作成する" : "保存する",
         variant: "primary",

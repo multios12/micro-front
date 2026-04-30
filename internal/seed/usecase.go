@@ -55,6 +55,7 @@ func (uc Usecase) seedSite(ctx context.Context, seedDir string) error {
 		SiteTitle:       siteSeed.SiteTitle,
 		SiteSubtitle:    siteSeed.SiteSubtitle,
 		SiteDescription: siteSeed.SiteDescription,
+		SiteURL:         siteSeed.SiteURL,
 		Tabs:            siteSeed.Tabs,
 		FootInformation: siteSeed.FootInformation,
 		Copyright:       siteSeed.Copyright,

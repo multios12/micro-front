@@ -84,6 +84,7 @@ export function buildDashboardStatCards(items: Array<{ status: 'public' | 'priva
 export function buildDashboardSettings(site: {
   site_title: string
   site_subtitle: string
+  site_url: string
   foot_information: string
   copyright: string
   tabs: Array<unknown>
@@ -92,6 +93,7 @@ export function buildDashboardSettings(site: {
   return [
     ['サイトタイトル', site.site_title],
     ['サイトサブタイトル', site.site_subtitle],
+    ['サイトURL', site.site_url || '未設定'],
     ['フッタ情報', site.foot_information],
     ['コピーライト', site.copyright],
     ['タブ数', String(site.tabs.length)],

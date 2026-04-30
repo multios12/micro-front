@@ -3,6 +3,7 @@ package site
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"micro-front/internal/store"
 	"micro-front/internal/validate"
@@ -28,6 +29,7 @@ func (uc Usecase) Put(ctx context.Context, req SitePutRequest) (SitePutResponse,
 		SiteTitle:       req.SiteTitle,
 		SiteSubtitle:    req.SiteSubtitle,
 		SiteDescription: req.SiteDescription,
+		SiteURL:         req.SiteURL,
 		Tabs:            req.Tabs,
 		FootInformation: req.FootInformation,
 		Copyright:       req.Copyright,
@@ -59,6 +61,12 @@ func validateSiteSettings(req SitePutRequest) (string, map[string]string) {
 		fields["site_description"] = "サイト説明を入力してください。"
 	} else if validate.Length(req.SiteDescription) > 1000 {
 		fields["site_description"] = "サイト説明は1000文字以内で入力してください。"
+	}
+
+	if validate.Length(req.SiteURL) > 0 && validate.Length(req.SiteURL) > 200 {
+		fields["site_url"] = "サイトURLは200文字以内で入力してください。"
+	} else if validate.Length(req.SiteURL) > 0 && !(strings.HasPrefix(req.SiteURL, "http://") || strings.HasPrefix(req.SiteURL, "https://")) {
+		fields["site_url"] = "サイトURLは http:// または https:// で入力してください。"
 	}
 
 	if len(req.Tabs) == 0 {

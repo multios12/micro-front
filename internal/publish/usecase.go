@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"html"
@@ -146,8 +147,26 @@ func (uc Usecase) render(ctx context.Context, req Request) error {
 	}
 }
 
+func (uc Usecase) renderPublicMetadata(ctx context.Context) error {
+	settings, err := uc.Store.GetSiteSettings(ctx)
+	if err != nil {
+		return err
+	}
+	siteURL := strings.TrimSpace(settings.SiteURL)
+	if err := uc.renderRobotsTxt(siteURL); err != nil {
+		return err
+	}
+	if baseURL := siteURL; baseURL != "" {
+		return uc.renderSitemapXML(ctx, baseURL)
+	}
+	return nil
+}
+
 func (uc Usecase) renderIndex(ctx context.Context) error {
-	return uc.renderIndexWithLimit(ctx, loadPublishLimit("TOP_PAGE_BLOG_LIMIT", 20))
+	if err := uc.renderIndexWithLimit(ctx, loadPublishLimit("TOP_PAGE_BLOG_LIMIT", 20)); err != nil {
+		return err
+	}
+	return uc.renderPublicMetadata(ctx)
 }
 
 func (uc Usecase) renderIndexWithLimit(ctx context.Context, topLimit int) error {
@@ -248,7 +267,7 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 				return err
 			}
 		}
-		return nil
+		return uc.renderPublicMetadata(ctx)
 	}
 	for _, blog := range blogs {
 		if err := uc.renderBlog(ctx, blog.ID); err != nil {
@@ -260,7 +279,7 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 			return err
 		}
 	}
-	return nil
+	return uc.renderPublicMetadata(ctx)
 }
 
 func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
@@ -293,13 +312,19 @@ func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
 	if err := uc.copyPublicImagesForBlog(ctx, blog.ID); err != nil {
 		return err
 	}
-	return writeFile(filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(id, 10)+".html"), page)
+	if err := writeFile(filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(id, 10)+".html"), page); err != nil {
+		return err
+	}
+	return uc.renderPublicMetadata(ctx)
 }
 
 func (uc Usecase) renderAbout(ctx context.Context) error {
 	blog, err := uc.Store.GetBlogByTitle(ctx, "about")
 	if err != nil || blog.Status != "public" {
-		return os.RemoveAll(filepath.Join(uc.PublishDir, "about"))
+		if err := os.RemoveAll(filepath.Join(uc.PublishDir, "about")); err != nil {
+			return err
+		}
+		return uc.renderPublicMetadata(ctx)
 	}
 	return uc.renderAboutPage(ctx, blog)
 }
@@ -328,7 +353,10 @@ func (uc Usecase) renderAboutPage(ctx context.Context, blog store.BlogEntitty) e
 	if err := uc.copyPublicImagesForBlog(ctx, blog.ID); err != nil {
 		return err
 	}
-	return writeFile(filepath.Join(uc.PublishDir, "about", "index.html"), page)
+	if err := writeFile(filepath.Join(uc.PublishDir, "about", "index.html"), page); err != nil {
+		return err
+	}
+	return uc.renderPublicMetadata(ctx)
 }
 
 func (uc Usecase) renderCategory(category string, blogs []store.BlogEntitty, perPage int) error {
@@ -365,7 +393,7 @@ func (uc Usecase) renderCategory(category string, blogs []store.BlogEntitty, per
 			return err
 		}
 	}
-	return nil
+	return uc.renderPublicMetadata(context.Background())
 }
 
 func (uc Usecase) renderError() error {
@@ -384,6 +412,65 @@ func (uc Usecase) renderError() error {
 		return err
 	}
 	return writeFile(filepath.Join(uc.PublishDir, "error.html"), page)
+}
+
+func (uc Usecase) renderRobotsTxt(siteURL string) error {
+	content := "User-agent: *\nAllow: /\n"
+	if strings.TrimSpace(siteURL) != "" {
+		content += "Sitemap: " + strings.TrimRight(strings.TrimSpace(siteURL), "/") + "/sitemap.xml\n"
+	}
+	return writeFile(filepath.Join(uc.PublishDir, "robots.txt"), content)
+}
+
+type sitemapURL struct {
+	Loc string `xml:"loc"`
+}
+
+type sitemapXML struct {
+	XMLName xml.Name     `xml:"urlset"`
+	Xmlns   string       `xml:"xmlns,attr"`
+	URLs    []sitemapURL `xml:"url"`
+}
+
+func (uc Usecase) renderSitemapXML(ctx context.Context, baseURL string) error {
+	blogs, err := uc.Store.ListPublicBlogs(ctx)
+	if err != nil {
+		return err
+	}
+	baseURL = strings.TrimRight(baseURL, "/")
+	urls := []string{
+		baseURL + "/index.html",
+		baseURL + "/blogs/index.html",
+	}
+	if about, err := uc.Store.GetBlogByTitle(ctx, "about"); err == nil && about.Status == "public" {
+		urls = append(urls, baseURL+"/about/index.html")
+	}
+	limits := publishLimits()
+	totalPages := (len(blogs) + limits.blogsPerPage - 1) / limits.blogsPerPage
+	for page := 2; page <= totalPages; page++ {
+		urls = append(urls, baseURL+"/blogs/page"+strconv.Itoa(page)+".html")
+	}
+	for _, blog := range blogs {
+		urls = append(urls, baseURL+"/blogs/"+strconv.FormatInt(blog.ID, 10)+".html")
+	}
+	for category := range groupBlogsByCategory(blogs) {
+		slug := categorySlug(category)
+		categoryBlogs := filterBlogsByCategory(blogs, category)
+		urls = append(urls, baseURL+"/blogs/category/"+slug+"/index.html")
+		totalCategoryPages := (len(categoryBlogs) + limits.blogsPerPage - 1) / limits.blogsPerPage
+		for page := 2; page <= totalCategoryPages; page++ {
+			urls = append(urls, baseURL+"/blogs/category/"+slug+"/page"+strconv.Itoa(page)+".html")
+		}
+	}
+	doc := sitemapXML{Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9"}
+	for _, loc := range urls {
+		doc.URLs = append(doc.URLs, sitemapURL{Loc: loc})
+	}
+	buf, err := xml.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return err
+	}
+	return writeFile(filepath.Join(uc.PublishDir, "sitemap.xml"), xml.Header+string(buf)+"\n")
 }
 
 func (uc Usecase) renderPageAt(ctx context.Context, settings store.SiteEntitty, title, pageFile, body string) (string, error) {

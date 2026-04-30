@@ -1,19 +1,6 @@
-package web
+package publish
 
-import (
-	"html/template"
-
-	"micro-front/internal/store"
-)
-
-// Handler は静的HTML出力APIと公開ファイル配信の HTTP ハンドラです。
-type Handler struct {
-	Store      *store.Store
-	DataDir    string
-	StaticDir  string
-	PublishDir string
-	PreviewDir string
-}
+import "html/template"
 
 // PageTemplateData は公開ページ共通レイアウトに渡すデータです。
 type PageTemplateData struct {
@@ -83,11 +70,11 @@ type BlogListPageData struct {
 
 // BlogListCard は一覧ページの記事カードです。
 type BlogListCard struct {
-	Title     string
-	Summary   string
-	Category  string
-	UpdatedAt string
-	URL       string
+	Title       string
+	Summary     string
+	Category    string
+	PublishedAt string
+	URL         string
 }
 
 // AboutPageData は About ページの body テンプレートに渡すデータです。
@@ -102,7 +89,7 @@ type BlogDetailPageData struct {
 	Breadcrumbs []PageBreadcrumb
 	Title       string
 	Meta        template.HTML
-	UpdatedAt   string
+	PublishedAt string
 	LeadFigure  template.HTML
 	Content     template.HTML
 }
@@ -111,15 +98,4 @@ type BlogDetailPageData struct {
 type PageBreadcrumb struct {
 	Label string
 	URL   string
-}
-
-// WebPublishRequest は静的HTML出力APIのリクエストです。
-type WebPublishRequest struct {
-	Target string `json:"target"`
-	BlogID int64  `json:"blog_id"`
-}
-
-// WebPreviewRequest は記事プレビュー生成APIのリクエストです。
-type WebPreviewRequest struct {
-	BlogID int64 `json:"blog_id"`
 }

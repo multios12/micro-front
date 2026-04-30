@@ -1,4 +1,4 @@
-package web
+package publish
 
 import (
 	"bytes"
@@ -27,132 +27,103 @@ import (
 //go:embed templates/*.tmpl
 var templateFS embed.FS
 
-var layoutTemplate = template.Must(template.ParseFS(templateFS, "templates/layout.tmpl"))
-var indexBodyTemplate = template.Must(template.ParseFS(templateFS, "templates/index.tmpl"))
-var listBodyTemplate = template.Must(template.ParseFS(templateFS, "templates/list.tmpl"))
-var aboutBodyTemplate = template.Must(template.ParseFS(templateFS, "templates/about.tmpl"))
-var blogBodyTemplate = template.Must(template.ParseFS(templateFS, "templates/blog.tmpl"))
+var templateFuncs = template.FuncMap{
+	"dateOnly": formatDateOnly,
+}
+
+var layoutTemplate = mustParseTemplate("layout", "templates/layout.tmpl")
+var indexBodyTemplate = mustParseTemplate("index", "templates/index.tmpl")
+var listBodyTemplate = mustParseTemplate("blog-list", "templates/list.tmpl")
+var aboutBodyTemplate = mustParseTemplate("about", "templates/about.tmpl")
+var blogBodyTemplate = mustParseTemplate("blog", "templates/blog.tmpl")
 
 var publicImagePattern = regexp.MustCompile(`/admin/images/(\d+)/(\d+)\.png`)
 
-const previewTTL = 24 * time.Hour // プレビューデータの有効期限
+const previewTTL = 24 * time.Hour
 
-// Publish は公開HTMLの出力処理を行います。
-func (uc Usecase) Publish(ctx context.Context, req WebPublishRequest) (WebPublishResponse, map[string]string, error) {
+func mustParseTemplate(name string, pattern string) *template.Template {
+	return template.Must(template.New(name).Funcs(templateFuncs).ParseFS(templateFS, pattern))
+}
+
+// run は公開対象に応じて静的HTMLを再生成します。
+func (uc Usecase) run(ctx context.Context, req Request) (Response, map[string]string, error) {
 	if req.Target != "all" && req.Target != "index" && req.Target != "blogs" && req.Target != "blog" && req.Target != "about" {
-		return WebPublishResponse{}, map[string]string{
-			"target": "公開対象が不正です。",
-		}, nil
+		return Response{}, map[string]string{"target": "公開対象が不正です。"}, nil
 	}
 	if req.Target == "blog" && req.BlogID == 0 {
-		return WebPublishResponse{}, map[string]string{
-			"blog_id": "記事IDを入力してください。",
-		}, nil
+		return Response{}, map[string]string{"blog_id": "記事IDを入力してください。"}, nil
 	}
 
 	log.Printf("[publish] start target=%s blog_id=%d output_dir=%s", req.Target, req.BlogID, uc.PublishDir)
 	if err := uc.render(ctx, req); err != nil {
-		return WebPublishResponse{}, nil, err
+		return Response{}, nil, err
 	}
 	log.Printf("[publish] done target=%s blog_id=%d output_dir=%s", req.Target, req.BlogID, uc.PublishDir)
-	return WebPublishResponse{Result: "success"}, nil, nil
+	return Response{Result: "success"}, nil, nil
 }
 
 // PreviewBlog は保存済み記事のプレビュー用HTMLを一時ディレクトリへ生成します。
-func (uc Usecase) PreviewBlog(ctx context.Context, blogID int64, previewRoot string) (WebPreviewResponse, map[string]string, error) {
+func (uc Usecase) PreviewBlog(ctx context.Context, blogID int64, previewRoot string) (PreviewResponse, map[string]string, error) {
 	if blogID == 0 {
-		return WebPreviewResponse{}, map[string]string{
-			"blog_id": "記事IDを入力してください。",
-		}, nil
+		return PreviewResponse{}, map[string]string{"blog_id": "記事IDを入力してください。"}, nil
 	}
-
 	token := strconv.FormatInt(blogID, 10) + "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 	outputDir := filepath.Join(previewRoot, token)
 	if err := cleanupPreviewRoot(previewRoot, previewTTL); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
-	previewUsecase := Usecase{
-		Store:      uc.Store,
-		StaticDir:  uc.StaticDir,
-		PublishDir: outputDir,
-	}
-
+	previewUsecase := Usecase{Store: uc.Store, PublishDir: outputDir}
 	if err := os.RemoveAll(outputDir); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
 	if err := previewUsecase.renderBlog(ctx, blogID); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
-
-	return WebPreviewResponse{
-		Result: "success",
-		URL:    filepath.ToSlash(filepath.Join("/admin/preview", token, "blogs", strconv.FormatInt(blogID, 10)+".html")),
-	}, nil, nil
+	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("/admin/preview", token, "blogs", strconv.FormatInt(blogID, 10)+".html"))}, nil, nil
 }
 
 // PreviewAbout は about 記事のプレビュー用HTMLを一時ディレクトリへ生成します。
-func (uc Usecase) PreviewAbout(ctx context.Context, previewRoot string) (WebPreviewResponse, map[string]string, error) {
+func (uc Usecase) PreviewAbout(ctx context.Context, previewRoot string) (PreviewResponse, map[string]string, error) {
 	blog, err := uc.Store.GetBlogByTitle(ctx, "about")
 	if err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
-
 	token := "about-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 	outputDir := filepath.Join(previewRoot, token)
 	if err := cleanupPreviewRoot(previewRoot, previewTTL); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
-	previewUsecase := Usecase{
-		Store:      uc.Store,
-		StaticDir:  uc.StaticDir,
-		PublishDir: outputDir,
-	}
-
+	previewUsecase := Usecase{Store: uc.Store, PublishDir: outputDir}
 	if err := os.RemoveAll(outputDir); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
 	if err := previewUsecase.renderAboutPreview(ctx, blog); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
-
-	return WebPreviewResponse{
-		Result: "success",
-		URL:    filepath.ToSlash(filepath.Join("/admin/preview", token, "about", "index.html")),
-	}, nil, nil
+	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("/admin/preview", token, "about", "index.html"))}, nil, nil
 }
 
 // PreviewIndex はトップページのプレビュー用HTMLを一時ディレクトリへ生成します。
-func (uc Usecase) PreviewIndex(ctx context.Context, previewRoot string) (WebPreviewResponse, map[string]string, error) {
+func (uc Usecase) PreviewIndex(ctx context.Context, previewRoot string) (PreviewResponse, map[string]string, error) {
 	token := "index-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 	outputDir := filepath.Join(previewRoot, token)
 	if err := cleanupPreviewRoot(previewRoot, previewTTL); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
-	previewUsecase := Usecase{
-		Store:      uc.Store,
-		StaticDir:  uc.StaticDir,
-		PublishDir: outputDir,
-	}
-
+	previewUsecase := Usecase{Store: uc.Store, PublishDir: outputDir}
 	if err := os.RemoveAll(outputDir); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
 	if err := previewUsecase.renderIndex(ctx); err != nil {
-		return WebPreviewResponse{}, nil, err
+		return PreviewResponse{}, nil, err
 	}
-
-	return WebPreviewResponse{
-		Result: "success",
-		URL:    filepath.ToSlash(filepath.Join("/admin/preview", token, "index.html")),
-	}, nil, nil
+	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("/admin/preview", token, "index.html"))}, nil, nil
 }
 
-// render は target に応じて公開用 HTML を再生成します。
-func (uc Usecase) render(ctx context.Context, req WebPublishRequest) error {
+func (uc Usecase) render(ctx context.Context, req Request) error {
 	if err := os.MkdirAll(uc.PublishDir, 0o755); err != nil {
 		return err
 	}
-
 	switch req.Target {
 	case "all":
 		if err := uc.renderBlogs(ctx, 0); err != nil {
@@ -175,7 +146,6 @@ func (uc Usecase) render(ctx context.Context, req WebPublishRequest) error {
 	}
 }
 
-// renderIndex はトップページを生成します。
 func (uc Usecase) renderIndex(ctx context.Context) error {
 	return uc.renderIndexWithLimit(ctx, loadPublishLimit("TOP_PAGE_BLOG_LIMIT", 20))
 }
@@ -193,23 +163,13 @@ func (uc Usecase) renderIndexWithLimit(ctx context.Context, topLimit int) error 
 	if err != nil {
 		return err
 	}
-	page, err := renderIndexDocument(IndexPageData{
-		SiteTitle:       settings.SiteTitle,
-		SiteSubtitle:    settings.SiteSubtitle,
-		SiteDescription: settings.SiteDescription,
-		HomeURL:         "./index.html",
-		Tabs:            pageTabs("index.html", tabs),
-		LatestPosts:     buildIndexBlogCards(limit(blogs, topLimit)),
-		Categories:      buildIndexCategories(blogs),
-		Copyright:       settings.Copyright,
-	})
+	page, err := renderIndexDocument(IndexPageData{SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, HomeURL: "./index.html", Tabs: pageTabs("index.html", tabs), LatestPosts: buildIndexBlogCards(limit(blogs, topLimit)), Categories: buildIndexCategories(blogs), Copyright: settings.Copyright})
 	if err != nil {
 		return err
 	}
 	return writeFile(filepath.Join(uc.PublishDir, "index.html"), page)
 }
 
-// renderBlogs は記事一覧ページ、記事詳細ページ、カテゴリ別一覧を生成します。
 func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 	settings, err := uc.Store.GetSiteSettings(ctx)
 	if err != nil {
@@ -220,7 +180,6 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 		return err
 	}
 	limits := publishLimits()
-
 	if blogID > 0 {
 		if err := uc.cleanupBlogListPages(); err != nil {
 			return err
@@ -233,11 +192,9 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 			return err
 		}
 	}
-
 	if err := uc.renderIndexWithLimit(ctx, limits.topLimit); err != nil {
 		return err
 	}
-
 	if blogID > 0 {
 		if err := uc.copyPublicImagesForBlog(ctx, blogID); err != nil {
 			return err
@@ -247,16 +204,9 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 			return err
 		}
 	}
-
 	totalPages := (len(blogs) + limits.blogsPerPage - 1) / limits.blogsPerPage
 	pageFile := "blogs/index.html"
-	pageBody, err := renderBlogListDocument(BlogListPageData{
-		Breadcrumbs: buildListBreadcrumbs(pageFile, ""),
-		Kicker:      "Blogs",
-		Heading:     "記事一覧",
-		Items:       buildBlogListCards(pageFile, pageSlice(blogs, 0, limits.blogsPerPage)),
-		Pagination:  template.HTML(renderPagination(pageFile, "blogs", 1, totalPages)),
-	})
+	pageBody, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, ""), Kicker: "Blogs", Heading: "記事一覧", Items: buildBlogListCards(pageFile, pageSlice(blogs, 0, limits.blogsPerPage)), Pagination: template.HTML(renderPagination(pageFile, "blogs", 1, totalPages))})
 	if err != nil {
 		return err
 	}
@@ -267,15 +217,9 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 	if err := writeFile(filepath.Join(uc.PublishDir, "blogs", "index.html"), page); err != nil {
 		return err
 	}
-	for page := 2; (page-1)*limits.blogsPerPage < len(blogs); page++ {
-		pageFile := filepath.ToSlash(filepath.Join("blogs", "page"+strconv.Itoa(page)+".html"))
-		pbody, err := renderBlogListDocument(BlogListPageData{
-			Breadcrumbs: buildListBreadcrumbs(pageFile, ""),
-			Kicker:      "Blogs",
-			Heading:     "記事一覧",
-			Items:       buildBlogListCards(pageFile, pageSlice(blogs, page-1, limits.blogsPerPage)),
-			Pagination:  template.HTML(renderPagination(pageFile, "blogs", page, totalPages)),
-		})
+	for pageNum := 2; (pageNum-1)*limits.blogsPerPage < len(blogs); pageNum++ {
+		pageFile := filepath.ToSlash(filepath.Join("blogs", "page"+strconv.Itoa(pageNum)+".html"))
+		pbody, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, ""), Kicker: "Blogs", Heading: "記事一覧", Items: buildBlogListCards(pageFile, pageSlice(blogs, pageNum-1, limits.blogsPerPage)), Pagination: template.HTML(renderPagination(pageFile, "blogs", pageNum, totalPages))})
 		if err != nil {
 			return err
 		}
@@ -283,11 +227,10 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 		if err != nil {
 			return err
 		}
-		if err := writeFile(filepath.Join(uc.PublishDir, "blogs", "page"+strconv.Itoa(page)+".html"), p); err != nil {
+		if err := writeFile(filepath.Join(uc.PublishDir, "blogs", "page"+strconv.Itoa(pageNum)+".html"), p); err != nil {
 			return err
 		}
 	}
-
 	if blogID > 0 {
 		targetBlog, err := uc.Store.GetBlog(ctx, blogID)
 		if err != nil {
@@ -307,15 +250,12 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 		}
 		return nil
 	}
-
 	for _, blog := range blogs {
 		if err := uc.renderBlog(ctx, blog.ID); err != nil {
 			return err
 		}
 	}
-
-	groups := groupBlogsByCategory(blogs)
-	for category, items := range groups {
+	for category, items := range groupBlogsByCategory(blogs) {
 		if err := uc.renderCategory(category, items, limits.blogsPerPage); err != nil {
 			return err
 		}
@@ -323,7 +263,6 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 	return nil
 }
 
-// renderBlog は記事詳細ページを生成します。
 func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
 	settings, err := uc.Store.GetSiteSettings(ctx)
 	if err != nil {
@@ -338,27 +277,12 @@ func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	breadcrumbItems := []PageBreadcrumb{
-		{Label: "Home", URL: "../index.html"},
-		{Label: "Blogs", URL: "./index.html"},
-	}
+	breadcrumbItems := []PageBreadcrumb{{Label: "Home", URL: "../index.html"}, {Label: "Blogs", URL: "./index.html"}}
 	if blog.Category != "" {
-		breadcrumbItems = append(breadcrumbItems, PageBreadcrumb{
-			Label: blog.Category,
-			URL:   "./category/" + categorySlug(blog.Category) + "/index.html",
-		})
+		breadcrumbItems = append(breadcrumbItems, PageBreadcrumb{Label: blog.Category, URL: "./category/" + categorySlug(blog.Category) + "/index.html"})
 	}
-	breadcrumbItems = append(breadcrumbItems, PageBreadcrumb{
-		Label: blog.Title,
-	})
-	body, err := renderBlogDocument(BlogDetailPageData{
-		Breadcrumbs: breadcrumbItems,
-		Title:       blog.Title,
-		Meta:        template.HTML(blogMetaHTML(pageFile, blog)),
-		UpdatedAt:   blog.UpdatedAt,
-		LeadFigure:  template.HTML(leadFigure),
-		Content:     template.HTML(publicMarkdownHTML(pageFile, blog.ID, blog.Content)),
-	})
+	breadcrumbItems = append(breadcrumbItems, PageBreadcrumb{Label: blog.Title})
+	body, err := renderBlogDocument(BlogDetailPageData{Breadcrumbs: breadcrumbItems, Title: blog.Title, Meta: template.HTML(blogMetaHTML(pageFile, blog)), PublishedAt: blog.PublishedAt, LeadFigure: template.HTML(leadFigure), Content: template.HTML(publicMarkdownHTML(pageFile, blog.ID, blog.Content))})
 	if err != nil {
 		return err
 	}
@@ -372,7 +296,6 @@ func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
 	return writeFile(filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(id, 10)+".html"), page)
 }
 
-// renderAbout はプロフィールページを生成します。
 func (uc Usecase) renderAbout(ctx context.Context) error {
 	blog, err := uc.Store.GetBlogByTitle(ctx, "about")
 	if err != nil || blog.Status != "public" {
@@ -394,11 +317,7 @@ func (uc Usecase) renderAboutPage(ctx context.Context, blog store.BlogEntitty) e
 	if err != nil {
 		return err
 	}
-	body, err := renderAboutDocument(AboutPageData{
-		BodyTitle:  blog.Title,
-		Content:    template.HTML(publicMarkdownHTML("about/index.html", blog.ID, blog.Content)),
-		LeadFigure: template.HTML(leadFigure),
-	})
+	body, err := renderAboutDocument(AboutPageData{BodyTitle: blog.Title, Content: template.HTML(publicMarkdownHTML("about/index.html", blog.ID, blog.Content)), LeadFigure: template.HTML(leadFigure)})
 	if err != nil {
 		return err
 	}
@@ -412,11 +331,8 @@ func (uc Usecase) renderAboutPage(ctx context.Context, blog store.BlogEntitty) e
 	return writeFile(filepath.Join(uc.PublishDir, "about", "index.html"), page)
 }
 
-// renderCategory はカテゴリ別一覧ページを生成します。
 func (uc Usecase) renderCategory(category string, blogs []store.BlogEntitty, perPage int) error {
-	sort.SliceStable(blogs, func(i, j int) bool {
-		return blogs[i].PublishedAt > blogs[j].PublishedAt
-	})
+	sort.SliceStable(blogs, func(i, j int) bool { return blogs[i].PublishedAt > blogs[j].PublishedAt })
 	page, err := uc.Store.GetSiteSettings(context.Background())
 	if err != nil {
 		return err
@@ -424,13 +340,7 @@ func (uc Usecase) renderCategory(category string, blogs []store.BlogEntitty, per
 	slug := categorySlug(category)
 	pageFile := filepath.ToSlash(filepath.Join("blogs", "category", slug, "index.html"))
 	totalPages := (len(blogs) + perPage - 1) / perPage
-	body, err := renderBlogListDocument(BlogListPageData{
-		Breadcrumbs: buildListBreadcrumbs(pageFile, category),
-		Kicker:      "Category",
-		Heading:     category,
-		Items:       buildBlogListCards(pageFile, pageSlice(blogs, 0, perPage)),
-		Pagination:  template.HTML(renderPagination(pageFile, filepath.ToSlash(filepath.Join("blogs", "category", slug)), 1, totalPages)),
-	})
+	body, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, category), Kicker: "Category", Heading: category, Items: buildBlogListCards(pageFile, pageSlice(blogs, 0, perPage)), Pagination: template.HTML(renderPagination(pageFile, filepath.ToSlash(filepath.Join("blogs", "category", slug)), 1, totalPages))})
 	if err != nil {
 		return err
 	}
@@ -443,13 +353,7 @@ func (uc Usecase) renderCategory(category string, blogs []store.BlogEntitty, per
 	}
 	for pageNum := 2; (pageNum-1)*perPage < len(blogs); pageNum++ {
 		pageFile := filepath.ToSlash(filepath.Join("blogs", "category", slug, "page"+strconv.Itoa(pageNum)+".html"))
-		body, err := renderBlogListDocument(BlogListPageData{
-			Breadcrumbs: buildListBreadcrumbs(pageFile, category),
-			Kicker:      "Category",
-			Heading:     category,
-			Items:       buildBlogListCards(pageFile, pageSlice(blogs, pageNum-1, perPage)),
-			Pagination:  template.HTML(renderPagination(pageFile, filepath.ToSlash(filepath.Join("blogs", "category", slug)), pageNum, totalPages)),
-		})
+		body, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, category), Kicker: "Category", Heading: category, Items: buildBlogListCards(pageFile, pageSlice(blogs, pageNum-1, perPage)), Pagination: template.HTML(renderPagination(pageFile, filepath.ToSlash(filepath.Join("blogs", "category", slug)), pageNum, totalPages))})
 		if err != nil {
 			return err
 		}
@@ -464,7 +368,6 @@ func (uc Usecase) renderCategory(category string, blogs []store.BlogEntitty, per
 	return nil
 }
 
-// renderError はエラーページを生成します。
 func (uc Usecase) renderError() error {
 	settings, err := uc.Store.GetSiteSettings(context.Background())
 	if err != nil {
@@ -483,24 +386,13 @@ func (uc Usecase) renderError() error {
 	return writeFile(filepath.Join(uc.PublishDir, "error.html"), page)
 }
 
-// renderPageAt は共通テンプレートへデータを流し込んで HTML を組み立てます。
 func (uc Usecase) renderPageAt(ctx context.Context, settings store.SiteEntitty, title, pageFile, body string) (string, error) {
 	tabs, err := uc.publicTabs(ctx, settings)
 	if err != nil {
 		return "", err
 	}
 	var buf bytes.Buffer
-	err = layoutTemplate.ExecuteTemplate(&buf, "layout", PageTemplateData{
-		Title:           title,
-		SiteTitle:       settings.SiteTitle,
-		SiteSubtitle:    settings.SiteSubtitle,
-		SiteDescription: settings.SiteDescription,
-		HomeURL:         relURL(pageFile, "index.html"),
-		Tabs:            pageTabs(pageFile, tabs),
-		Body:            template.HTML(body),
-		FootInformation: settings.FootInformation,
-		Copyright:       settings.Copyright,
-	})
+	err = layoutTemplate.ExecuteTemplate(&buf, "layout", PageTemplateData{Title: title, SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, HomeURL: relURL(pageFile, "index.html"), Tabs: pageTabs(pageFile, tabs), Body: template.HTML(body), FootInformation: settings.FootInformation, Copyright: settings.Copyright})
 	if err != nil {
 		return "", err
 	}
@@ -512,7 +404,6 @@ func (uc Usecase) publicTabs(ctx context.Context, settings store.SiteEntitty) ([
 	if len(tabs) == 0 {
 		tabs = defaultPublicTabs()
 	}
-
 	about, err := uc.Store.GetBlogByTitle(ctx, "about")
 	if err == nil && about.Status == "public" {
 		return tabs, nil
@@ -520,13 +411,11 @@ func (uc Usecase) publicTabs(ctx context.Context, settings store.SiteEntitty) ([
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
-
 	filtered := make([]store.Tab, 0, len(tabs))
 	for _, tab := range tabs {
-		if isAboutTabURL(tab.TabURL) {
-			continue
+		if !isAboutTabURL(tab.TabURL) {
+			filtered = append(filtered, tab)
 		}
-		filtered = append(filtered, tab)
 	}
 	return filtered, nil
 }
@@ -546,7 +435,6 @@ func renderIndexDocument(data IndexPageData) (string, error) {
 	}
 	return buf.String(), nil
 }
-
 func renderBlogListDocument(data BlogListPageData) (string, error) {
 	var buf bytes.Buffer
 	if err := listBodyTemplate.ExecuteTemplate(&buf, "blog-list", data); err != nil {
@@ -554,21 +442,13 @@ func renderBlogListDocument(data BlogListPageData) (string, error) {
 	}
 	return buf.String(), nil
 }
-
 func buildListBreadcrumbs(pageFile, category string) []PageBreadcrumb {
-	breadcrumbs := []PageBreadcrumb{
-		{Label: "Home", URL: relURL(pageFile, "index.html")},
-		{Label: "Blogs", URL: relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", "index.html")))},
-	}
+	breadcrumbs := []PageBreadcrumb{{Label: "Home", URL: relURL(pageFile, "index.html")}, {Label: "Blogs", URL: relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", "index.html")))}}
 	if category != "" {
-		breadcrumbs = append(breadcrumbs, PageBreadcrumb{
-			Label: category,
-			URL:   relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", "category", categorySlug(category), "index.html"))),
-		})
+		breadcrumbs = append(breadcrumbs, PageBreadcrumb{Label: category, URL: relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", "category", categorySlug(category), "index.html")))})
 	}
 	return breadcrumbs
 }
-
 func renderAboutDocument(data AboutPageData) (string, error) {
 	var buf bytes.Buffer
 	if err := aboutBodyTemplate.ExecuteTemplate(&buf, "about", data); err != nil {
@@ -576,7 +456,6 @@ func renderAboutDocument(data AboutPageData) (string, error) {
 	}
 	return buf.String(), nil
 }
-
 func renderBlogDocument(data BlogDetailPageData) (string, error) {
 	var buf bytes.Buffer
 	if err := blogBodyTemplate.ExecuteTemplate(&buf, "blog", data); err != nil {
@@ -584,31 +463,17 @@ func renderBlogDocument(data BlogDetailPageData) (string, error) {
 	}
 	return buf.String(), nil
 }
-
 func buildBlogListCards(pageFile string, blogs []store.BlogEntitty) []BlogListCard {
 	cards := make([]BlogListCard, 0, len(blogs))
 	for _, blog := range blogs {
-		cards = append(cards, BlogListCard{
-			Title:     blog.Title,
-			Summary:   blog.Summary,
-			Category:  blog.Category,
-			UpdatedAt: blog.UpdatedAt,
-			URL:       relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html"))),
-		})
+		cards = append(cards, BlogListCard{Title: blog.Title, Summary: blog.Summary, Category: blog.Category, PublishedAt: blog.PublishedAt, URL: relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html")))})
 	}
 	return cards
 }
-
 func buildIndexBlogCards(blogs []store.BlogEntitty) []IndexPostCard {
 	cards := make([]IndexPostCard, 0, len(blogs))
 	for _, blog := range blogs {
-		cards = append(cards, IndexPostCard{
-			Title:       blog.Title,
-			Summary:     blog.Summary,
-			Category:    blog.Category,
-			PublishedAt: formatDateOnly(blog.PublishedAt),
-			URL:         relURL("index.html", filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html"))),
-		})
+		cards = append(cards, IndexPostCard{Title: blog.Title, Summary: blog.Summary, Category: blog.Category, PublishedAt: blog.PublishedAt, URL: relURL("index.html", filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html")))})
 	}
 	return cards
 }
@@ -622,7 +487,6 @@ func formatDateOnly(value string) string {
 	}
 	return value
 }
-
 func buildIndexCategories(blogs []store.BlogEntitty) []IndexCategoryGroup {
 	groups := groupBlogsByCategory(blogs)
 	if len(groups) == 0 {
@@ -637,11 +501,7 @@ func buildIndexCategories(blogs []store.BlogEntitty) []IndexCategoryGroup {
 	rootOrder := make([]string, 0, len(groups))
 	for category, items := range groups {
 		root, child := splitIndexCategory(category)
-		node := categoryNode{
-			name:  category,
-			count: len(items),
-			url:   relURL("index.html", filepath.ToSlash(filepath.Join("blogs", "category", categorySlug(category), "index.html"))),
-		}
+		node := categoryNode{name: category, count: len(items), url: relURL("index.html", filepath.ToSlash(filepath.Join("blogs", "category", categorySlug(category), "index.html")))}
 		if child == "" || root == category {
 			root = category
 		}
@@ -668,11 +528,7 @@ func buildIndexCategories(blogs []store.BlogEntitty) []IndexCategoryGroup {
 		} else {
 			group.Open = true
 			for _, child := range children {
-				group.Children = append(group.Children, IndexCategoryCard{
-					Name:  child.name,
-					Count: child.count,
-					URL:   child.url,
-				})
+				group.Children = append(group.Children, IndexCategoryCard{Name: child.name, Count: child.count, URL: child.url})
 				group.Count += child.count
 			}
 		}
@@ -680,7 +536,6 @@ func buildIndexCategories(blogs []store.BlogEntitty) []IndexCategoryGroup {
 	}
 	return out
 }
-
 func splitIndexCategory(category string) (string, string) {
 	category = strings.TrimSpace(category)
 	if category == "" {
@@ -702,29 +557,18 @@ func splitIndexCategory(category string) (string, string) {
 	}
 	return category, ""
 }
-
 func pageTabs(pageFile string, tabs []store.Tab) []PageTab {
 	activeTarget := activeTabTarget(pageFile)
 	out := make([]PageTab, 0, len(tabs))
 	for _, tab := range tabs {
 		target := tabURLToFile(tab.TabURL)
-		out = append(out, PageTab{
-			TabLabel: tab.TabLabel,
-			TabURL:   relURL(pageFile, target),
-			Active:   isSameFile(activeTarget, target),
-		})
+		out = append(out, PageTab{TabLabel: tab.TabLabel, TabURL: relURL(pageFile, target), Active: isSameFile(activeTarget, target)})
 	}
 	return out
 }
-
 func defaultPublicTabs() []store.Tab {
-	return []store.Tab{
-		{TabLabel: "Home", TabURL: "/"},
-		{TabLabel: "Blogs", TabURL: "/blogs"},
-		{TabLabel: "About", TabURL: "/about"},
-	}
+	return []store.Tab{{TabLabel: "Home", TabURL: "/"}, {TabLabel: "Blogs", TabURL: "/blogs"}, {TabLabel: "About", TabURL: "/about"}}
 }
-
 func activeTabTarget(pageFile string) string {
 	switch {
 	case pageFile == "index.html":
@@ -737,7 +581,6 @@ func activeTabTarget(pageFile string) string {
 		return "index.html"
 	}
 }
-
 func tabURLToFile(url string) string {
 	switch url {
 	case "/":
@@ -782,9 +625,7 @@ func relURL(fromFile, targetFile string) string {
 	return rel
 }
 
-func isSameFile(a, b string) bool {
-	return path.Clean(a) == path.Clean(b)
-}
+func isSameFile(a, b string) bool { return path.Clean(a) == path.Clean(b) }
 
 func categorySlug(category string) string {
 	slug := strings.TrimSpace(category)
@@ -859,7 +700,6 @@ func (uc Usecase) renderLeadImageFigure(ctx context.Context, pageFile string, bl
 	return `<figure class="mock-figure"><img class="mock-image" alt="` + esc(alt) + `" src="` + src + `"></figure>`, nil
 }
 
-// pageSlice は記事一覧をページ単位に切り出します。
 func pageSlice(blogs []store.BlogEntitty, page, perPage int) []store.BlogEntitty {
 	start := page * perPage
 	if start >= len(blogs) {
@@ -872,7 +712,6 @@ func pageSlice(blogs []store.BlogEntitty, page, perPage int) []store.BlogEntitty
 	return blogs[start:end]
 }
 
-// limit は先頭から指定件数だけ取得します。
 func limit(blogs []store.BlogEntitty, n int) []store.BlogEntitty {
 	if len(blogs) < n {
 		n = len(blogs)
@@ -959,8 +798,8 @@ func (uc Usecase) cleanupBlogListPages() error {
 		return err
 	}
 	for page := 2; ; page++ {
-		path := filepath.Join(blogDir, "page"+strconv.Itoa(page)+".html")
-		err := os.Remove(path)
+		p := filepath.Join(blogDir, "page"+strconv.Itoa(page)+".html")
+		err := os.Remove(p)
 		if os.IsNotExist(err) {
 			break
 		}
@@ -975,10 +814,7 @@ func (uc Usecase) cleanupCategoryPages(category string) error {
 	return os.RemoveAll(filepath.Join(uc.PublishDir, "blogs", "category", categorySlug(category)))
 }
 
-// esc は HTML エスケープを行います。
-func esc(value string) string {
-	return html.EscapeString(value)
-}
+func esc(value string) string { return html.EscapeString(value) }
 
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)
@@ -1011,7 +847,6 @@ func cleanupPreviewRoot(previewRoot string, ttl time.Duration) error {
 		}
 		return err
 	}
-
 	cutoff := time.Now().Add(-ttl)
 	for _, entry := range entries {
 		info, err := entry.Info()
@@ -1025,7 +860,6 @@ func cleanupPreviewRoot(previewRoot string, ttl time.Duration) error {
 	return nil
 }
 
-// writeFile は必要なディレクトリを作成したうえでファイルを書き込みます。
 func writeFile(path, content string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err

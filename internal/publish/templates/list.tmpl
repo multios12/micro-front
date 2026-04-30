@@ -5,7 +5,7 @@
   {{end}}
   <h3>{{.Title}}</h3>
   <p>{{.Summary}}</p>
-  <p class="meta">{{.UpdatedAt}}</p>
+  <p class="meta">{{dateOnly .PublishedAt}}</p>
 </a>
 {{end}}
 

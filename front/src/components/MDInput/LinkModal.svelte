@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { faLink, faTrash } from "@fortawesome/free-solid-svg-icons";
+  import { Link2, Trash2 } from "lucide-svelte";
   import Icon from "./Icon.svelte";
 
   interface Props {
@@ -70,7 +70,7 @@
           aria-label="apply link"
           onclick={onApply}
         >
-          <span class="icon"><Icon icon={faLink} /></span>
+          <span class="icon"><Icon icon={Link2} /></span>
         </button>
       </div>
       <div class="control">
@@ -80,7 +80,7 @@
           aria-label="remove link"
           onclick={onRemove}
         >
-          <span class="icon"><Icon icon={faTrash} /></span>
+          <span class="icon"><Icon icon={Trash2} /></span>
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { faArrowLeft, faImage } from "@fortawesome/free-solid-svg-icons";
+  import { ArrowLeft, Image } from "lucide-svelte";
   import Icon from "./Icon.svelte";
 
   interface Props {
@@ -57,7 +57,7 @@
         onclick={onClose}
       >
         <span class="icon">
-          <Icon icon={faArrowLeft} />
+          <Icon icon={ArrowLeft} />
         </span>
       </button>
       <button
@@ -68,7 +68,7 @@
         onclick={onOpenPicker}
       >
         <span class="icon">
-          <Icon icon={faImage} />
+          <Icon icon={Image} />
         </span>
         <span>画像選択</span>
       </button>

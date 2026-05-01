@@ -17,9 +17,8 @@
   },
   "dependencies": {
     "@formkit/tempo": "0.1.2",
-    "@fortawesome/fontawesome-svg-core": "6.7.2",
-    "@fortawesome/free-solid-svg-icons": "6.7.2",
     "@mateothegreat/svelte5-router": "^2.16.19",
+    "lucide-svelte": "^0.542.0",
     "svelte": "^5.55.1"
   },
   "devDependencies": {

@@ -208,6 +208,73 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	}
 }
 
+func TestPreviewURLs_AreRelative(t *testing.T) {
+	ctx := context.Background()
+	dataDir := t.TempDir()
+	s, err := store.New(dataDir)
+	if err != nil {
+		t.Fatalf("store.New: %v", err)
+	}
+	t.Cleanup(func() { _ = s.Close() })
+
+	blog, err := s.CreateBlog(ctx, store.BlogEntitty{
+		Title:       "preview-post",
+		Content:     "# Preview",
+		Summary:     "preview summary",
+		Category:    "news",
+		Status:      "public",
+		PublishedAt: "2026-04-21 00:00:00",
+	})
+	if err != nil {
+		t.Fatalf("CreateBlog: %v", err)
+	}
+	if _, err := s.CreateBlog(ctx, store.BlogEntitty{
+		Title:       "about",
+		Content:     "## About",
+		Summary:     "about summary",
+		Category:    "profile",
+		Status:      "public",
+		PublishedAt: "2026-04-20 00:00:00",
+	}); err != nil {
+		t.Fatalf("CreateBlog about: %v", err)
+	}
+
+	uc := Usecase{Store: s, PublishDir: filepath.Join(dataDir, "public")}
+
+	blogPreview, _, err := uc.PreviewBlog(ctx, blog.ID, filepath.Join(dataDir, "preview"))
+	if err != nil {
+		t.Fatalf("PreviewBlog: %v", err)
+	}
+	if strings.HasPrefix(blogPreview.URL, "/") {
+		t.Fatalf("PreviewBlog returned absolute path: %q", blogPreview.URL)
+	}
+	if !strings.HasPrefix(blogPreview.URL, "admin/preview/") {
+		t.Fatalf("PreviewBlog returned unexpected path: %q", blogPreview.URL)
+	}
+
+	sitePreview, _, err := uc.PreviewIndex(ctx, filepath.Join(dataDir, "preview"))
+	if err != nil {
+		t.Fatalf("PreviewIndex: %v", err)
+	}
+	if strings.HasPrefix(sitePreview.URL, "/") {
+		t.Fatalf("PreviewIndex returned absolute path: %q", sitePreview.URL)
+	}
+	if !strings.HasPrefix(sitePreview.URL, "admin/preview/") {
+		t.Fatalf("PreviewIndex returned unexpected path: %q", sitePreview.URL)
+	}
+
+	aboutPreview, _, err := uc.PreviewAbout(ctx, filepath.Join(dataDir, "preview"))
+	if err != nil {
+		t.Fatalf("PreviewAbout: %v", err)
+	}
+	if strings.HasPrefix(aboutPreview.URL, "/") {
+		t.Fatalf("PreviewAbout returned absolute path: %q", aboutPreview.URL)
+	}
+	if !strings.HasPrefix(aboutPreview.URL, "admin/preview/") {
+		t.Fatalf("PreviewAbout returned unexpected path: %q", aboutPreview.URL)
+	}
+}
+
 func formatBlogFileName(id int64) string {
 	return strconv.FormatInt(id, 10) + ".html"
 }

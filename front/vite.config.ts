@@ -1,11 +1,12 @@
-import { defineConfig, Plugin } from 'vite'
+import { defineConfig, loadEnv, Plugin } from 'vite'
 import { OutputChunk, OutputAsset } from "rollup"
 import tailwindcss from "@tailwindcss/vite"
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
-export default defineConfig(() => {
-  const html = process.env.HTML || "index.html"
-  const base = process.env.BASE_URL || "./"
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const html = env.HTML || "index.html"
+  const base = env.BASE_URL || "./"
   return {
     plugins: [tailwindcss(), svelte(), singleFilePlugin(base)],
     build: {

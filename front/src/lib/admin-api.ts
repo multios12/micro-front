@@ -77,6 +77,9 @@ export type BlogImageApiResponse = {
 
 export type PublishTarget = 'all' | 'index' | 'blogs' | 'blog' | 'about'
 
+const adminApiBase = import.meta.env.DEV ? '/admin/api/' : 'admin/api/'
+const adminApiPath = (path: string) => `${adminApiBase}${path.replace(/^\/+/, '')}`
+
 export class ApiError extends Error {
   status: number
   code?: string
@@ -197,11 +200,11 @@ async function requestFormData<T>(path: string, init: RequestInit & { body: Form
 }
 
 export async function fetchSiteSettings(): Promise<SiteApiResponse> {
-  return requestJson<SiteApiResponse>('admin/api/site')
+  return requestJson<SiteApiResponse>(adminApiPath('site'))
 }
 
 export async function updateSiteSettings(request: SiteApiRequest): Promise<SiteApiResponse> {
-  return requestJson<SiteApiResponse>('admin/api/site', {
+  return requestJson<SiteApiResponse>(adminApiPath('site'), {
     method: 'PUT',
     body: request,
   })
@@ -223,35 +226,35 @@ export async function fetchBlogList(params: {
     search.set('status', params.status)
   }
   const query = search.toString()
-  return requestJson<BlogListApiResponse>(`admin/api/blogs${query ? `?${query}` : ''}`)
+  return requestJson<BlogListApiResponse>(`${adminApiPath('blogs')}${query ? `?${query}` : ''}`)
 }
 
 export async function fetchBlogDetail(blogId: number): Promise<BlogDetailApiResponse> {
-  return requestJson<BlogDetailApiResponse>(`admin/api/blogs/${blogId}`)
+  return requestJson<BlogDetailApiResponse>(adminApiPath(`blogs/${blogId}`))
 }
 
 export async function updateBlog(blogId: number, request: BlogUpsertApiRequest): Promise<BlogDetailApiResponse> {
-  return requestJson<BlogDetailApiResponse>(`admin/api/blogs/${blogId}`, {
+  return requestJson<BlogDetailApiResponse>(adminApiPath(`blogs/${blogId}`), {
     method: 'PUT',
     body: request,
   })
 }
 
 export async function createBlog(request: BlogUpsertApiRequest): Promise<BlogDetailApiResponse> {
-  return requestJson<BlogDetailApiResponse>('admin/api/blogs', {
+  return requestJson<BlogDetailApiResponse>(adminApiPath('blogs'), {
     method: 'POST',
     body: request,
   })
 }
 
 export async function deleteBlog(blogId: number): Promise<{ id: number; result: string }> {
-  return requestJson<{ id: number; result: string }>(`admin/api/blogs/${blogId}`, {
+  return requestJson<{ id: number; result: string }>(adminApiPath(`blogs/${blogId}`), {
     method: 'DELETE',
   })
 }
 
 export async function fetchBlogImages(blogId: number): Promise<BlogImageApiResponse> {
-  return requestJson<BlogImageApiResponse>(`admin/api/blogs/${blogId}/images`)
+  return requestJson<BlogImageApiResponse>(adminApiPath(`blogs/${blogId}/images`))
 }
 
 export async function uploadBlogImage(
@@ -262,7 +265,7 @@ export async function uploadBlogImage(
   const formData = new FormData()
   formData.set('file', file)
   formData.set('alt_text', altText)
-  return requestFormData<BlogImageApiItem>(`admin/api/blogs/${blogId}/images`, {
+  return requestFormData<BlogImageApiItem>(adminApiPath(`blogs/${blogId}/images`), {
     method: 'POST',
     body: formData,
   })
@@ -273,7 +276,7 @@ export async function deleteBlogImage(
   imageId: number,
 ): Promise<{ id: number; blog_id: number; result: string }> {
   return requestJson<{ id: number; blog_id: number; result: string }>(
-    `admin/api/blogs/${blogId}/images/${imageId}`,
+    adminApiPath(`blogs/${blogId}/images/${imageId}`),
     {
       method: 'DELETE',
     },
@@ -281,21 +284,21 @@ export async function deleteBlogImage(
 }
 
 export async function publish(target: PublishTarget, blogId?: number): Promise<{ result: string }> {
-  return requestJson<{ result: string }>('admin/api/publish', {
+  return requestJson<{ result: string }>(adminApiPath('publish'), {
     method: 'POST',
     body: blogId === undefined ? { target } : { target, blog_id: blogId },
   })
 }
 
 export async function createBlogPreview(blogId: number | 'about'): Promise<{ result: string; url: string }> {
-  return requestJson<{ result: string; url: string }>(`admin/api/blogs/${blogId}/preview`, {
+  return requestJson<{ result: string; url: string }>(adminApiPath(`blogs/${blogId}/preview`), {
     method: 'POST',
     body: typeof blogId === 'number' ? { blog_id: blogId } : { blog_id: 0 },
   })
 }
 
 export async function createSitePreview(): Promise<{ result: string; url: string }> {
-  return requestJson<{ result: string; url: string }>('admin/api/site/preview', {
+  return requestJson<{ result: string; url: string }>(adminApiPath('site/preview'), {
     method: 'POST',
   })
 }

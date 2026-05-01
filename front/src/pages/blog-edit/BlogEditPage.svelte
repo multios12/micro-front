@@ -187,7 +187,9 @@
   };
 
   const getMarkdownImageUploadPath = () =>
-    resolvedBlogId === null ? "" : `admin/api/blogs/${resolvedBlogId}/images`;
+    resolvedBlogId === null
+      ? ""
+      : `${import.meta.env.DEV ? '/admin/api/' : 'admin/api/'}blogs/${resolvedBlogId}/images`;
 
   const handleImageSelect = async (file: File) => {
     if (resolvedBlogId === null) {

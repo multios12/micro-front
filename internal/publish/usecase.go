@@ -80,7 +80,7 @@ func (uc Usecase) PreviewBlog(ctx context.Context, blogID int64, previewRoot str
 	if err := previewUsecase.renderBlog(ctx, blogID); err != nil {
 		return PreviewResponse{}, nil, err
 	}
-	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("/admin/preview", token, "blogs", strconv.FormatInt(blogID, 10)+".html"))}, nil, nil
+	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("admin/preview", token, "blogs", strconv.FormatInt(blogID, 10)+".html"))}, nil, nil
 }
 
 // PreviewAbout は about 記事のプレビュー用HTMLを一時ディレクトリへ生成します。
@@ -101,7 +101,7 @@ func (uc Usecase) PreviewAbout(ctx context.Context, previewRoot string) (Preview
 	if err := previewUsecase.renderAboutPreview(ctx, blog); err != nil {
 		return PreviewResponse{}, nil, err
 	}
-	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("/admin/preview", token, "about", "index.html"))}, nil, nil
+	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("admin/preview", token, "about", "index.html"))}, nil, nil
 }
 
 // PreviewIndex はトップページのプレビュー用HTMLを一時ディレクトリへ生成します。
@@ -118,7 +118,7 @@ func (uc Usecase) PreviewIndex(ctx context.Context, previewRoot string) (Preview
 	if err := previewUsecase.renderIndex(ctx); err != nil {
 		return PreviewResponse{}, nil, err
 	}
-	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("/admin/preview", token, "index.html"))}, nil, nil
+	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("admin/preview", token, "index.html"))}, nil, nil
 }
 
 func (uc Usecase) render(ctx context.Context, req Request) error {

@@ -1,16 +1,25 @@
 <script lang="ts">
+  import { Info, LayoutDashboard, Newspaper, PanelTop } from "lucide-svelte";
+  import Icon from "./MDInput/Icon.svelte";
+
   type NavKey = 'dashboard' | 'blogs' | 'site' | 'about'
 
   export let active: NavKey = 'dashboard'
   export let blogCount = 0
   export let siteTitle = 'micro-front'
-  let items: Array<{ key: NavKey; label: string; href: string; badge?: string }> = []
+  let items: Array<{
+    key: NavKey
+    label: string
+    href: string
+    badge?: string
+    icon: typeof LayoutDashboard
+  }> = []
 
   $: items = [
-    { key: 'dashboard', label: 'Dashboard', href: '#/dashboard' },
-    { key: 'blogs', label: 'Blogs', href: '#/blogs', badge: String(blogCount) },
-    { key: 'site', label: 'Site', href: '#/site' },
-    { key: 'about', label: 'About', href: '#/blog-edit/about' },
+    { key: 'dashboard', label: 'Dashboard', href: '#/dashboard', icon: LayoutDashboard },
+    { key: 'blogs', label: 'Blogs', href: '#/blogs', badge: String(blogCount), icon: Newspaper },
+    { key: 'site', label: 'Site', href: '#/site', icon: PanelTop },
+    { key: 'about', label: 'About', href: '#/blog-edit/about', icon: Info },
   ]
 </script>
 
@@ -26,7 +35,10 @@
       }`}
       href={item.href}
     >
-      <span>{item.label}</span>
+      <span class="flex items-center gap-2">
+        <Icon icon={item.icon} />
+        <span>{item.label}</span>
+      </span>
       {#if item.badge}
         <span class="rounded-full bg-sky-400/15 px-2 py-2 text-xs font-semibold text-sky-200">
           {item.badge}

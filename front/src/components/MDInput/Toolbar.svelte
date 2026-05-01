@@ -1,35 +1,37 @@
 <script lang="ts">
-  import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
   import {
-    faArrowsRotate,
-    faBold,
-    faChevronDown,
-    faCode,
-    faGripLines,
-    faItalic,
-    faLink,
-    faListOl,
-    faListUl,
-    faQuoteLeft,
-    faStrikethrough,
-  } from "@fortawesome/free-solid-svg-icons";
+    ArrowLeftRight,
+    Bold,
+    ChevronDown,
+    Code,
+    GripHorizontal,
+    Italic,
+    Heading1,
+    Heading2,
+    Heading3,
+    Link2,
+    List,
+    ListOrdered,
+    Quote,
+    Strikethrough,
+  } from "lucide-svelte";
+  import type { ComponentType, SvelteComponent } from "svelte";
   import Icon from "./Icon.svelte";
   import type { ParagraphKind } from "./types";
 
   export const paragraphs = [
-    { key: "normal", value: "本文", icon: faGripLines },
-    { key: "h1", value: "見出し1", badge: "H1" },
-    { key: "h2", value: "見出し2", badge: "H2" },
-    { key: "h3", value: "見出し3", badge: "H3" },
-    { key: "ol", value: "番号リスト", icon: faListOl },
-    { key: "ul", value: "段落リスト", icon: faListUl },
-    { key: "code", value: "コード", icon: faCode },
-    { key: "quote", value: "引用", icon: faQuoteLeft },
+    { key: "normal", value: "本文", icon: GripHorizontal },
+    { key: "h1", value: "見出し1", icon: Heading1 },
+    { key: "h2", value: "見出し2", icon: Heading2 },
+    { key: "h3", value: "見出し3", icon: Heading3 },
+    { key: "ol", value: "番号リスト", icon: ListOrdered },
+    { key: "ul", value: "段落リスト", icon: List },
+    { key: "code", value: "コード", icon: Code },
+    { key: "quote", value: "引用", icon: Quote },
   ] satisfies Array<{
     key: ParagraphKind;
     value: string;
-    icon?: IconDefinition;
-    badge?: string;
+    icon?: ComponentType<SvelteComponent>;
   }>;
 
   interface Props {
@@ -99,14 +101,10 @@
           <span class="icon md-paragraph-icon-slot">
             <Icon icon={currentParagraph.icon} />
           </span>
-        {:else}
-          <span class="icon md-paragraph-icon-slot">
-            <span class="md-paragraph-badge">{currentParagraph.badge}</span>
-          </span>
         {/if}
       {/key}
       <span class="icon is-small">
-        <Icon icon={faChevronDown} />
+        <Icon icon={ChevronDown} />
       </span>
     </button>
 
@@ -125,10 +123,6 @@
               <span class="icon md-paragraph-icon-slot">
                 <Icon icon={item.icon} />
               </span>
-            {:else}
-              <span class="icon md-paragraph-icon-slot">
-                <span class="md-paragraph-badge">{item.badge}</span>
-              </span>
             {/if}
             <span>{item.value}</span>
           </button>
@@ -143,7 +137,7 @@
     aria-label="bold"
     onclick={onBold}
   >
-    <Icon icon={faBold} />
+    <Icon icon={Bold} />
   </button>
   <button
     class="button is-ghost md-toolbar-button"
@@ -152,7 +146,7 @@
     aria-label="italic"
     onclick={onItalic}
   >
-    <Icon icon={faItalic} />
+    <Icon icon={Italic} />
   </button>
   <button
     class="button is-ghost md-toolbar-button"
@@ -161,7 +155,7 @@
     aria-label="strike"
     onclick={onStrike}
   >
-    <Icon icon={faStrikethrough} />
+    <Icon icon={Strikethrough} />
   </button>
   <button
     class="button is-ghost md-toolbar-button"
@@ -170,7 +164,7 @@
     title="次回グループ追加へ引き継ぐ位置を挿入"
     onclick={onCarryOver}
   >
-    <Icon icon={faArrowsRotate} />
+    <Icon icon={ArrowLeftRight} />
   </button>
   <button
     class="button is-ghost md-toolbar-button"
@@ -179,7 +173,7 @@
     aria-label="link"
     onclick={onLink}
   >
-    <Icon icon={faLink} />
+    <Icon icon={Link2} />
   </button>
 </div>
 
@@ -242,19 +236,6 @@
     border-radius: var(--modal-radius);
     background: #161b28;
     box-shadow: 0 0.85rem 2rem color-mix(in srgb, black 28%, transparent);
-  }
-
-  .md-paragraph-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    color: #f6f7fb;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    line-height: 1;
   }
 
   .md-paragraph-icon-slot {

@@ -10,10 +10,10 @@ import (
 )
 
 func (h Handler) Init(s *server.Server) {
-	s.HandleFunc("GET /admin/api/blogs/{blog_id}/images", h.handlerGetImages)
-	s.HandleFunc("POST /admin/api/blogs/{blog_id}/images", h.handlerPostImages)
+	s.HandleFunc("GET    /admin/api/blogs/{blog_id}/images", h.handlerGetImages)
+	s.HandleFunc("POST   /admin/api/blogs/{blog_id}/images", h.handlerPostImages)
 	s.HandleFunc("DELETE /admin/api/blogs/{blog_id}/images/{image_id}", h.handlerDeleteImage)
-	s.HandleFunc("GET /admin/images/{blog_id}/{image_name}", h.handlerGetImage)
+	s.HandleFunc("GET    /admin/images/{blog_id}/{image_name}", h.handlerGetImage)
 }
 
 // handlerGetImages は、記事に紐づく画像一覧を返します。

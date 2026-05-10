@@ -5,6 +5,7 @@
     id: number;
     label: string;
     imageUrl: string;
+    displayUrl?: string;
     altText?: string;
   };
 
@@ -75,7 +76,7 @@
           >
             <img
               class="aspect-[16/9] w-full object-cover"
-              src={item.imageUrl}
+              src={item.displayUrl ?? item.imageUrl}
               alt={item.altText ?? `image-${item.id}`}
               loading="lazy"
             />

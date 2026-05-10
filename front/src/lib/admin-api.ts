@@ -75,10 +75,24 @@ export type BlogImageApiResponse = {
   items: BlogImageApiItem[]
 }
 
+export type BlogImageViewItem = BlogImageApiItem & {
+  displayUrl: string
+}
+
+export type BlogImageViewResponse = {
+  items: BlogImageViewItem[]
+}
+
 export type PublishTarget = 'all' | 'index' | 'blogs' | 'blog' | 'about'
 
-const adminApiBase = 'admin/api/'
-const adminApiPath = (path: string) => `${adminApiBase}${path.replace(/^\/+/, '')}`
+export type PreviewApiResponse = {
+  result: string
+  url: string
+}
+
+export type PreviewViewResponse = PreviewApiResponse & {
+  displayUrl: string
+}
 
 export class ApiError extends Error {
   status: number
@@ -100,6 +114,35 @@ export class ApiError extends Error {
     this.fields = options.fields
   }
 }
+
+// 管理画面ベースURL
+const appBasePath = (() => {
+  const base = import.meta.env.BASE_URL ?? '/'
+  if (base === './' || base === '/') {
+    return './'
+  }
+  return `/${base.replace(/^\/+|\/+$/g, '')}/`
+})()
+
+// 管理画面URL【<appBasePath>/admin】
+const adminPath = (path: string) => `${appBasePath}admin/${path.replace(/^\/+/, '')}`
+// 管理画面APIURL [<appBasePath/admin/api/*]
+export const adminApiPath = (path: string) => adminPath(`api/${path}`)
+// 管理画面リソースURL [<appBasePath/*]
+export const adminResourcePath = (path: string) => {
+  if (/^(?:[a-z][a-z\d+\-.]*:)?\/\//i.test(path) || /^(?:data|blob):/i.test(path)) {
+    return path
+  }
+  if (path.startsWith('/admin/')) {
+    return `${appBasePath}${path.replace(/^\/+/, '')}`
+  }
+  if (path.startsWith('admin/')) {
+    return `${appBasePath}${path}`
+  }
+  return path
+}
+// 管理画面アップロードパス
+export const blogImageUploadPath = (blogId: number) => adminApiPath(`blogs/${blogId}/images`)
 
 export function extractValidationFields(error: unknown): Record<string, string> | null {
   if (typeof error !== 'object' || error === null) {
@@ -253,8 +296,14 @@ export async function deleteBlog(blogId: number): Promise<{ id: number; result: 
   })
 }
 
-export async function fetchBlogImages(blogId: number): Promise<BlogImageApiResponse> {
-  return requestJson<BlogImageApiResponse>(adminApiPath(`blogs/${blogId}/images`))
+export async function fetchBlogImages(blogId: number): Promise<BlogImageViewResponse> {
+  const response = await requestJson<BlogImageApiResponse>(adminApiPath(`blogs/${blogId}/images`))
+  return {
+    items: response.items.map((item) => ({
+      ...item,
+      displayUrl: adminResourcePath(item.url),
+    })),
+  }
 }
 
 export async function uploadBlogImage(
@@ -265,7 +314,7 @@ export async function uploadBlogImage(
   const formData = new FormData()
   formData.set('file', file)
   formData.set('alt_text', altText)
-  return requestFormData<BlogImageApiItem>(adminApiPath(`blogs/${blogId}/images`), {
+  return requestFormData<BlogImageApiItem>(blogImageUploadPath(blogId), {
     method: 'POST',
     body: formData,
   })
@@ -290,15 +339,23 @@ export async function publish(target: PublishTarget, blogId?: number): Promise<{
   })
 }
 
-export async function createBlogPreview(blogId: number | 'about'): Promise<{ result: string; url: string }> {
-  return requestJson<{ result: string; url: string }>(adminApiPath(`blogs/${blogId}/preview`), {
+export async function createBlogPreview(blogId: number | 'about'): Promise<PreviewViewResponse> {
+  const response = await requestJson<PreviewApiResponse>(adminApiPath(`blogs/${blogId}/preview`), {
     method: 'POST',
     body: typeof blogId === 'number' ? { blog_id: blogId } : { blog_id: 0 },
   })
+  return {
+    ...response,
+    displayUrl: adminResourcePath(response.url),
+  }
 }
 
-export async function createSitePreview(): Promise<{ result: string; url: string }> {
-  return requestJson<{ result: string; url: string }>(adminApiPath('site/preview'), {
+export async function createSitePreview(): Promise<PreviewViewResponse> {
+  const response = await requestJson<PreviewApiResponse>(adminApiPath('site/preview'), {
     method: 'POST',
   })
+  return {
+    ...response,
+    displayUrl: adminResourcePath(response.url),
+  }
 }

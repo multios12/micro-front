@@ -312,7 +312,7 @@
         method: "post",
         body: data,
       });
-      if (response.status !== 200) {
+      if (!response.ok) {
         imageError = await response.text();
         return;
       }

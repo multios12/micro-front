@@ -18,6 +18,7 @@
     deleteBlog,
     deleteBlogImage,
     ApiError,
+    blogImageUploadPath,
     fetchBlogDetail,
     fetchBlogImages,
     extractValidationFields,
@@ -62,6 +63,7 @@
     id: number;
     label: string;
     imageUrl: string;
+    displayUrl: string;
     altText?: string;
   }> = [];
 
@@ -90,6 +92,7 @@
       id: image.id,
       label: "URLをコピー",
       imageUrl: image.url,
+      displayUrl: image.displayUrl,
       altText: image.alt_text,
     }));
 
@@ -189,7 +192,7 @@
   const getMarkdownImageUploadPath = () =>
     resolvedBlogId === null
       ? ""
-      : `admin/api/blogs/${resolvedBlogId}/images`;
+      : blogImageUploadPath(resolvedBlogId);
 
   const handleImageSelect = async (file: File) => {
     if (resolvedBlogId === null) {
@@ -366,7 +369,7 @@
       const preview = await createBlogPreview(
         mode === "about" ? "about" : (resolvedBlogId as number),
       );
-      window.open(preview.url, "_blank", "noopener,noreferrer");
+      window.open(preview.displayUrl, "_blank", "noopener,noreferrer");
       toastTitle = "プレビュー生成";
       toastMessage = "プレビューを新しいタブで開きました。";
       toastTone = "success";

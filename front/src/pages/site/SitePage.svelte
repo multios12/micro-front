@@ -151,7 +151,7 @@
 
     try {
       const preview = await createSitePreview();
-      previewWindow.location.href = preview.url;
+      previewWindow.location.href = preview.displayUrl;
       messageTone = "success";
       toastTitle = "プレビュー生成";
       toastMessage = "プレビューを新しいタブで開きました。";

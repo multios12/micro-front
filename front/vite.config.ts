@@ -7,6 +7,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const html = env.HTML || "index.html"
   const base = env.BASE_URL || "./"
+  const basePath = base === "./" || base === "/" ? "" : `/${base.replace(/^\/+|\/+$/g, "")}`
+  const escapedBasePath = escapeRegExp(basePath)
+  const apiTarget = "http://localhost:3001"
+  const stripBasePath = (path: string) => (basePath ? path.replace(new RegExp(`^${escapedBasePath}`), "") : path)
   return {
     plugins: [tailwindcss(), svelte(), singleFilePlugin(base)],
     build: {
@@ -20,10 +24,22 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       port: 3000,
       proxy: {
-        "^/admin/api/.*": "http://localhost:3001",
-        "^/admin/preview/.*": "http://localhost:3001",
-        "^/admin/images/.*": "http://localhost:3001",
-        "^/settings$": "http://localhost:3001",
+        [`^${escapedBasePath}/admin/api(?:/.*)?$`]: {
+          target: apiTarget,
+          rewrite: stripBasePath,
+        },
+        [`^${escapedBasePath}/admin/preview(?:/.*)?$`]: {
+          target: apiTarget,
+          rewrite: stripBasePath,
+        },
+        [`^${escapedBasePath}/admin/images(?:/.*)?$`]: {
+          target: apiTarget,
+          rewrite: stripBasePath,
+        },
+        [`^${escapedBasePath}/settings$`]: {
+          target: apiTarget,
+          rewrite: stripBasePath,
+        },
       },
     },
   }

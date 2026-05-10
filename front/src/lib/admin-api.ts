@@ -77,7 +77,7 @@ export type BlogImageApiResponse = {
 
 export type PublishTarget = 'all' | 'index' | 'blogs' | 'blog' | 'about'
 
-const adminApiBase = import.meta.env.DEV ? '/admin/api/' : 'admin/api/'
+const adminApiBase = 'admin/api/'
 const adminApiPath = (path: string) => `${adminApiBase}${path.replace(/^\/+/, '')}`
 
 export class ApiError extends Error {

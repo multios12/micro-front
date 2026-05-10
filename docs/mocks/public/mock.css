@@ -343,7 +343,6 @@ a {
 }
 
 .post-detail .content {
-  white-space: pre-wrap;
   padding-top: 18px;
   width: 100%;
   max-width: none;

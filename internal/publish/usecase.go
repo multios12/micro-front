@@ -77,7 +77,7 @@ func (uc Usecase) PreviewBlog(ctx context.Context, blogID int64, previewRoot str
 	if err := os.RemoveAll(outputDir); err != nil {
 		return PreviewResponse{}, nil, err
 	}
-	if err := previewUsecase.renderBlog(ctx, blogID); err != nil {
+	if err := previewUsecase.renderBlogDetail(ctx, blogID); err != nil {
 		return PreviewResponse{}, nil, err
 	}
 	return PreviewResponse{Result: "success", URL: filepath.ToSlash(filepath.Join("admin/preview", token, "blogs", strconv.FormatInt(blogID, 10)+".html"))}, nil, nil
@@ -223,39 +223,15 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 			return err
 		}
 	}
-	totalPages := (len(blogs) + limits.blogsPerPage - 1) / limits.blogsPerPage
-	pageFile := "blogs/index.html"
-	pageBody, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, ""), Kicker: "Blogs", Heading: "記事一覧", Items: buildBlogListCards(pageFile, pageSlice(blogs, 0, limits.blogsPerPage)), Pagination: template.HTML(renderPagination(pageFile, "blogs", 1, totalPages))})
-	if err != nil {
+	if err := uc.renderBlogListPages(ctx, settings, blogs, limits.blogsPerPage); err != nil {
 		return err
-	}
-	page, err := uc.renderPageAt(ctx, settings, "Blogs", "blogs/index.html", pageBody)
-	if err != nil {
-		return err
-	}
-	if err := writeFile(filepath.Join(uc.PublishDir, "blogs", "index.html"), page); err != nil {
-		return err
-	}
-	for pageNum := 2; (pageNum-1)*limits.blogsPerPage < len(blogs); pageNum++ {
-		pageFile := filepath.ToSlash(filepath.Join("blogs", "page"+strconv.Itoa(pageNum)+".html"))
-		pbody, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, ""), Kicker: "Blogs", Heading: "記事一覧", Items: buildBlogListCards(pageFile, pageSlice(blogs, pageNum-1, limits.blogsPerPage)), Pagination: template.HTML(renderPagination(pageFile, "blogs", pageNum, totalPages))})
-		if err != nil {
-			return err
-		}
-		p, err := uc.renderPageAt(ctx, settings, "Blogs", pageFile, pbody)
-		if err != nil {
-			return err
-		}
-		if err := writeFile(filepath.Join(uc.PublishDir, "blogs", "page"+strconv.Itoa(pageNum)+".html"), p); err != nil {
-			return err
-		}
 	}
 	if blogID > 0 {
 		targetBlog, err := uc.Store.GetBlog(ctx, blogID)
 		if err != nil {
 			return err
 		}
-		if err := uc.renderBlog(ctx, blogID); err != nil {
+		if err := uc.renderBlogDetail(ctx, blogID); err != nil {
 			return err
 		}
 		if targetBlog.Category != "" {
@@ -270,7 +246,7 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 		return uc.renderPublicMetadata(ctx)
 	}
 	for _, blog := range blogs {
-		if err := uc.renderBlog(ctx, blog.ID); err != nil {
+		if err := uc.renderBlogDetail(ctx, blog.ID); err != nil {
 			return err
 		}
 	}
@@ -282,7 +258,45 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 	return uc.renderPublicMetadata(ctx)
 }
 
+func (uc Usecase) renderBlogListPages(ctx context.Context, settings store.SiteEntitty, blogs []store.BlogEntitty, perPage int) error {
+	totalPages := (len(blogs) + perPage - 1) / perPage
+	pageFile := "blogs/index.html"
+	pageBody, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, ""), Kicker: "Blogs", Heading: "記事一覧", Items: buildBlogListCards(pageFile, pageSlice(blogs, 0, perPage)), Pagination: template.HTML(renderPagination(pageFile, "blogs", 1, totalPages))})
+	if err != nil {
+		return err
+	}
+	page, err := uc.renderPageAt(ctx, settings, "Blogs", "blogs/index.html", pageBody)
+	if err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join(uc.PublishDir, "blogs", "index.html"), page); err != nil {
+		return err
+	}
+	for pageNum := 2; (pageNum-1)*perPage < len(blogs); pageNum++ {
+		pageFile := filepath.ToSlash(filepath.Join("blogs", "page"+strconv.Itoa(pageNum)+".html"))
+		pbody, err := renderBlogListDocument(BlogListPageData{Breadcrumbs: buildListBreadcrumbs(pageFile, ""), Kicker: "Blogs", Heading: "記事一覧", Items: buildBlogListCards(pageFile, pageSlice(blogs, pageNum-1, perPage)), Pagination: template.HTML(renderPagination(pageFile, "blogs", pageNum, totalPages))})
+		if err != nil {
+			return err
+		}
+		p, err := uc.renderPageAt(ctx, settings, "Blogs", pageFile, pbody)
+		if err != nil {
+			return err
+		}
+		if err := writeFile(filepath.Join(uc.PublishDir, "blogs", "page"+strconv.Itoa(pageNum)+".html"), p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
+	if err := uc.renderBlogDetail(ctx, id); err != nil {
+		return err
+	}
+	return uc.renderBlogRelatedPages(ctx, id)
+}
+
+func (uc Usecase) renderBlogDetail(ctx context.Context, id int64) error {
 	settings, err := uc.Store.GetSiteSettings(ctx)
 	if err != nil {
 		return err
@@ -314,6 +328,41 @@ func (uc Usecase) renderBlog(ctx context.Context, id int64) error {
 	}
 	if err := writeFile(filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(id, 10)+".html"), page); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (uc Usecase) renderBlogRelatedPages(ctx context.Context, blogID int64) error {
+	settings, err := uc.Store.GetSiteSettings(ctx)
+	if err != nil {
+		return err
+	}
+	blogs, err := uc.Store.ListPublicBlogs(ctx)
+	if err != nil {
+		return err
+	}
+	limits := publishLimits()
+	if err := uc.cleanupBlogListPages(); err != nil {
+		return err
+	}
+	if err := uc.renderIndexWithLimit(ctx, limits.topLimit); err != nil {
+		return err
+	}
+	if err := uc.renderBlogListPages(ctx, settings, blogs, limits.blogsPerPage); err != nil {
+		return err
+	}
+	targetBlog, err := uc.Store.GetBlog(ctx, blogID)
+	if err != nil {
+		return err
+	}
+	if targetBlog.Category != "" {
+		if err := uc.cleanupCategoryPages(targetBlog.Category); err != nil {
+			return err
+		}
+		catBlogs := filterBlogsByCategory(blogs, targetBlog.Category)
+		if err := uc.renderCategory(targetBlog.Category, catBlogs, limits.blogsPerPage); err != nil {
+			return err
+		}
 	}
 	return uc.renderPublicMetadata(ctx)
 }

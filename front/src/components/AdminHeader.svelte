@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let title = ''
+  export let title = "";
 </script>
 
 <header class="admin-topbar">

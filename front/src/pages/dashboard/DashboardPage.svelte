@@ -104,7 +104,18 @@
   <title>Dashboard | micro-front</title>
 </svelte:head>
 
-<AdminHeader title="Dashboard" />
+<AdminHeader title="Dashboard">
+  <svelte:fragment slot="actions">
+    <button
+      class={dashboardPublishAction.primary ? 'admin-button admin-button-primary' : 'admin-button'}
+      type="button"
+      on:click={publishAll}
+      disabled={publishing}
+    >
+      {publishing ? '再生成中...' : dashboardPublishAction.label}
+    </button>
+  </svelte:fragment>
+</AdminHeader>
 
 {#if toastOpen}
   <Toast tone={toastTone} title={toastTitle} message={toastMessage} onClose={() => (toastOpen = false)} />
@@ -130,14 +141,6 @@
   <div class="admin-panel-head">
     <h2>記事一覧</h2>
     <div class="admin-topbar-actions">
-      <button
-        class={dashboardPublishAction.primary ? 'admin-button admin-button-primary' : 'admin-button'}
-        type="button"
-        on:click={publishAll}
-        disabled={publishing}
-      >
-        {publishing ? '再生成中...' : dashboardPublishAction.label}
-      </button>
       {#each dashboardTableActions as action}
         <a
           class={action.primary ? 'admin-button admin-button-primary' : 'admin-button'}

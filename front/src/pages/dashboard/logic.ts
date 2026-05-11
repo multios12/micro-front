@@ -1,3 +1,5 @@
+import { formatPublishedDate } from '../../lib/date-format'
+
 export type DashboardStatCard = {
   label: string
   value: string
@@ -66,7 +68,7 @@ export function mapDashboardBlogRows(items: Array<{
     summary: item.summary,
     category: item.category || '未分類',
     status: item.status,
-    publishedAt: item.published_at,
+    publishedAt: formatPublishedDate(item.published_at),
     updatedAt: item.updated_at,
     href: `#/blog-edit/${item.id}`,
   }))

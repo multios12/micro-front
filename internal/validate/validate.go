@@ -29,6 +29,11 @@ func IsDateTime(value string) bool {
 	return err == nil
 }
 
+func IsDate(value string) bool {
+	_, err := time.Parse("2006-01-02", value)
+	return err == nil
+}
+
 func SummaryFromContent(content string) string {
 	content = markdownImagePattern.ReplaceAllString(content, "$1")
 	content = markdownLinkPattern.ReplaceAllString(content, "$1")

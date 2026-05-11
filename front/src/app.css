@@ -53,6 +53,10 @@
     @apply border-b border-white/10 pb-4;
   }
 
+  .admin-sidebar-brand-link {
+    @apply transition hover:text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400/70 focus-visible:outline-offset-4;
+  }
+
   .admin-sidebar-nav {
     @apply pt-4;
   }

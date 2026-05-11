@@ -40,6 +40,8 @@ type titleLayout struct {
 	MaxUnits   int
 }
 
+const titleTextScale = 1.5
+
 func ListTemplates() []Template {
 	items := make([]Template, len(templates))
 	copy(items, templates)
@@ -103,7 +105,7 @@ func renderTech(title string) string {
 <path d="M88 76l20 20-20 20"/>
 <path d="M126 116h28"/>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: 154, Y: 330, LineHeight: 72, Anchor: "start", Fill: "#f3ffff", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 34}))
+	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 72, Anchor: "middle", Fill: "#f3ffff", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
 func renderBook(title string) string {
@@ -126,7 +128,7 @@ func renderBook(title string) string {
 <g font-family="Georgia, 'Times New Roman', serif" fill="#2f2720">
 <path d="M84 76c10-6 21-6 31 0v44c-10-6-21-6-31 0zM119 76c10-6 21-6 31 0v44c-10-6-21-6-31 0z" fill="#2f2720" opacity="0.86"/>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: 154, Y: 330, LineHeight: 78, Anchor: "start", Fill: "#2f2720", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 34}))
+	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 78, Anchor: "middle", Fill: "#2f2720", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
 func renderBookStackImage() string {
@@ -157,7 +159,7 @@ func renderDiary(title string) string {
 <g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fill="#5c5268">
 <path d="M84 116l30-30 18 18-30 30-27 8zM118 82l8-8c4-4 11-4 15 0l4 4c4 4 4 11 0 15l-8 8z" fill="#34404a" opacity="0.9"/>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: 154, Y: 330, LineHeight: 76, Anchor: "start", Fill: "#202b33", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 34}))
+	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 76, Anchor: "middle", Fill: "#202b33", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
 func renderTravel(title string) string {
@@ -171,7 +173,7 @@ func renderTravel(title string) string {
 <path d="M104 74c-15 0-27 12-27 27 0 22 27 51 27 51s27-29 27-51c0-15-12-27-27-27zm0 37c-7 0-12-5-12-12s5-12 12-12 12 5 12 12-5 12-12 12z" fill="#334d35"/>
 <text x="84" y="178" font-size="20" opacity="0.78">35.6895N 139.6917E</text>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: 154, Y: 330, LineHeight: 74, Anchor: "start", Fill: "#26332f", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 34}))
+	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 74, Anchor: "middle", Fill: "#26332f", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
 func renderTravelMapImage() string {
@@ -184,15 +186,28 @@ func wrapSVG(body string) string {
 }
 
 func renderTitle(title string, layout titleLayout) string {
-	lines, fontSize := fitTitle(title, layout.MaxUnits)
+	lines, fontSize := fitTitle(title, scaledTitleUnits(layout.MaxUnits))
+	lineHeight := scaledTitleSize(layout.LineHeight)
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf(`<g font-family="%s" font-weight="700" font-size="%d" text-anchor="%s" fill="%s">`, layout.FontFamily, fontSize, layout.Anchor, layout.Fill))
-	startY := layout.Y - ((len(lines) - 1) * layout.LineHeight / 2)
+	startY := layout.Y - ((len(lines) - 1) * lineHeight / 2)
 	for i, line := range lines {
-		b.WriteString(fmt.Sprintf(`<text x="%d" y="%d">%s</text>`, layout.X, startY+(i*layout.LineHeight), html.EscapeString(line)))
+		b.WriteString(fmt.Sprintf(`<text x="%d" y="%d">%s</text>`, layout.X, startY+(i*lineHeight), html.EscapeString(line)))
 	}
 	b.WriteString(`</g>`)
 	return b.String()
+}
+
+func scaledTitleSize(size int) int {
+	return int(float64(size)*titleTextScale + 0.5)
+}
+
+func scaledTitleUnits(units int) int {
+	scaled := int(float64(units) / titleTextScale)
+	if scaled < 1 {
+		return 1
+	}
+	return scaled
 }
 
 func fitTitle(title string, maxUnits int) ([]string, int) {
@@ -204,10 +219,10 @@ func fitTitle(title string, maxUnits int) ([]string, int) {
 		size  int
 		units int
 	}{
-		{56, maxUnits},
-		{50, maxUnits + 4},
-		{44, maxUnits + 8},
-		{38, maxUnits + 12},
+		{scaledTitleSize(56), maxUnits},
+		{scaledTitleSize(50), maxUnits + scaledTitleUnits(4)},
+		{scaledTitleSize(44), maxUnits + scaledTitleUnits(8)},
+		{scaledTitleSize(38), maxUnits + scaledTitleUnits(12)},
 	}
 	for _, step := range steps {
 		lines := wrapRunes(title, step.units, 3)
@@ -215,7 +230,8 @@ func fitTitle(title string, maxUnits int) ([]string, int) {
 			return lines, step.size
 		}
 	}
-	return ellipsizeLines(wrapRunes(title, maxUnits+12, 3), maxUnits+12), 38
+	minUnits := maxUnits + scaledTitleUnits(12)
+	return ellipsizeLines(wrapRunes(title, minUnits, 3), minUnits), scaledTitleSize(38)
 }
 
 func wrapRunes(text string, maxUnits, maxLines int) []string {

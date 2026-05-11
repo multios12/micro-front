@@ -8,7 +8,7 @@
   import SitePage from './pages/site/SitePage.svelte'
   import { fetchSiteSettings } from './lib/admin-api'
   import { blogCount, refreshBlogCount } from './lib/blog-count'
-  import { siteTitle } from './lib/site-title'
+  import { siteTitle, siteUrl } from './lib/site-title'
 
   type Route = 'dashboard' | 'blogs' | 'site' | 'blog-edit'
   type NavKey = 'dashboard' | 'blogs' | 'site' | 'about'
@@ -48,8 +48,10 @@
       try {
         const site = await fetchSiteSettings()
         siteTitle.set(site.site_title || 'micro-front')
+        siteUrl.set(site.site_url || '')
       } catch {
         siteTitle.set('micro-front')
+        siteUrl.set('')
       }
     })()
 
@@ -69,7 +71,7 @@
   <meta name="description" content="micro-front の管理画面" />
 </svelte:head>
 
-<AdminShell active={activeNav} blogCount={$blogCount} siteTitle={$siteTitle}>
+<AdminShell active={activeNav} blogCount={$blogCount} siteTitle={$siteTitle} siteUrl={$siteUrl}>
   {#if route === 'dashboard'}
     <DashboardPage />
   {:else if route === 'blogs'}

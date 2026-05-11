@@ -30,6 +30,11 @@
   } from "../../lib/admin-api";
   import type { TitleImageTemplateApiItem } from "../../lib/admin-api";
   import { refreshBlogCount } from "../../lib/blog-count";
+  import {
+    formatPublishedDate,
+    normalizePublishedDateForSave,
+    todayLocalDate,
+  } from "../../lib/date-format";
 
   export let blogId = "new";
   $: mode = resolveBlogEditMode(blogId);
@@ -52,7 +57,7 @@
   let articleId = "";
   let title = "";
   let category = "";
-  let updatedAt = "";
+  let publishedAt = "";
   let content = "";
   let status: "public" | "private" = "private";
   let titleImageTemplate = "diary";
@@ -72,13 +77,6 @@
     altText?: string;
   }> = [];
 
-  const getTodayInputValue = () => {
-    const now = new Date();
-    const yyyy = String(now.getFullYear());
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd} 00:00:00`;
-  };
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -134,7 +132,7 @@
         articleId = "new";
         title = "";
         category = "";
-        updatedAt = getTodayInputValue();
+        publishedAt = todayLocalDate();
         content = "";
         status = "private";
         titleImageTemplate = "diary";
@@ -164,7 +162,7 @@
         articleId = String(targetId);
         title = "";
         category = "";
-        updatedAt = "";
+        publishedAt = "";
         content = "";
         status = "private";
         titleImageTemplate = "diary";
@@ -183,7 +181,7 @@
     articleId = String(detail.id);
     title = detail.title;
     category = detail.category;
-    updatedAt = detail.updated_at;
+    publishedAt = formatPublishedDate(detail.published_at);
     content = detail.content;
     status = detail.status;
     titleImageTemplate = detail.title_image_template || "diary";
@@ -195,7 +193,7 @@
     category: mode === "about" ? "" : category,
     status: nextStatus,
     title_image_template: mode === "about" ? "diary" : titleImageTemplate || "diary",
-    published_at: updatedAt,
+    published_at: normalizePublishedDateForSave(publishedAt),
   });
 
   const reloadBlogImages = async (blogId: number) => {
@@ -531,13 +529,14 @@
           {/if}
         </div>
         <div class="admin-field">
-          <label class="admin-label" for="updated-at">更新日</label>
+          <label class="admin-label" for="published-at">公開日</label>
           <input
-            id="updated-at"
+            id="published-at"
             class="admin-input"
             class:admin-input-error={Boolean(validationFields.published_at)}
             type="text"
-            bind:value={updatedAt}
+            placeholder="yyyy-mm-dd"
+            bind:value={publishedAt}
           />
           {#if validationFields.published_at}
             <p class="admin-error-message">{validationFields.published_at}</p>

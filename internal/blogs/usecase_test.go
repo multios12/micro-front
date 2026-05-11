@@ -25,7 +25,7 @@ func TestCreateAboutUsesFixedID(t *testing.T) {
 		Content:     "about body",
 		Category:    "",
 		Status:      "private",
-		PublishedAt: "2026-04-19 00:00:00",
+		PublishedAt: "2026-04-19",
 	})
 	if err != nil {
 		t.Fatalf("Create: %v", err)
@@ -95,11 +95,21 @@ func TestUpdateAboutCreatesWhenMissing(t *testing.T) {
 }
 
 func TestBuildBlogAllowsEmptyCategory(t *testing.T) {
-	_, code, fields := buildBlog("sample", "body", "", "private", "diary", "2026-04-19 00:00:00", true)
+	_, code, fields := buildBlog("sample", "body", "", "private", "diary", "2026-04-19", true)
 	if code != "" {
 		t.Fatalf("buildBlog code=%q want empty", code)
 	}
 	if len(fields) > 0 {
 		t.Fatalf("buildBlog fields=%v want empty", fields)
+	}
+}
+
+func TestBuildBlogRejectsPublishedAtWithTime(t *testing.T) {
+	_, code, fields := buildBlog("sample", "body", "", "private", "diary", "2026-04-19 00:00:00", true)
+	if code != "INVALID_PUBLISHED_AT" {
+		t.Fatalf("buildBlog code=%q want INVALID_PUBLISHED_AT", code)
+	}
+	if fields["published_at"] != "公開日の形式が不正です(yyyy-mm-dd)。" {
+		t.Fatalf("published_at error=%q", fields["published_at"])
 	}
 }

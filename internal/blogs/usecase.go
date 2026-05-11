@@ -255,9 +255,9 @@ func buildBlog(title, content, category, status, titleImageTemplate, publishedAt
 	}
 	if validatePublishedAt {
 		if validate.Length(publishedAt) == 0 {
-			fields["published_at"] = "更新日を入力してください。"
-		} else if !validate.IsDateTime(publishedAt) {
-			fields["published_at"] = "更新日の形式が不正です(yyyy-mm-dd hh:mm:ss)。"
+			fields["published_at"] = "公開日を入力してください。"
+		} else if !validate.IsDate(publishedAt) {
+			fields["published_at"] = "公開日の形式が不正です(yyyy-mm-dd)。"
 			if code == "VALIDATION_ERROR" {
 				code = "INVALID_PUBLISHED_AT"
 			}

@@ -50,6 +50,7 @@ export type BlogDetailApiResponse = {
   summary: string
   category: string
   status: 'public' | 'private'
+  title_image_template: string
   published_at: string
   updated_at: string
 }
@@ -59,7 +60,22 @@ export type BlogUpsertApiRequest = {
   content: string
   category: string
   status: 'public' | 'private'
+  title_image_template: string
   published_at: string
+}
+
+export type TitleImageTemplateApiItem = {
+  id: string
+  label: string
+  description: string
+}
+
+export type TitleImageTemplatesApiResponse = {
+  items: TitleImageTemplateApiItem[]
+}
+
+export type TitleImagePreviewApiResponse = {
+  svg: string
 }
 
 export type BlogImageApiItem = {
@@ -285,6 +301,20 @@ export async function updateBlog(blogId: number, request: BlogUpsertApiRequest):
 
 export async function createBlog(request: BlogUpsertApiRequest): Promise<BlogDetailApiResponse> {
   return requestJson<BlogDetailApiResponse>(adminApiPath('blogs'), {
+    method: 'POST',
+    body: request,
+  })
+}
+
+export async function fetchTitleImageTemplates(): Promise<TitleImageTemplatesApiResponse> {
+  return requestJson<TitleImageTemplatesApiResponse>(adminApiPath('title-image/templates'))
+}
+
+export async function createTitleImagePreview(request: {
+  title: string
+  template: string
+}): Promise<TitleImagePreviewApiResponse> {
+  return requestJson<TitleImagePreviewApiResponse>(adminApiPath('title-image/preview'), {
     method: 'POST',
     body: request,
   })

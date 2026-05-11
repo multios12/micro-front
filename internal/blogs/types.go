@@ -16,13 +16,14 @@ type Usecase struct {
 
 // BlogsListItemResponse は記事一覧APIの1件分のレスポンスです。
 type BlogsListItemResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Summary     string `json:"summary"`
-	Category    string `json:"category"`
-	Status      string `json:"status"`
-	PublishedAt string `json:"published_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID                 int64  `json:"id"`
+	Title              string `json:"title"`
+	Summary            string `json:"summary"`
+	Category           string `json:"category"`
+	Status             string `json:"status"`
+	TitleImageTemplate string `json:"title_image_template"`
+	PublishedAt        string `json:"published_at"`
+	UpdatedAt          string `json:"updated_at"`
 }
 
 // BlogsListResponse は記事一覧APIのレスポンスです。
@@ -36,56 +37,61 @@ type BlogsListResponse struct {
 
 // BlogsDetailResponse は記事詳細APIのレスポンスです。
 type BlogsDetailResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Content     string `json:"content"`
-	Summary     string `json:"summary"`
-	Category    string `json:"category"`
-	Status      string `json:"status"`
-	PublishedAt string `json:"published_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID                 int64  `json:"id"`
+	Title              string `json:"title"`
+	Content            string `json:"content"`
+	Summary            string `json:"summary"`
+	Category           string `json:"category"`
+	Status             string `json:"status"`
+	TitleImageTemplate string `json:"title_image_template"`
+	PublishedAt        string `json:"published_at"`
+	UpdatedAt          string `json:"updated_at"`
 }
 
 // BlogsCreateRequest は記事新規作成APIのリクエストです。
 type BlogsCreateRequest struct {
-	Title       string `json:"title"`
-	Content     string `json:"content"`
-	Category    string `json:"category"`
-	Status      string `json:"status"`
-	PublishedAt string `json:"published_at"`
+	Title              string `json:"title"`
+	Content            string `json:"content"`
+	Category           string `json:"category"`
+	Status             string `json:"status"`
+	TitleImageTemplate string `json:"title_image_template"`
+	PublishedAt        string `json:"published_at"`
 }
 
 // BlogsCreateResponse は記事新規作成APIのレスポンスです。
 type BlogsCreateResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Content     string `json:"content"`
-	Summary     string `json:"summary"`
-	Category    string `json:"category"`
-	Status      string `json:"status"`
-	PublishedAt string `json:"published_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID                 int64  `json:"id"`
+	Title              string `json:"title"`
+	Content            string `json:"content"`
+	Summary            string `json:"summary"`
+	Category           string `json:"category"`
+	Status             string `json:"status"`
+	TitleImageTemplate string `json:"title_image_template"`
+	PublishedAt        string `json:"published_at"`
+	UpdatedAt          string `json:"updated_at"`
 }
 
 // BlogsUpdateRequest は記事更新APIのリクエストです。
 type BlogsUpdateRequest struct {
-	Title       string `json:"title"`
-	Content     string `json:"content"`
-	Category    string `json:"category"`
-	Status      string `json:"status"`
-	PublishedAt string `json:"published_at"`
+	Title              string `json:"title"`
+	Content            string `json:"content"`
+	Category           string `json:"category"`
+	Status             string `json:"status"`
+	TitleImageTemplate string `json:"title_image_template"`
+	PublishedAt        string `json:"published_at"`
 }
 
 // BlogsUpdateResponse は記事更新APIのレスポンスです。
 type BlogsUpdateResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Content     string `json:"content"`
-	Summary     string `json:"summary"`
-	Category    string `json:"category"`
-	Status      string `json:"status"`
-	PublishedAt string `json:"published_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID                 int64  `json:"id"`
+	Title              string `json:"title"`
+	Content            string `json:"content"`
+	Summary            string `json:"summary"`
+	Category           string `json:"category"`
+	Status             string `json:"status"`
+	TitleImageTemplate string `json:"title_image_template"`
+	PublishedAt        string `json:"published_at"`
+	UpdatedAt          string `json:"updated_at"`
 }
 
 // BlogsDeleteResponse は記事削除APIのレスポンスです。

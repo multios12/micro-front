@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"micro-front/internal/blogs"
 	"micro-front/internal/config"
@@ -14,6 +16,7 @@ import (
 	"micro-front/internal/server"
 	"micro-front/internal/site"
 	"micro-front/internal/store"
+	"micro-front/internal/titleimage"
 	"micro-front/internal/web"
 )
 
@@ -25,6 +28,9 @@ func run(ctx context.Context, args []string) error {
 	}
 	if len(args) > 0 && args[0] == "seed" {
 		return runSeed(ctx, cfg, args[1:])
+	}
+	if len(args) > 0 && args[0] == "sample" {
+		return runSample(ctx, args[1:])
 	}
 
 	st, err := store.New(cfg.DataDir)
@@ -38,6 +44,7 @@ func run(ctx context.Context, args []string) error {
 	site.Handler{Store: st}.Init(&srv)
 	blogs.Handler{Store: st, DataDir: cfg.DataDir}.Init(&srv)
 	images.Handler{Store: st, DataDir: cfg.DataDir}.Init(&srv)
+	titleimage.Handler{}.Init(&srv)
 	web.Handler{Store: st, DataDir: cfg.DataDir, PublishDir: cfg.PublicStaticDir}.Init(&srv)
 
 	return srv.Run(ctx)
@@ -105,5 +112,35 @@ func runPublish(ctx context.Context, cfg config.Config, args []string) error {
 	}
 
 	log.Printf("publish complete: target=%s blog_id=%d output_dir=%s", *target, *blogID, *outputDir)
+	return nil
+}
+
+func runSample(_ context.Context, args []string) error {
+	fs := flag.NewFlagSet("sample", flag.ContinueOnError)
+	fs.SetOutput(log.Writer())
+	outputDir := fs.String("output-dir", "docs/mocks/blog-header", "sample SVG output directory")
+	title := fs.String("title", "ブログタイトル画像ジェネレータ", "sample title")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(*outputDir, 0o755); err != nil {
+		return fmt.Errorf("create sample output dir: %w", err)
+	}
+	for _, tmpl := range titleimage.ListTemplates() {
+		svg, err := titleimage.GenerateSVG(titleimage.GenerateInput{
+			Title:    *title,
+			Template: tmpl.ID,
+		})
+		if err != nil {
+			return err
+		}
+		path := filepath.Join(*outputDir, string(tmpl.ID)+".svg")
+		if err := os.WriteFile(path, []byte(svg), 0o644); err != nil {
+			return fmt.Errorf("write sample svg %s: %w", path, err)
+		}
+		log.Printf("sample generated: %s", path)
+	}
+
 	return nil
 }

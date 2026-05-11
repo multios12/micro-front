@@ -95,7 +95,7 @@ func TestUpdateAboutCreatesWhenMissing(t *testing.T) {
 }
 
 func TestBuildBlogAllowsEmptyCategory(t *testing.T) {
-	_, code, fields := buildBlog("sample", "body", "", "private", "2026-04-19 00:00:00", true)
+	_, code, fields := buildBlog("sample", "body", "", "private", "diary", "2026-04-19 00:00:00", true)
 	if code != "" {
 		t.Fatalf("buildBlog code=%q want empty", code)
 	}

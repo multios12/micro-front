@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"micro-front/internal/store"
+	"micro-front/internal/titleimage"
 	"micro-front/internal/validate"
 )
 
@@ -38,13 +39,14 @@ func (uc Usecase) List(ctx context.Context, page, perPage int, status string) (B
 	items := make([]BlogsListItemResponse, 0, len(result.Items))
 	for _, blog := range result.Items {
 		items = append(items, BlogsListItemResponse{
-			ID:          blog.ID,
-			Title:       blog.Title,
-			Summary:     blog.Summary,
-			Category:    blog.Category,
-			Status:      blog.Status,
-			PublishedAt: blog.PublishedAt,
-			UpdatedAt:   blog.UpdatedAt,
+			ID:                 blog.ID,
+			Title:              blog.Title,
+			Summary:            blog.Summary,
+			Category:           blog.Category,
+			Status:             blog.Status,
+			TitleImageTemplate: blog.TitleImageTemplate,
+			PublishedAt:        blog.PublishedAt,
+			UpdatedAt:          blog.UpdatedAt,
 		})
 	}
 
@@ -67,20 +69,21 @@ func (uc Usecase) Get(ctx context.Context, id int64) (BlogsDetailResponse, error
 		return BlogsDetailResponse{}, err
 	}
 	return BlogsDetailResponse{
-		ID:          blog.ID,
-		Title:       blog.Title,
-		Content:     blog.Content,
-		Summary:     blog.Summary,
-		Category:    blog.Category,
-		Status:      blog.Status,
-		PublishedAt: blog.PublishedAt,
-		UpdatedAt:   blog.UpdatedAt,
+		ID:                 blog.ID,
+		Title:              blog.Title,
+		Content:            blog.Content,
+		Summary:            blog.Summary,
+		Category:           blog.Category,
+		Status:             blog.Status,
+		TitleImageTemplate: blog.TitleImageTemplate,
+		PublishedAt:        blog.PublishedAt,
+		UpdatedAt:          blog.UpdatedAt,
 	}, nil
 }
 
 // Create は設計書 3.5 の記事新規作成処理を行います。
 func (uc Usecase) Create(ctx context.Context, req BlogsCreateRequest) (BlogsCreateResponse, string, map[string]string, error) {
-	blog, code, fields := buildBlog(req.Title, req.Content, req.Category, req.Status, req.PublishedAt, true)
+	blog, code, fields := buildBlog(req.Title, req.Content, req.Category, req.Status, req.TitleImageTemplate, req.PublishedAt, true)
 	if len(fields) > 0 {
 		return BlogsCreateResponse{}, code, fields, nil
 	}
@@ -96,14 +99,15 @@ func (uc Usecase) Create(ctx context.Context, req BlogsCreateRequest) (BlogsCrea
 		return BlogsCreateResponse{}, "", nil, err
 	}
 	return BlogsCreateResponse{
-		ID:          created.ID,
-		Title:       created.Title,
-		Content:     created.Content,
-		Summary:     created.Summary,
-		Category:    created.Category,
-		Status:      created.Status,
-		PublishedAt: created.PublishedAt,
-		UpdatedAt:   created.UpdatedAt,
+		ID:                 created.ID,
+		Title:              created.Title,
+		Content:            created.Content,
+		Summary:            created.Summary,
+		Category:           created.Category,
+		Status:             created.Status,
+		TitleImageTemplate: created.TitleImageTemplate,
+		PublishedAt:        created.PublishedAt,
+		UpdatedAt:          created.UpdatedAt,
 	}, "", nil, nil
 }
 
@@ -114,7 +118,7 @@ func (uc Usecase) Update(ctx context.Context, id int64, req BlogsUpdateRequest) 
 		req.Category = ""
 	}
 
-	blog, code, fields := buildBlog(req.Title, req.Content, req.Category, req.Status, req.PublishedAt, id != aboutBlogID)
+	blog, code, fields := buildBlog(req.Title, req.Content, req.Category, req.Status, req.TitleImageTemplate, req.PublishedAt, id != aboutBlogID)
 	if len(fields) > 0 {
 		return BlogsUpdateResponse{}, code, fields, nil
 	}
@@ -130,14 +134,15 @@ func (uc Usecase) Update(ctx context.Context, id int64, req BlogsUpdateRequest) 
 				return BlogsUpdateResponse{}, "", nil, err
 			}
 			return BlogsUpdateResponse{
-				ID:          created.ID,
-				Title:       created.Title,
-				Content:     created.Content,
-				Summary:     created.Summary,
-				Category:    created.Category,
-				Status:      created.Status,
-				PublishedAt: created.PublishedAt,
-				UpdatedAt:   created.UpdatedAt,
+				ID:                 created.ID,
+				Title:              created.Title,
+				Content:            created.Content,
+				Summary:            created.Summary,
+				Category:           created.Category,
+				Status:             created.Status,
+				TitleImageTemplate: created.TitleImageTemplate,
+				PublishedAt:        created.PublishedAt,
+				UpdatedAt:          created.UpdatedAt,
 			}, "", nil, nil
 		}
 		if errors.Is(err, sql.ErrNoRows) {
@@ -158,14 +163,15 @@ func (uc Usecase) Update(ctx context.Context, id int64, req BlogsUpdateRequest) 
 		return BlogsUpdateResponse{}, "", nil, err
 	}
 	return BlogsUpdateResponse{
-		ID:          updated.ID,
-		Title:       updated.Title,
-		Content:     updated.Content,
-		Summary:     updated.Summary,
-		Category:    updated.Category,
-		Status:      updated.Status,
-		PublishedAt: updated.PublishedAt,
-		UpdatedAt:   updated.UpdatedAt,
+		ID:                 updated.ID,
+		Title:              updated.Title,
+		Content:            updated.Content,
+		Summary:            updated.Summary,
+		Category:           updated.Category,
+		Status:             updated.Status,
+		TitleImageTemplate: updated.TitleImageTemplate,
+		PublishedAt:        updated.PublishedAt,
+		UpdatedAt:          updated.UpdatedAt,
 	}, "", nil, nil
 }
 
@@ -214,7 +220,7 @@ func (uc Usecase) createBlogRecord(ctx context.Context, blog store.BlogEntitty) 
 }
 
 // buildBlog は記事作成・更新で共通の入力検証とDBモデル変換を行います。
-func buildBlog(title, content, category, status, publishedAt string, validatePublishedAt bool) (store.BlogEntitty, string, map[string]string) {
+func buildBlog(title, content, category, status, titleImageTemplate, publishedAt string, validatePublishedAt bool) (store.BlogEntitty, string, map[string]string) {
 	fields := map[string]string{}
 	code := "VALIDATION_ERROR"
 	if validate.Length(title) == 0 {
@@ -240,6 +246,13 @@ func buildBlog(title, content, category, status, publishedAt string, validatePub
 		fields["status"] = "公開状態は public か private を指定してください。"
 		code = "INVALID_STATUS"
 	}
+	if titleImageTemplate == "" {
+		titleImageTemplate = string(titleimage.DefaultTemplate)
+	}
+	if !titleimage.IsValidTemplate(titleimage.TemplateID(titleImageTemplate)) {
+		fields["title_image_template"] = "タイトル画像テンプレートが不正です。"
+		code = "INVALID_TITLE_IMAGE_TEMPLATE"
+	}
 	if validatePublishedAt {
 		if validate.Length(publishedAt) == 0 {
 			fields["published_at"] = "更新日を入力してください。"
@@ -256,11 +269,12 @@ func buildBlog(title, content, category, status, publishedAt string, validatePub
 	}
 
 	return store.BlogEntitty{
-		Title:       title,
-		Content:     content,
-		Summary:     validate.SummaryFromContent(content),
-		Category:    strings.TrimSpace(category),
-		Status:      status,
-		PublishedAt: publishedAt,
+		Title:              title,
+		Content:            content,
+		Summary:            validate.SummaryFromContent(content),
+		Category:           strings.TrimSpace(category),
+		Status:             status,
+		TitleImageTemplate: titleImageTemplate,
+		PublishedAt:        publishedAt,
 	}, "", nil
 }

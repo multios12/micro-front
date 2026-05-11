@@ -29,15 +29,16 @@ type SiteEntitty struct {
 
 // BlogEntitty は記事のDBモデルです。
 type BlogEntitty struct {
-	ID          int64          `json:"id"`
-	Title       string         `json:"title"`
-	Content     string         `json:"content"`
-	Summary     string         `json:"summary"`
-	Category    string         `json:"category"`
-	Status      string         `json:"status"`
-	PublishedAt string         `json:"published_at"`
-	UpdatedAt   string         `json:"updated_at"`
-	Images      []ImageEntitty `json:"images,omitempty"`
+	ID                 int64          `json:"id"`
+	Title              string         `json:"title"`
+	Content            string         `json:"content"`
+	Summary            string         `json:"summary"`
+	Category           string         `json:"category"`
+	Status             string         `json:"status"`
+	TitleImageTemplate string         `json:"title_image_template"`
+	PublishedAt        string         `json:"published_at"`
+	UpdatedAt          string         `json:"updated_at"`
+	Images             []ImageEntitty `json:"images,omitempty"`
 }
 
 // ImageEntitty は記事に紐づく画像のDBモデルです。

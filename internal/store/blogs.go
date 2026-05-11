@@ -44,7 +44,7 @@ func (s *Store) ListBlogs(ctx context.Context, filter BlogListFilter) (BlogListR
 	queryArgs = append(queryArgs, filter.PerPage, offset)
 
 	rows, err := s.DB.QueryContext(ctx, fmt.Sprintf(`
-		SELECT id, title, content, summary, category, status, published_at, updated_at
+		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		%s
 		ORDER BY published_at DESC, id DESC
@@ -83,7 +83,7 @@ func (s *Store) ListBlogs(ctx context.Context, filter BlogListFilter) (BlogListR
 
 func (s *Store) ListBlogsAll(ctx context.Context) ([]BlogEntitty, error) {
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT id, title, content, summary, category, status, published_at, updated_at
+		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE title <> 'about'
 		ORDER BY published_at DESC, id DESC
@@ -106,7 +106,7 @@ func (s *Store) ListBlogsAll(ctx context.Context) ([]BlogEntitty, error) {
 
 func (s *Store) ListPublicBlogs(ctx context.Context) ([]BlogEntitty, error) {
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT id, title, content, summary, category, status, published_at, updated_at
+		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE status = 'public' AND title <> 'about'
 		ORDER BY published_at DESC, id DESC
@@ -129,7 +129,7 @@ func (s *Store) ListPublicBlogs(ctx context.Context) ([]BlogEntitty, error) {
 
 func (s *Store) GetBlog(ctx context.Context, id int64) (BlogEntitty, error) {
 	row := s.DB.QueryRowContext(ctx, `
-		SELECT id, title, content, summary, category, status, published_at, updated_at
+		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE id = ?
 	`, id)
@@ -138,7 +138,7 @@ func (s *Store) GetBlog(ctx context.Context, id int64) (BlogEntitty, error) {
 
 func (s *Store) GetBlogByTitle(ctx context.Context, title string) (BlogEntitty, error) {
 	row := s.DB.QueryRowContext(ctx, `
-		SELECT id, title, content, summary, category, status, published_at, updated_at
+		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE title = ?
 	`, title)
@@ -148,9 +148,9 @@ func (s *Store) GetBlogByTitle(ctx context.Context, title string) (BlogEntitty, 
 func (s *Store) CreateBlog(ctx context.Context, blog BlogEntitty) (BlogEntitty, error) {
 	now := time.Now().UTC().Format("2006-01-02 15:04:05")
 	result, err := s.DB.ExecContext(ctx, `
-		INSERT INTO blogs (title, content, summary, category, status, published_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
-	`, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, blog.PublishedAt, now)
+		INSERT INTO blogs (title, content, summary, category, status, title_image_template, published_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+	`, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now)
 	if err != nil {
 		return BlogEntitty{}, err
 	}
@@ -164,9 +164,9 @@ func (s *Store) CreateBlog(ctx context.Context, blog BlogEntitty) (BlogEntitty, 
 func (s *Store) CreateBlogWithID(ctx context.Context, blog BlogEntitty, id int64) (BlogEntitty, error) {
 	now := time.Now().UTC().Format("2006-01-02 15:04:05")
 	if _, err := s.DB.ExecContext(ctx, `
-		INSERT INTO blogs (id, title, content, summary, category, status, published_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`, id, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, blog.PublishedAt, now); err != nil {
+		INSERT INTO blogs (id, title, content, summary, category, status, title_image_template, published_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, id, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now); err != nil {
 		return BlogEntitty{}, err
 	}
 	return s.GetBlog(ctx, id)
@@ -176,9 +176,9 @@ func (s *Store) UpdateBlog(ctx context.Context, id int64, blog BlogEntitty) (Blo
 	now := time.Now().UTC().Format("2006-01-02 15:04:05")
 	_, err := s.DB.ExecContext(ctx, `
 		UPDATE blogs
-		SET title = ?, content = ?, summary = ?, category = ?, status = ?, published_at = ?, updated_at = ?
+		SET title = ?, content = ?, summary = ?, category = ?, status = ?, title_image_template = ?, published_at = ?, updated_at = ?
 		WHERE id = ?
-	`, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, blog.PublishedAt, now, id)
+	`, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now, id)
 	if err != nil {
 		return BlogEntitty{}, err
 	}
@@ -193,28 +193,37 @@ func (s *Store) DeleteBlog(ctx context.Context, id int64) error {
 func scanBlog(rows interface{ Scan(dest ...any) error }) (BlogEntitty, error) {
 	var blog BlogEntitty
 	var category sql.NullString
-	err := rows.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.Status, &blog.PublishedAt, &blog.UpdatedAt)
+	err := rows.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.Status, &blog.TitleImageTemplate, &blog.PublishedAt, &blog.UpdatedAt)
 	if err != nil {
 		return BlogEntitty{}, err
 	}
 	blog.Category = category.String
+	blog.TitleImageTemplate = defaultTitleImageTemplate(blog.TitleImageTemplate)
 	return blog, nil
 }
 
 func scanBlogRow(row *sql.Row) (BlogEntitty, error) {
 	var blog BlogEntitty
 	var category sql.NullString
-	err := row.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.Status, &blog.PublishedAt, &blog.UpdatedAt)
+	err := row.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.Status, &blog.TitleImageTemplate, &blog.PublishedAt, &blog.UpdatedAt)
 	if err != nil {
 		return BlogEntitty{}, err
 	}
 	blog.Category = category.String
+	blog.TitleImageTemplate = defaultTitleImageTemplate(blog.TitleImageTemplate)
 	return blog, nil
 }
 
 func nullString(value string) any {
 	if strings.TrimSpace(value) == "" {
 		return nil
+	}
+	return value
+}
+
+func defaultTitleImageTemplate(value string) string {
+	if strings.TrimSpace(value) == "" {
+		return "diary"
 	}
 	return value
 }

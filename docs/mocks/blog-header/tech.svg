@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img"><defs>
+<linearGradient id="tech-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#070b12"/><stop offset="58%" stop-color="#101827"/><stop offset="100%" stop-color="#041416"/></linearGradient>
+<pattern id="tech-grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M 48 0 L 0 0 0 48" fill="none" stroke="#1ce7ff" stroke-opacity="0.16" stroke-width="1"/></pattern>
+<pattern id="tech-dots" width="34" height="34" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="#26efff" opacity="0.42"/></pattern>
+<filter id="soft-glow"><feGaussianBlur stdDeviation="6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="tech-noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="8"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0.13"/></feComponentTransfer></filter>
+</defs>
+<rect width="1200" height="675" fill="url(#tech-bg)"/>
+<rect width="1200" height="675" fill="url(#tech-grid)"/>
+<rect width="1200" height="675" filter="url(#tech-noise)" opacity="0.65"/>
+<rect x="84" y="110" width="520" height="334" fill="none" stroke="#25dfff" stroke-opacity="0.16"/>
+<rect x="850" y="150" width="244" height="372" fill="none" stroke="#25dfff" stroke-opacity="0.14"/>
+<rect x="982" y="44" width="154" height="154" fill="url(#tech-dots)" opacity="0.9"/>
+<rect x="330" y="472" width="238" height="106" fill="url(#tech-dots)" opacity="0.52"/>
+<g opacity="0.3" stroke="#71ffb5" stroke-width="2"><path d="M104 136h260M104 184h170M104 232h316M824 122h218M860 174h248M786 226h146"/></g>
+<g opacity="0.22" stroke="#8af7ff"><path d="M0 96h1200M0 288h1200M0 480h1200M208 0v675M992 0v675"/></g>
+<rect x="28" y="34" width="1144" height="607" rx="18" fill="#07101b" fill-opacity="0.44" stroke="#4cecff" stroke-opacity="0.45"/>
+<circle cx="1030" cy="143" r="54" fill="#20f7ff" opacity="0.2" filter="url(#soft-glow)"/>
+<circle cx="940" cy="514" r="72" fill="#45ff9c" opacity="0.14" filter="url(#soft-glow)"/>
+<path d="M612 486h140l64-106h128l52-86h156" fill="none" stroke="#25dfff" stroke-width="3" opacity="0.75"/>
+<g fill="#25dfff" stroke="#07101b" stroke-width="4"><circle cx="612" cy="486" r="8"/><circle cx="752" cy="486" r="12"/><circle cx="944" cy="380" r="9"/></g>
+<g fill="none" stroke="#63f6ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M88 76l20 20-20 20"/>
+<path d="M126 116h28"/>
+</g><g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="56" text-anchor="start" fill="#f3ffff"><text x="154" y="294">静的サイトジェネレータで育てる個人</text><text x="154" y="366">ブログ運営と日々の開発記録</text></g></svg>

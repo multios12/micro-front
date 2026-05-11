@@ -142,7 +142,7 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 		t.Fatalf("Run blogs: %v", err)
 	}
 
-	for _, path := range []string{filepath.Join(uc.PublishDir, "index.html"), filepath.Join(uc.PublishDir, "blogs", "index.html"), filepath.Join(uc.PublishDir, "blogs", "page2.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "index.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "page2.html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog1.ID, 10)+".html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog2.ID, 10)+".html"), filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".png"), filepath.Join(uc.PublishDir, "robots.txt"), filepath.Join(uc.PublishDir, "sitemap.xml")} {
+	for _, path := range []string{filepath.Join(uc.PublishDir, "index.html"), filepath.Join(uc.PublishDir, "blogs", "index.html"), filepath.Join(uc.PublishDir, "blogs", "page2.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "index.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "page2.html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog1.ID, 10)+".html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog2.ID, 10)+".html"), filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".png"), filepath.Join(uc.PublishDir, "assets", "title-images", strconv.FormatInt(blog1.ID, 10)+".svg"), filepath.Join(uc.PublishDir, "assets", "title-images", strconv.FormatInt(blog2.ID, 10)+".svg"), filepath.Join(uc.PublishDir, "robots.txt"), filepath.Join(uc.PublishDir, "sitemap.xml")} {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("expected file %s: %v", path, err)
 		}
@@ -155,7 +155,7 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	if !strings.Contains(string(topPage), "second-post") {
 		t.Fatalf("top page was not regenerated with latest post:\n%s", topPage)
 	}
-	for _, want := range []string{"href=\"./blogs/index.html\"", "href=\"./about/index.html\"", "href=\"./blogs/2.html\"", "href=\"./blogs/category/news/index.html\"", "category-tree"} {
+	for _, want := range []string{"href=\"./blogs/index.html\"", "href=\"./about/index.html\"", "href=\"./blogs/2.html\"", "href=\"./blogs/category/news/index.html\"", "src=\"./assets/title-images/2.svg\"", "category-tree"} {
 		if !strings.Contains(string(topPage), want) {
 			t.Fatalf("top page missing %q:\n%s", want, topPage)
 		}
@@ -167,6 +167,9 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	}
 	if !strings.Contains(string(blogPage), "../assets/images/"+strconv.FormatInt(blog1.ID, 10)+"/"+strconv.FormatInt(img.ID, 10)+".png") {
 		t.Fatalf("blog page did not rewrite image URL:\n%s", blogPage)
+	}
+	if !strings.Contains(string(blogPage), "src=\"../assets/title-images/"+strconv.FormatInt(blog1.ID, 10)+".svg\"") {
+		t.Fatalf("blog page did not reference title image:\n%s", blogPage)
 	}
 	if strings.Contains(string(blogPage), "/admin/images/") {
 		t.Fatalf("blog page still contains admin image URL:\n%s", blogPage)
@@ -252,7 +255,8 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 		t.Fatalf("PreviewBlog returned unexpected path: %q", blogPreview.URL)
 	}
 
-	sitePreview, _, err := uc.PreviewIndex(ctx, filepath.Join(dataDir, "preview"))
+	previewRoot := filepath.Join(dataDir, "preview")
+	sitePreview, _, err := uc.PreviewIndex(ctx, previewRoot)
 	if err != nil {
 		t.Fatalf("PreviewIndex: %v", err)
 	}
@@ -261,6 +265,11 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 	}
 	if !strings.HasPrefix(sitePreview.URL, "admin/preview/") {
 		t.Fatalf("PreviewIndex returned unexpected path: %q", sitePreview.URL)
+	}
+	sitePreviewRel := strings.TrimPrefix(sitePreview.URL, "admin/preview/")
+	sitePreviewDir := filepath.Join(previewRoot, filepath.Dir(filepath.FromSlash(sitePreviewRel)))
+	if _, err := os.Stat(filepath.Join(sitePreviewDir, "assets", "title-images", strconv.FormatInt(blog.ID, 10)+".svg")); err != nil {
+		t.Fatalf("PreviewIndex did not write title image asset: %v", err)
 	}
 
 	aboutPreview, _, err := uc.PreviewAbout(ctx, filepath.Join(dataDir, "preview"))

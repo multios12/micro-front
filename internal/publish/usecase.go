@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"micro-front/internal/store"
+	"micro-front/internal/titleimage"
 	"micro-front/pkg/markdown"
 )
 
@@ -166,7 +167,18 @@ func (uc Usecase) renderIndex(ctx context.Context) error {
 	if err := uc.renderIndexWithLimit(ctx, loadPublishLimit("TOP_PAGE_BLOG_LIMIT", 20)); err != nil {
 		return err
 	}
+	if err := uc.writeIndexTitleImageSVGs(ctx); err != nil {
+		return err
+	}
 	return uc.renderPublicMetadata(ctx)
+}
+
+func (uc Usecase) writeIndexTitleImageSVGs(ctx context.Context) error {
+	blogs, err := uc.Store.ListPublicBlogs(ctx)
+	if err != nil {
+		return err
+	}
+	return uc.writeTitleImageSVGs(limit(blogs, loadPublishLimit("TOP_PAGE_BLOG_LIMIT", 20)))
 }
 
 func (uc Usecase) renderIndexWithLimit(ctx context.Context, topLimit int) error {
@@ -210,6 +222,9 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 		if err := os.RemoveAll(filepath.Join(uc.PublishDir, "assets", "images")); err != nil {
 			return err
 		}
+		if err := os.RemoveAll(filepath.Join(uc.PublishDir, "assets", "title-images")); err != nil {
+			return err
+		}
 	}
 	if err := uc.renderIndexWithLimit(ctx, limits.topLimit); err != nil {
 		return err
@@ -218,8 +233,14 @@ func (uc Usecase) renderBlogs(ctx context.Context, blogID int64) error {
 		if err := uc.copyPublicImagesForBlog(ctx, blogID); err != nil {
 			return err
 		}
+		if err := uc.writeTitleImageSVGs(blogs); err != nil {
+			return err
+		}
 	} else {
 		if err := uc.copyPublicImagesForBlogs(ctx, blogs); err != nil {
+			return err
+		}
+		if err := uc.writeTitleImageSVGs(blogs); err != nil {
 			return err
 		}
 	}
@@ -306,16 +327,17 @@ func (uc Usecase) renderBlogDetail(ctx context.Context, id int64) error {
 		return err
 	}
 	pageFile := filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(id, 10)+".html"))
-	leadFigure, err := uc.renderLeadImageFigure(ctx, pageFile, blog.ID, blog.Title)
-	if err != nil {
-		return err
+	if blog.Title != "about" {
+		if err := uc.writeTitleImageSVG(blog); err != nil {
+			return err
+		}
 	}
 	breadcrumbItems := []PageBreadcrumb{{Label: "Home", URL: "../index.html"}, {Label: "Blogs", URL: "./index.html"}}
 	if blog.Category != "" {
 		breadcrumbItems = append(breadcrumbItems, PageBreadcrumb{Label: blog.Category, URL: "./category/" + categorySlug(blog.Category) + "/index.html"})
 	}
 	breadcrumbItems = append(breadcrumbItems, PageBreadcrumb{Label: blog.Title})
-	body, err := renderBlogDocument(BlogDetailPageData{Breadcrumbs: breadcrumbItems, Title: blog.Title, Meta: template.HTML(blogMetaHTML(pageFile, blog)), PublishedAt: blog.PublishedAt, LeadFigure: template.HTML(leadFigure), Content: template.HTML(publicMarkdownHTML(pageFile, blog.ID, blog.Content))})
+	body, err := renderBlogDocument(BlogDetailPageData{Breadcrumbs: breadcrumbItems, Title: blog.Title, Meta: template.HTML(blogMetaHTML(pageFile, blog)), PublishedAt: blog.PublishedAt, TitleImageURL: titleImageURL(pageFile, blog.ID), Content: template.HTML(publicMarkdownHTML(pageFile, blog.ID, blog.Content))})
 	if err != nil {
 		return err
 	}
@@ -349,6 +371,9 @@ func (uc Usecase) renderBlogRelatedPages(ctx context.Context, blogID int64) erro
 		return err
 	}
 	if err := uc.renderBlogListPages(ctx, settings, blogs, limits.blogsPerPage); err != nil {
+		return err
+	}
+	if err := uc.writeTitleImageSVGs(blogs); err != nil {
 		return err
 	}
 	targetBlog, err := uc.Store.GetBlog(ctx, blogID)
@@ -607,14 +632,14 @@ func renderBlogDocument(data BlogDetailPageData) (string, error) {
 func buildBlogListCards(pageFile string, blogs []store.BlogEntitty) []BlogListCard {
 	cards := make([]BlogListCard, 0, len(blogs))
 	for _, blog := range blogs {
-		cards = append(cards, BlogListCard{Title: blog.Title, Summary: blog.Summary, Category: blog.Category, PublishedAt: blog.PublishedAt, URL: relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html")))})
+		cards = append(cards, BlogListCard{Title: blog.Title, Summary: blog.Summary, Category: blog.Category, PublishedAt: blog.PublishedAt, URL: relURL(pageFile, filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html"))), TitleImageURL: titleImageURL(pageFile, blog.ID)})
 	}
 	return cards
 }
 func buildIndexBlogCards(blogs []store.BlogEntitty) []IndexPostCard {
 	cards := make([]IndexPostCard, 0, len(blogs))
 	for _, blog := range blogs {
-		cards = append(cards, IndexPostCard{Title: blog.Title, Summary: blog.Summary, Category: blog.Category, PublishedAt: blog.PublishedAt, URL: relURL("index.html", filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html")))})
+		cards = append(cards, IndexPostCard{Title: blog.Title, Summary: blog.Summary, Category: blog.Category, PublishedAt: blog.PublishedAt, URL: relURL("index.html", filepath.ToSlash(filepath.Join("blogs", strconv.FormatInt(blog.ID, 10)+".html"))), TitleImageURL: titleImageURL("index.html", blog.ID)})
 	}
 	return cards
 }
@@ -933,6 +958,29 @@ func (uc Usecase) copyPublicImagesForBlog(ctx context.Context, blogID int64) err
 	return nil
 }
 
+func (uc Usecase) writeTitleImageSVGs(blogs []store.BlogEntitty) error {
+	for _, blog := range blogs {
+		if err := uc.writeTitleImageSVG(blog); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (uc Usecase) writeTitleImageSVG(blog store.BlogEntitty) error {
+	if blog.Title == "about" {
+		return nil
+	}
+	svg, err := titleimage.GenerateSVG(titleimage.GenerateInput{
+		Title:    blog.Title,
+		Template: titleimage.TemplateID(blog.TitleImageTemplate),
+	})
+	if err != nil {
+		return err
+	}
+	return writeFile(filepath.Join(uc.PublishDir, "assets", "title-images", strconv.FormatInt(blog.ID, 10)+".svg"), svg)
+}
+
 func (uc Usecase) cleanupBlogListPages() error {
 	blogDir := filepath.Join(uc.PublishDir, "blogs")
 	if err := os.Remove(filepath.Join(blogDir, "index.html")); err != nil && !os.IsNotExist(err) {
@@ -956,6 +1004,10 @@ func (uc Usecase) cleanupCategoryPages(category string) error {
 }
 
 func esc(value string) string { return html.EscapeString(value) }
+
+func titleImageURL(pageFile string, blogID int64) string {
+	return relURL(pageFile, filepath.ToSlash(filepath.Join("assets", "title-images", strconv.FormatInt(blogID, 10)+".svg")))
+}
 
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)

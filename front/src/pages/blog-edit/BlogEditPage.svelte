@@ -6,6 +6,7 @@
   import FormActionButtons from "../../components/FormActionButtons.svelte";
   import ImageUploader from "../../components/ImageUploader.svelte";
   import MDInput from "../../components/MDInput/index.svelte";
+  import TitleImageTemplateSelector from "../../components/TitleImageTemplateSelector.svelte";
   import Toast from "../../components/Toast.svelte";
   import {
     createBlogEditLabels,
@@ -22,10 +23,12 @@
     fetchBlogDetail,
     fetchBlogImages,
     extractValidationFields,
+    fetchTitleImageTemplates,
     publish,
     uploadBlogImage,
     updateBlog,
   } from "../../lib/admin-api";
+  import type { TitleImageTemplateApiItem } from "../../lib/admin-api";
   import { refreshBlogCount } from "../../lib/blog-count";
 
   export let blogId = "new";
@@ -52,6 +55,8 @@
   let updatedAt = "";
   let content = "";
   let status: "public" | "private" = "private";
+  let titleImageTemplate = "diary";
+  let titleImageTemplates: TitleImageTemplateApiItem[] = [];
   let headerTitle = "";
   let cancelHref = "";
   let showPublishButton = false;
@@ -107,6 +112,15 @@
     void loadBlog();
   }
 
+  const loadTitleImageTemplates = async () => {
+    try {
+      const resp = await fetchTitleImageTemplates();
+      titleImageTemplates = resp.items;
+    } catch {
+      titleImageTemplates = [];
+    }
+  };
+
   const loadBlog = async () => {
     scrollToTop();
     loading = true;
@@ -123,6 +137,7 @@
         updatedAt = getTodayInputValue();
         content = "";
         status = "private";
+        titleImageTemplate = "diary";
         blogImages = [];
         return;
       }
@@ -152,6 +167,7 @@
         updatedAt = "";
         content = "";
         status = "private";
+        titleImageTemplate = "diary";
         blogImages = [];
         return;
       }
@@ -170,6 +186,7 @@
     updatedAt = detail.updated_at;
     content = detail.content;
     status = detail.status;
+    titleImageTemplate = detail.title_image_template || "diary";
   };
 
   const buildBlogPayload = (nextStatus: "public" | "private" = status) => ({
@@ -177,6 +194,7 @@
     content,
     category: mode === "about" ? "" : category,
     status: nextStatus,
+    title_image_template: mode === "about" ? "diary" : titleImageTemplate || "diary",
     published_at: updatedAt,
   });
 
@@ -419,6 +437,7 @@
 
   onMount(() => {
     scrollToTop();
+    void loadTitleImageTemplates();
   });
 </script>
 
@@ -524,6 +543,15 @@
             <p class="admin-error-message">{validationFields.published_at}</p>
           {/if}
         </div>
+      </div>
+
+      <div class="admin-field">
+        <span class="admin-label">タイトル画像テンプレート</span>
+        <TitleImageTemplateSelector
+          templates={titleImageTemplates}
+          bind:value={titleImageTemplate}
+          error={validationFields.title_image_template ?? ""}
+        />
       </div>
     {/if}
 

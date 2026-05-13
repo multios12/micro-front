@@ -12,6 +12,7 @@ const (
 
 type GenerateInput struct {
 	Title    string
+	Category string
 	Template TemplateID
 }
 

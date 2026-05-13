@@ -120,6 +120,7 @@ func runSample(_ context.Context, args []string) error {
 	fs.SetOutput(log.Writer())
 	outputDir := fs.String("output-dir", "docs/mocks/blog-header", "sample SVG output directory")
 	title := fs.String("title", "ブログタイトル画像ジェネレータ", "sample title")
+	category := fs.String("category", "Tech", "sample category")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -130,6 +131,7 @@ func runSample(_ context.Context, args []string) error {
 	for _, tmpl := range titleimage.ListTemplates() {
 		svg, err := titleimage.GenerateSVG(titleimage.GenerateInput{
 			Title:    *title,
+			Category: *category,
 			Template: tmpl.ID,
 		})
 		if err != nil {

@@ -40,6 +40,15 @@ type titleLayout struct {
 	MaxUnits   int
 }
 
+type categoryLayout struct {
+	X          int
+	Y          int
+	Fill       string
+	Opacity    string
+	FontFamily string
+	MaxUnits   int
+}
+
 const titleTextScale = 1.5
 
 func ListTemplates() []Template {
@@ -67,19 +76,19 @@ func GenerateSVG(input GenerateInput) (string, error) {
 
 	switch input.Template {
 	case TemplateTech:
-		return renderTech(input.Title), nil
+		return renderTech(input.Title, input.Category), nil
 	case TemplateBook:
-		return renderBook(input.Title), nil
+		return renderBook(input.Title, input.Category), nil
 	case TemplateDiary:
-		return renderDiary(input.Title), nil
+		return renderDiary(input.Title, input.Category), nil
 	case TemplateTravel:
-		return renderTravel(input.Title), nil
+		return renderTravel(input.Title, input.Category), nil
 	default:
 		return "", fmt.Errorf("%w: %s", ErrInvalidTemplate, input.Template)
 	}
 }
 
-func renderTech(title string) string {
+func renderTech(title, category string) string {
 	body := `<defs>
 <linearGradient id="tech-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#070b12"/><stop offset="58%" stop-color="#101827"/><stop offset="100%" stop-color="#041416"/></linearGradient>
 <pattern id="tech-grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M 48 0 L 0 0 0 48" fill="none" stroke="#1ce7ff" stroke-opacity="0.16" stroke-width="1"/></pattern>
@@ -105,10 +114,10 @@ func renderTech(title string) string {
 <path d="M88 76l20 20-20 20"/>
 <path d="M126 116h28"/>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 72, Anchor: "middle", Fill: "#f3ffff", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
+	return wrapSVG(body + renderCategory(category, categoryLayout{X: 178, Y: 96, Fill: "#9af8ff", Opacity: "0.88", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 28}) + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 72, Anchor: "middle", Fill: "#f3ffff", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
-func renderBook(title string) string {
+func renderBook(title, category string) string {
 	body := `<defs>
 <radialGradient id="book-vignette" cx="50%" cy="44%" r="72%"><stop offset="0%" stop-color="#fff5dc"/><stop offset="68%" stop-color="#ead7b6"/><stop offset="100%" stop-color="#caa879"/></radialGradient>
 <pattern id="book-paper" width="56" height="56" patternUnits="userSpaceOnUse"><circle cx="8" cy="10" r="1.1" fill="#8a6b3f" opacity="0.16"/><circle cx="25" cy="21" r="0.9" fill="#31404a" opacity="0.08"/><circle cx="44" cy="35" r="1.4" fill="#9b7749" opacity="0.12"/><path d="M0 18 C14 14 28 22 56 16M0 43 C18 48 34 38 56 44" fill="none" stroke="#7c603d" stroke-opacity="0.08"/></pattern>
@@ -128,7 +137,7 @@ func renderBook(title string) string {
 <g font-family="Georgia, 'Times New Roman', serif" fill="#2f2720">
 <path d="M84 76c10-6 21-6 31 0v44c-10-6-21-6-31 0zM119 76c10-6 21-6 31 0v44c-10-6-21-6-31 0z" fill="#2f2720" opacity="0.86"/>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 78, Anchor: "middle", Fill: "#2f2720", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
+	return wrapSVG(body + renderCategory(category, categoryLayout{X: 170, Y: 98, Fill: "#2f2720", Opacity: "0.82", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 28}) + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 78, Anchor: "middle", Fill: "#2f2720", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
 func renderBookStackImage() string {
@@ -136,7 +145,7 @@ func renderBookStackImage() string {
 	return fmt.Sprintf(`<image href="data:image/png;base64,%s" x="732" y="208" width="386" height="276" opacity="0.36" preserveAspectRatio="xMidYMid meet"/>`, encoded)
 }
 
-func renderDiary(title string) string {
+func renderDiary(title, category string) string {
 	body := `<defs>
 <linearGradient id="diary-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d7e1e8"/><stop offset="46%" stop-color="#b9c6c8"/><stop offset="100%" stop-color="#d5dccf"/></linearGradient>
 <filter id="diary-blur"><feGaussianBlur stdDeviation="30"/></filter>
@@ -159,10 +168,10 @@ func renderDiary(title string) string {
 <g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fill="#5c5268">
 <path d="M84 116l30-30 18 18-30 30-27 8zM118 82l8-8c4-4 11-4 15 0l4 4c4 4 4 11 0 15l-8 8z" fill="#34404a" opacity="0.9"/>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 76, Anchor: "middle", Fill: "#202b33", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
+	return wrapSVG(body + renderCategory(category, categoryLayout{X: 158, Y: 108, Fill: "#202b33", Opacity: "0.78", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 28}) + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 76, Anchor: "middle", Fill: "#202b33", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
-func renderTravel(title string) string {
+func renderTravel(title, category string) string {
 	body := `<defs>
 <linearGradient id="travel-title-wash" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#f4efd9" stop-opacity="0.74"/><stop offset="58%" stop-color="#f4efd9" stop-opacity="0.36"/><stop offset="100%" stop-color="#f4efd9" stop-opacity="0"/></linearGradient>
 </defs>
@@ -173,7 +182,7 @@ func renderTravel(title string) string {
 <path d="M104 74c-15 0-27 12-27 27 0 22 27 51 27 51s27-29 27-51c0-15-12-27-27-27zm0 37c-7 0-12-5-12-12s5-12 12-12 12 5 12 12-5 12-12 12z" fill="#334d35"/>
 <text x="84" y="178" font-size="20" opacity="0.78">35.6895N 139.6917E</text>
 </g>`
-	return wrapSVG(body + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 74, Anchor: "middle", Fill: "#26332f", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
+	return wrapSVG(body + renderCategory(category, categoryLayout{X: 150, Y: 113, Fill: "#26332f", Opacity: "0.84", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 28}) + renderTitle(title, titleLayout{X: svgWidth / 2, Y: 330, LineHeight: 74, Anchor: "middle", Fill: "#26332f", FontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", MaxUnits: 46}))
 }
 
 func renderTravelMapImage() string {
@@ -183,6 +192,15 @@ func renderTravelMapImage() string {
 
 func wrapSVG(body string) string {
 	return fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" role="img">%s</svg>`, svgWidth, svgHeight, svgWidth, svgHeight, body)
+}
+
+func renderCategory(category string, layout categoryLayout) string {
+	category = strings.TrimSpace(category)
+	if category == "" {
+		return ""
+	}
+	category = ellipsizeText(category, layout.MaxUnits)
+	return fmt.Sprintf(`<text x="%d" y="%d" font-family="%s" font-size="60" font-weight="700" text-anchor="start" dominant-baseline="middle" fill="%s" opacity="%s">%s</text>`, layout.X, layout.Y, layout.FontFamily, layout.Fill, layout.Opacity, html.EscapeString(category))
 }
 
 func renderTitle(title string, layout titleLayout) string {
@@ -278,6 +296,17 @@ func displayUnits(text string) int {
 		units += runeUnits(r)
 	}
 	return units
+}
+
+func ellipsizeText(text string, maxUnits int) string {
+	if displayUnits(text) <= maxUnits {
+		return text
+	}
+	runes := []rune(strings.TrimSpace(text))
+	for displayUnits(string(runes))+3 > maxUnits && len(runes) > 0 {
+		runes = runes[:len(runes)-1]
+	}
+	return strings.TrimSpace(string(runes)) + "..."
 }
 
 func runeUnits(r rune) int {

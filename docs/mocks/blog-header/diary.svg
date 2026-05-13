@@ -19,4 +19,4 @@
 <rect x="24" y="30" width="1152" height="615" rx="16" fill="#f5f6ef" fill-opacity="0.16" stroke="#eef2ec" stroke-opacity="0.65"/>
 <g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fill="#5c5268">
 <path d="M84 116l30-30 18 18-30 30-27 8zM118 82l8-8c4-4 11-4 15 0l4 4c4 4 4 11 0 15l-8 8z" fill="#34404a" opacity="0.9"/>
-</g><g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="84" text-anchor="middle" fill="#202b33"><text x="600" y="330">ブログタイトル画像ジェネレータ</text></g></svg>
+</g><text x="158" y="108" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="60" font-weight="700" text-anchor="start" dominant-baseline="middle" fill="#202b33" opacity="0.78">Tech</text><g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="84" text-anchor="middle" fill="#202b33"><text x="600" y="330">ブログタイトル画像ジェネレータ</text></g></svg>

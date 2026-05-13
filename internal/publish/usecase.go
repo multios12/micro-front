@@ -973,6 +973,7 @@ func (uc Usecase) writeTitleImageSVG(blog store.BlogEntitty) error {
 	}
 	svg, err := titleimage.GenerateSVG(titleimage.GenerateInput{
 		Title:    blog.Title,
+		Category: blog.Category,
 		Template: titleimage.TemplateID(blog.TitleImageTemplate),
 	})
 	if err != nil {

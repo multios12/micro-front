@@ -41,6 +41,41 @@ func TestGenerateSVG_EscapesTitle(t *testing.T) {
 	}
 }
 
+func TestGenerateSVG_RendersCategoryBesideIcon(t *testing.T) {
+	svg, err := GenerateSVG(GenerateInput{
+		Title:    "title",
+		Category: "Tech",
+		Template: TemplateTech,
+	})
+	if err != nil {
+		t.Fatalf("GenerateSVG: %v", err)
+	}
+	for _, want := range []string{`<text x="178" y="96"`, `dominant-baseline="middle"`, `>Tech</text>`} {
+		if !strings.Contains(svg, want) {
+			t.Fatalf("category svg missing %q:\n%s", want, svg)
+		}
+	}
+}
+
+func TestGenerateSVG_EscapesCategory(t *testing.T) {
+	svg, err := GenerateSVG(GenerateInput{
+		Title:    "title",
+		Category: `<script>&"'</script>`,
+		Template: TemplateDiary,
+	})
+	if err != nil {
+		t.Fatalf("GenerateSVG: %v", err)
+	}
+	for _, want := range []string{`&lt;script&gt;`, `&amp;`, `&#34;`, `&#39;`} {
+		if !strings.Contains(svg, want) {
+			t.Fatalf("escaped svg missing %q:\n%s", want, svg)
+		}
+	}
+	if strings.Contains(svg, `<script>`) || strings.Contains(svg, `"</script>`) {
+		t.Fatalf("svg contains unescaped category:\n%s", svg)
+	}
+}
+
 func TestGenerateSVG_InvalidTemplate(t *testing.T) {
 	_, err := GenerateSVG(GenerateInput{
 		Title:    "title",

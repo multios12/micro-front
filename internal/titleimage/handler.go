@@ -15,6 +15,7 @@ type templatesResponse struct {
 
 type previewRequest struct {
 	Title    string `json:"title"`
+	Category string `json:"category"`
 	Template string `json:"template"`
 }
 
@@ -39,6 +40,7 @@ func (h Handler) handlePostPreview(w http.ResponseWriter, r *http.Request) {
 	}
 	svg, err := GenerateSVG(GenerateInput{
 		Title:    req.Title,
+		Category: req.Category,
 		Template: TemplateID(req.Template),
 	})
 	if err != nil {

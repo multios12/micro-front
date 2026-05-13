@@ -312,6 +312,7 @@ export async function fetchTitleImageTemplates(): Promise<TitleImageTemplatesApi
 
 export async function createTitleImagePreview(request: {
   title: string
+  category?: string
   template: string
 }): Promise<TitleImagePreviewApiResponse> {
   return requestJson<TitleImagePreviewApiResponse>(adminApiPath('title-image/preview'), {

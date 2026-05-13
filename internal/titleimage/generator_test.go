@@ -111,6 +111,32 @@ func TestGenerateSVG_SampleTitleUsesSameFontSize(t *testing.T) {
 	}
 }
 
+func TestGenerateSVG_LongTitleUses48pxFontSize(t *testing.T) {
+	svg, err := GenerateSVG(GenerateInput{
+		Title:    "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへ",
+		Template: TemplateDiary,
+	})
+	if err != nil {
+		t.Fatalf("GenerateSVG: %v", err)
+	}
+	if !strings.Contains(svg, `font-weight="700" font-size="48"`) {
+		t.Fatalf("long title font size should be 48px:\n%s", svg)
+	}
+}
+
+func TestGenerateSVG_28RuneTitleKeepsDefaultFontSize(t *testing.T) {
+	svg, err := GenerateSVG(GenerateInput{
+		Title:    "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふ",
+		Template: TemplateDiary,
+	})
+	if err != nil {
+		t.Fatalf("GenerateSVG: %v", err)
+	}
+	if !strings.Contains(svg, `font-weight="700" font-size="84"`) {
+		t.Fatalf("28 rune title font size should stay 84px:\n%s", svg)
+	}
+}
+
 func TestGenerateSVG_TitleIsCenteredHorizontally(t *testing.T) {
 	for _, tmpl := range ListTemplates() {
 		svg, err := GenerateSVG(GenerateInput{

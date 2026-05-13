@@ -50,6 +50,8 @@ type categoryLayout struct {
 }
 
 const titleTextScale = 1.5
+const longTitleRuneThreshold = 28
+const longTitleFontSize = 48
 
 func ListTemplates() []Template {
 	items := make([]Template, len(templates))
@@ -233,6 +235,14 @@ func fitTitle(title string, maxUnits int) ([]string, int) {
 	if title == "" {
 		title = "Untitled"
 	}
+	if len([]rune(title)) > longTitleRuneThreshold {
+		units := titleUnitsForFontSize(maxUnits, longTitleFontSize)
+		lines := wrapRunes(title, units, 3)
+		if strings.Join(lines, "") != strings.Join(wrapRunes(title, units, 99), "") {
+			lines = ellipsizeLines(lines, units)
+		}
+		return lines, longTitleFontSize
+	}
 	steps := []struct {
 		size  int
 		units int
@@ -250,6 +260,15 @@ func fitTitle(title string, maxUnits int) ([]string, int) {
 	}
 	minUnits := maxUnits + scaledTitleUnits(12)
 	return ellipsizeLines(wrapRunes(title, minUnits, 3), minUnits), scaledTitleSize(38)
+}
+
+func titleUnitsForFontSize(maxUnits, fontSize int) int {
+	baseFontSize := scaledTitleSize(56)
+	units := int(float64(maxUnits)*float64(baseFontSize)/float64(fontSize) + 0.5)
+	if units < maxUnits {
+		return maxUnits
+	}
+	return units
 }
 
 func wrapRunes(text string, maxUnits, maxLines int) []string {

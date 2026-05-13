@@ -15,8 +15,8 @@ var ErrInvalidTemplate = errors.New("invalid title image template")
 //go:embed assets/book-stack.png
 var bookStackPNG []byte
 
-//go:embed assets/travel-map.png
-var travelMapPNG []byte
+//go:embed assets/travel-map.webp
+var travelMapWebP []byte
 
 const (
 	svgWidth  = 1200
@@ -24,7 +24,7 @@ const (
 )
 
 var templates = []Template{
-	{ID: TemplateTech, Label: "Tech", Description: "無機質・発光。ターミナルをイメージしたもの"},
+	{ID: TemplateTech, Label: "Tech", Description: "ターミナル"},
 	{ID: TemplateBook, Label: "Book", Description: "紙・古書"},
 	{ID: TemplateDiary, Label: "Diary", Description: "淡い抽象"},
 	{ID: TemplateTravel, Label: "Travel", Description: "地図・等高線"},
@@ -188,8 +188,8 @@ func renderTravel(title, category string) string {
 }
 
 func renderTravelMapImage() string {
-	encoded := base64.StdEncoding.EncodeToString(travelMapPNG)
-	return fmt.Sprintf(`<image href="data:image/png;base64,%s" x="0" y="0" width="1200" height="675" preserveAspectRatio="xMidYMid slice"/>`, encoded)
+	encoded := base64.StdEncoding.EncodeToString(travelMapWebP)
+	return fmt.Sprintf(`<image href="data:image/webp;base64,%s" x="0" y="0" width="1200" height="675" preserveAspectRatio="xMidYMid slice"/>`, encoded)
 }
 
 func wrapSVG(body string) string {

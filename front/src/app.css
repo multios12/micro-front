@@ -288,7 +288,7 @@
   }
 
   .admin-modal {
-    @apply fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 p-4 backdrop-blur;
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur;
   }
 
   .admin-modal:target {

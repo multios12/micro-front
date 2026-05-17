@@ -24,6 +24,11 @@
     value?: string;
     error?: string;
     imageUploadPath?: string;
+    imageInsertRequest?: {
+      id: number;
+      imageUrl: string;
+      altText?: string;
+    } | null;
     onTextChange?: (value: string) => void;
     onImageUploaded?: (imageUrl: string) => void | Promise<void>;
   }
@@ -33,6 +38,7 @@
     value = $bindable(""),
     error = "",
     imageUploadPath = "",
+    imageInsertRequest = null,
     onTextChange,
     onImageUploaded,
   }: Props = $props();
@@ -51,6 +57,7 @@
   let imageError = $state("");
   let isImageUploading = $state(false);
   let pendingImageCursor = $state(0);
+  let lastHandledImageInsertRequestId = $state(0);
 
   const handleInput = (event: Event) => {
     const target = event.currentTarget as HTMLTextAreaElement;
@@ -453,6 +460,34 @@
     });
   };
 
+  const insertImageMarkdownAtCursor = (
+    imageUrl: string,
+    altText?: string,
+  ) => {
+    if (textarea === null) {
+      return;
+    }
+
+    const rawValue = textarea.value;
+    const cursor = pendingImageCursor;
+    const imageMarkdown = `![${altText?.trim() || "image"}](${imageUrl})`;
+    const nextValue =
+      rawValue.slice(0, cursor) + imageMarkdown + rawValue.slice(cursor);
+    const nextCursor = cursor + imageMarkdown.length;
+
+    updateValue(nextValue);
+
+    requestAnimationFrame(() => {
+      if (textarea === null) {
+        return;
+      }
+
+      textarea.focus();
+      textarea.setSelectionRange(nextCursor, nextCursor);
+      syncToolbarState(textarea);
+    });
+  };
+
   const insertCarryOverMarker = () => {
     if (textarea === null) {
       return;
@@ -554,9 +589,25 @@
   };
 
   const syncToolbarState = (target: HTMLTextAreaElement) => {
+    pendingImageCursor = target.selectionStart;
     syncParagraphWithCursor(target);
     syncInlineState(target);
   };
+
+  $effect(() => {
+    if (imageInsertRequest === null) {
+      return;
+    }
+    if (imageInsertRequest.id === lastHandledImageInsertRequestId) {
+      return;
+    }
+
+    lastHandledImageInsertRequestId = imageInsertRequest.id;
+    insertImageMarkdownAtCursor(
+      imageInsertRequest.imageUrl,
+      imageInsertRequest.altText,
+    );
+  });
 
 </script>
 

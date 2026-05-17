@@ -36,11 +36,20 @@
     todayLocalDate,
   } from "../../lib/date-format";
 
+  type BlogImageItem = {
+    id: number;
+    label: string;
+    imageUrl: string;
+    displayUrl: string;
+    altText?: string;
+  };
+
   export let blogId = "new";
   $: mode = resolveBlogEditMode(blogId);
   $: labels = createBlogEditLabels(blogId);
 
   let deleteOpen = false;
+  let imageDeleteOpen = false;
   let loading = true;
   let saving = false;
   let publishing = false;
@@ -68,14 +77,18 @@
   let showDeleteButton = false;
   let imageNote = "";
   let deleteMessage = "";
+  let imageDeleteMessage = "";
   let lastLoadedBlogId = "";
-  let blogImages: Array<{
-    id: number;
-    label: string;
-    imageUrl: string;
-    displayUrl: string;
-    altText?: string;
-  }> = [];
+  let imageDeleteTarget: BlogImageItem | null = null;
+  let imageInsertRequest:
+    | {
+        id: number;
+        imageUrl: string;
+        altText?: string;
+      }
+    | null = null;
+  let imageInsertRequestSeq = 0;
+  let blogImages: BlogImageItem[] = [];
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -98,6 +111,24 @@
       displayUrl: image.displayUrl,
       altText: image.alt_text,
     }));
+  const getMarkdownImageRefs = (markdown: string) => {
+    const pattern =
+      /!\[[^\]]*]\((?:\/admin\/images\/)?(\d+)\/(\d+)\.png(?:\s+[^)]*)?\)/g;
+
+    return [...markdown.matchAll(pattern)].map((match) => ({
+      blogId: Number(match[1]),
+      imageId: Number(match[2]),
+      path: `${match[1]}/${match[2]}.png`,
+    }));
+  };
+  const isMarkdownImageReferenced = (
+    markdown: string,
+    blogId: number,
+    imageId: number,
+  ) =>
+    getMarkdownImageRefs(markdown).some(
+      (ref) => ref.blogId === blogId && ref.imageId === imageId,
+    );
 
   $: headerTitle = labels.headerTitle;
   $: cancelHref = labels.cancelHref;
@@ -124,6 +155,7 @@
     loading = true;
     validationFields = {};
     toastOpen = false;
+    imageInsertRequest = null;
     let targetId = Number.NaN;
 
     try {
@@ -239,7 +271,7 @@
     }
   };
 
-  const handleImageDelete = async (imageId: number) => {
+  const deleteImage = async (imageId: number) => {
     if (resolvedBlogId === null) {
       scrollToTop();
       showErrorToast("画像を保存するためには、一度記事を保存してください。");
@@ -263,6 +295,24 @@
         err instanceof Error ? err.message : "画像の削除に失敗しました",
       );
     }
+  };
+
+  const handleImageDelete = async (item: BlogImageItem) => {
+    if (resolvedBlogId === null) {
+      scrollToTop();
+      showErrorToast("画像を保存するためには、一度記事を保存してください。");
+      return;
+    }
+
+    if (isMarkdownImageReferenced(content, resolvedBlogId, item.id)) {
+      imageDeleteTarget = item;
+      imageDeleteMessage =
+        "本文で使用されている画像です。削除すると表示できなくなります。削除しますか？";
+      imageDeleteOpen = true;
+      return;
+    }
+
+    await deleteImage(item.id);
   };
 
   const copyTextToClipboard = async (text: string) => {
@@ -307,6 +357,39 @@
     }
   };
 
+  const handleImageInsert = (item: {
+    id: number;
+    imageUrl: string;
+    altText?: string;
+  }) => {
+    if (resolvedBlogId === null) {
+      return;
+    }
+
+    imageInsertRequest = {
+      id: ++imageInsertRequestSeq,
+      imageUrl: `${resolvedBlogId}/${item.id}.png`,
+      altText: item.altText,
+    };
+  };
+
+  const findMissingMarkdownImages = (markdown: string, blogId: number) => {
+    const existingImageIds = new Set(blogImages.map((image) => image.id));
+    const missing = new Set<string>();
+
+    for (const ref of getMarkdownImageRefs(markdown)) {
+      if (ref.blogId !== blogId) {
+        continue;
+      }
+
+      if (!existingImageIds.has(ref.imageId)) {
+        missing.add(ref.path);
+      }
+    }
+
+    return [...missing];
+  };
+
   const saveBlog = async () => {
     scrollToTop();
     saving = true;
@@ -328,7 +411,15 @@
         void refreshBlogCount();
       }
 
-      messageTone = "success";
+      const missingImages = findMissingMarkdownImages(content, saved.id);
+      if (missingImages.length > 0) {
+        messageTone = "warning";
+        message = `本文で参照している画像が見つかりません: ${missingImages.join(", ")}`;
+      } else {
+        message = "";
+        messageTone = "success";
+      }
+
       toastTitle = "保存完了";
       toastMessage =
         mode === "new" ? "記事を作成しました。" : "記事を保存しました。";
@@ -428,9 +519,28 @@
     }
   };
 
+  const confirmImageDelete = async () => {
+    if (imageDeleteTarget === null) {
+      imageDeleteOpen = false;
+      return;
+    }
+
+    const target = imageDeleteTarget;
+    imageDeleteOpen = false;
+    imageDeleteTarget = null;
+    imageDeleteMessage = "";
+    await deleteImage(target.id);
+  };
+
   const openDeleteDialog = () => {
     scrollToTop();
     deleteOpen = true;
+  };
+
+  const closeImageDeleteDialog = () => {
+    imageDeleteOpen = false;
+    imageDeleteTarget = null;
+    imageDeleteMessage = "";
   };
 
   onMount(() => {
@@ -463,7 +573,7 @@
 {#if message}
   <FlashMessage
     tone={messageTone}
-    title={messageTone === "success" ? "完了" : "エラー"}
+    title={messageTone === "success" ? "完了" : messageTone === "warning" ? "注意" : "エラー"}
     {message}
   />
 {/if}
@@ -560,6 +670,7 @@
         id="blog-content"
         bind:value={content}
         error={validationFields.content ?? ""}
+        imageInsertRequest={imageInsertRequest}
         imageUploadPath={getMarkdownImageUploadPath()}
         onImageUploaded={() => {
           if (resolvedBlogId !== null) {
@@ -577,8 +688,9 @@
       buttonLabel="画像を選択"
       items={blogImages}
       onCopyItem={(item) => handleImageCopy(item)}
+      onInsertItem={(item) => handleImageInsert(item)}
       onSelectFile={handleImageSelect}
-      onDeleteItem={(item) => handleImageDelete(item.id)}
+      onDeleteItem={(item) => handleImageDelete(item)}
     />
   </div>
 
@@ -630,6 +742,16 @@
     onConfirm={confirmDelete}
   />
 {/if}
+
+<ConfirmDialog
+  open={imageDeleteOpen}
+  title="画像削除確認"
+  message={imageDeleteMessage}
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  onCancel={closeImageDeleteDialog}
+  onConfirm={confirmImageDelete}
+/>
 
 <style>
   .blog-edit-images {

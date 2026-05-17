@@ -107,7 +107,7 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	if err := writeTestPNG(filepath.Join(dataDir, "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".png")); err != nil {
 		t.Fatalf("writeTestPNG: %v", err)
 	}
-	if _, err := s.UpdateBlog(ctx, blog1.ID, store.BlogEntitty{Title: blog1.Title, Content: "# First\n\n![photo](/admin/images/" + strconv.FormatInt(blog1.ID, 10) + "/" + strconv.FormatInt(img.ID, 10) + ".png)", Summary: blog1.Summary, Category: blog1.Category, Status: blog1.Status, PublishedAt: blog1.PublishedAt}); err != nil {
+	if _, err := s.UpdateBlog(ctx, blog1.ID, store.BlogEntitty{Title: blog1.Title, Content: "# First\n\n![photo](" + strconv.FormatInt(blog1.ID, 10) + "/" + strconv.FormatInt(img.ID, 10) + ".png)", Summary: blog1.Summary, Category: blog1.Category, Status: blog1.Status, PublishedAt: blog1.PublishedAt}); err != nil {
 		t.Fatalf("UpdateBlog 1: %v", err)
 	}
 	blog1, err = s.GetBlog(ctx, blog1.ID)
@@ -231,6 +231,23 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateBlog: %v", err)
 	}
+	img, err := s.CreateImage(ctx, blog.ID, "preview photo")
+	if err != nil {
+		t.Fatalf("CreateImage: %v", err)
+	}
+	if err := writeTestPNG(filepath.Join(dataDir, "images", strconv.FormatInt(blog.ID, 10), strconv.FormatInt(img.ID, 10)+".png")); err != nil {
+		t.Fatalf("writeTestPNG: %v", err)
+	}
+	if _, err := s.UpdateBlog(ctx, blog.ID, store.BlogEntitty{
+		Title:       blog.Title,
+		Content:     "# Preview\n\n![photo](" + strconv.FormatInt(blog.ID, 10) + "/" + strconv.FormatInt(img.ID, 10) + ".png)",
+		Summary:     blog.Summary,
+		Category:    blog.Category,
+		Status:      blog.Status,
+		PublishedAt: blog.PublishedAt,
+	}); err != nil {
+		t.Fatalf("UpdateBlog preview: %v", err)
+	}
 	if _, err := s.CreateBlog(ctx, store.BlogEntitty{
 		Title:       "about",
 		Content:     "## About",
@@ -243,8 +260,9 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 	}
 
 	uc := Usecase{Store: s, PublishDir: filepath.Join(dataDir, "public")}
+	previewRoot := filepath.Join(dataDir, "preview")
 
-	blogPreview, _, err := uc.PreviewBlog(ctx, blog.ID, filepath.Join(dataDir, "preview"))
+	blogPreview, _, err := uc.PreviewBlog(ctx, blog.ID, previewRoot)
 	if err != nil {
 		t.Fatalf("PreviewBlog: %v", err)
 	}
@@ -254,8 +272,16 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 	if !strings.HasPrefix(blogPreview.URL, "admin/preview/") {
 		t.Fatalf("PreviewBlog returned unexpected path: %q", blogPreview.URL)
 	}
+	blogPreviewRel := strings.TrimPrefix(blogPreview.URL, "admin/preview/")
+	blogPreviewFile := filepath.Join(previewRoot, filepath.FromSlash(blogPreviewRel))
+	blogPreviewBody, err := os.ReadFile(blogPreviewFile)
+	if err != nil {
+		t.Fatalf("ReadFile blog preview: %v", err)
+	}
+	if !strings.Contains(string(blogPreviewBody), "../assets/images/"+strconv.FormatInt(blog.ID, 10)+"/"+strconv.FormatInt(img.ID, 10)+".png") {
+		t.Fatalf("PreviewBlog did not rewrite image URL:\n%s", blogPreviewBody)
+	}
 
-	previewRoot := filepath.Join(dataDir, "preview")
 	sitePreview, _, err := uc.PreviewIndex(ctx, previewRoot)
 	if err != nil {
 		t.Fatalf("PreviewIndex: %v", err)

@@ -39,7 +39,7 @@ var listBodyTemplate = mustParseTemplate("blog-list", "templates/list.tmpl")
 var aboutBodyTemplate = mustParseTemplate("about", "templates/about.tmpl")
 var blogBodyTemplate = mustParseTemplate("blog", "templates/blog.tmpl")
 
-var publicImagePattern = regexp.MustCompile(`/admin/images/(\d+)/(\d+)\.png`)
+var publicImagePattern = regexp.MustCompile(`src="(?:/admin/images/)?(\d+)/(\d+)\.png"`)
 
 const previewTTL = 24 * time.Hour
 
@@ -810,8 +810,8 @@ func publicMarkdownHTML(pageFile string, blogID int64, content string) string {
 		if len(parts) != 3 {
 			return match
 		}
-		target := filepath.ToSlash(filepath.Join("assets", "images", strconv.FormatInt(blogID, 10), parts[2]+".png"))
-		return relURL(pageFile, target)
+		target := filepath.ToSlash(filepath.Join("assets", "images", parts[1], parts[2]+".png"))
+		return `src="` + relURL(pageFile, target) + `"`
 	})
 }
 

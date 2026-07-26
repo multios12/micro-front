@@ -69,6 +69,7 @@ func (s *Store) initSchema() error {
 			summary TEXT NOT NULL,
 			category TEXT,
 			status TEXT NOT NULL DEFAULT 'private' CHECK (status IN ('public', 'private')),
+			title_image_template TEXT NOT NULL DEFAULT 'diary',
 			published_at TEXT NOT NULL,
 			updated_at TEXT NOT NULL
 		)`,
@@ -96,6 +97,9 @@ func (s *Store) initSchema() error {
 
 	if _, err := s.DB.Exec(`ALTER TABLE site ADD COLUMN site_url TEXT NOT NULL DEFAULT ''`); err != nil && !strings.Contains(err.Error(), "duplicate column name") {
 		return fmt.Errorf("migrate site schema: %w", err)
+	}
+	if _, err := s.DB.Exec(`ALTER TABLE blogs ADD COLUMN title_image_template TEXT NOT NULL DEFAULT 'diary'`); err != nil && !strings.Contains(err.Error(), "duplicate column name") {
+		return fmt.Errorf("migrate blogs schema: %w", err)
 	}
 
 	_, err := s.DB.Exec(`

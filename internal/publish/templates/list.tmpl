@@ -1,11 +1,14 @@
 {{define "blog-card"}}
-<a class="post-card post-card-link" href="{{.URL}}" aria-label="{{.Title}}を開く">
-  {{if .Category}}
-  <p class="meta">{{.Category}}</p>
-  {{end}}
-  <h3>{{.Title}}</h3>
-  <p>{{.Summary}}</p>
-  <p class="meta">{{dateOnly .PublishedAt}}</p>
+<a class="post-card post-card-link blog-list-card" href="{{.URL}}" aria-label="{{.Title}}を開く">
+  <div class="blog-list-card-body">
+    {{if .Category}}
+    <p class="meta">{{.Category}}</p>
+    {{end}}
+    <h3>{{.Title}}</h3>
+    <p>{{.Summary}}</p>
+    <p class="meta">{{dateOnly .PublishedAt}}</p>
+  </div>
+  {{if .TitleImageURL}}<img class="title-image-thumb blog-list-card-image" src="{{.TitleImageURL}}" alt="" loading="lazy">{{end}}
 </a>
 {{end}}
 

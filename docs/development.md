@@ -102,8 +102,7 @@ GOCACHE=/tmp/gocache GOMODCACHE=/tmp/gomodcache go test ./...
 1. `main` ブランチに必要な変更をマージします
 1. バージョンタグを作成して push します
    ```sh
-   git tag v0.7.0
-   git push origin v0.7.0
+   git tag -a v0.8.5 -m ''; git push origin --tags
    ```
 1. GitHub の Releases ページで、Actions が作成したリリース資材を確認します
 

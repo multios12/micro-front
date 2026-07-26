@@ -11,13 +11,13 @@
   {{- end -}}
 </nav>
 {{end}}
+{{if .TitleImageURL}}<img class="title-image-hero" src="{{.TitleImageURL}}" alt="" loading="eager">{{end}}
 <section class="blogs-intro">
     <span class="kicker list-kicker">{{.Meta}}</span>
     <h2>{{.Title}}</h2>
     {{if .PublishedAt}}<p class="meta">{{dateOnly .PublishedAt}}</p>{{end}}
 </section>
 <article class="section post-detail">
-  {{if .LeadFigure}}{{.LeadFigure}}{{end}}
   <div class="content">{{.Content}}</div>
 </article>
 {{end}}

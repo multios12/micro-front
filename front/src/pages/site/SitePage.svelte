@@ -13,7 +13,7 @@
     updateSiteSettings,
     type SiteApiResponse,
   } from "../../lib/admin-api";
-  import { siteTitle as siteTitleStore } from "../../lib/site-title";
+  import { siteTitle as siteTitleStore, siteUrl as siteUrlStore } from "../../lib/site-title";
   import {
     addSiteTab,
     buildSiteUpdateRequest,
@@ -110,6 +110,7 @@
       );
       applySite(saved);
       siteTitleStore.set(saved.site_title || "micro-front");
+      siteUrlStore.set(saved.site_url || "");
       messageTone = "success";
       toastTitle = "保存完了";
       toastMessage = "サイト設定を保存しました。";
@@ -151,7 +152,7 @@
 
     try {
       const preview = await createSitePreview();
-      previewWindow.location.href = preview.url;
+      previewWindow.location.href = preview.displayUrl;
       messageTone = "success";
       toastTitle = "プレビュー生成";
       toastMessage = "プレビューを新しいタブで開きました。";

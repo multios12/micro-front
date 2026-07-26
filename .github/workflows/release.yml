@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24.15.0"
           cache: yarn
@@ -32,7 +32,7 @@ jobs:
         run: yarn build
 
       - name: Upload admin page artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: admin-html
           path: internal/web/admin.html
@@ -61,10 +61,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download admin page artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: admin-html
           path: internal/web
@@ -112,7 +112,7 @@ jobs:
           fi
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: micro-front-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/micro-front-${{ matrix.goos }}-${{ matrix.goarch }}.${{ matrix.archive_ext }}
@@ -124,7 +124,7 @@ jobs:
     needs: build
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: release-assets
 

@@ -6,6 +6,7 @@
   import FormActionButtons from "../../components/FormActionButtons.svelte";
   import ImageUploader from "../../components/ImageUploader.svelte";
   import MDInput from "../../components/MDInput/index.svelte";
+  import TitleImageTemplateSelector from "../../components/TitleImageTemplateSelector.svelte";
   import Toast from "../../components/Toast.svelte";
   import {
     createBlogEditLabels,
@@ -18,20 +19,37 @@
     deleteBlog,
     deleteBlogImage,
     ApiError,
+    blogImageUploadPath,
     fetchBlogDetail,
     fetchBlogImages,
     extractValidationFields,
+    fetchTitleImageTemplates,
     publish,
     uploadBlogImage,
     updateBlog,
   } from "../../lib/admin-api";
+  import type { TitleImageTemplateApiItem } from "../../lib/admin-api";
   import { refreshBlogCount } from "../../lib/blog-count";
+  import {
+    formatPublishedDate,
+    normalizePublishedDateForSave,
+    todayLocalDate,
+  } from "../../lib/date-format";
+
+  type BlogImageItem = {
+    id: number;
+    label: string;
+    imageUrl: string;
+    displayUrl: string;
+    altText?: string;
+  };
 
   export let blogId = "new";
   $: mode = resolveBlogEditMode(blogId);
   $: labels = createBlogEditLabels(blogId);
 
   let deleteOpen = false;
+  let imageDeleteOpen = false;
   let loading = true;
   let saving = false;
   let publishing = false;
@@ -48,30 +66,30 @@
   let articleId = "";
   let title = "";
   let category = "";
-  let updatedAt = "";
+  let publishedAt = "";
   let content = "";
   let status: "public" | "private" = "private";
+  let titleImageTemplate = "diary";
+  let titleImageTemplates: TitleImageTemplateApiItem[] = [];
   let headerTitle = "";
   let cancelHref = "";
   let showPublishButton = false;
   let showDeleteButton = false;
   let imageNote = "";
   let deleteMessage = "";
+  let imageDeleteMessage = "";
   let lastLoadedBlogId = "";
-  let blogImages: Array<{
-    id: number;
-    label: string;
-    imageUrl: string;
-    altText?: string;
-  }> = [];
+  let imageDeleteTarget: BlogImageItem | null = null;
+  let imageInsertRequest:
+    | {
+        id: number;
+        imageUrl: string;
+        altText?: string;
+      }
+    | null = null;
+  let imageInsertRequestSeq = 0;
+  let blogImages: BlogImageItem[] = [];
 
-  const getTodayInputValue = () => {
-    const now = new Date();
-    const yyyy = String(now.getFullYear());
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd} 00:00:00`;
-  };
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -90,8 +108,27 @@
       id: image.id,
       label: "URLをコピー",
       imageUrl: image.url,
+      displayUrl: image.displayUrl,
       altText: image.alt_text,
     }));
+  const getMarkdownImageRefs = (markdown: string) => {
+    const pattern =
+      /!\[[^\]]*]\((?:\/admin\/images\/)?(\d+)\/(\d+)\.png(?:\s+[^)]*)?\)/g;
+
+    return [...markdown.matchAll(pattern)].map((match) => ({
+      blogId: Number(match[1]),
+      imageId: Number(match[2]),
+      path: `${match[1]}/${match[2]}.png`,
+    }));
+  };
+  const isMarkdownImageReferenced = (
+    markdown: string,
+    blogId: number,
+    imageId: number,
+  ) =>
+    getMarkdownImageRefs(markdown).some(
+      (ref) => ref.blogId === blogId && ref.imageId === imageId,
+    );
 
   $: headerTitle = labels.headerTitle;
   $: cancelHref = labels.cancelHref;
@@ -104,11 +141,21 @@
     void loadBlog();
   }
 
+  const loadTitleImageTemplates = async () => {
+    try {
+      const resp = await fetchTitleImageTemplates();
+      titleImageTemplates = resp.items;
+    } catch {
+      titleImageTemplates = [];
+    }
+  };
+
   const loadBlog = async () => {
     scrollToTop();
     loading = true;
     validationFields = {};
     toastOpen = false;
+    imageInsertRequest = null;
     let targetId = Number.NaN;
 
     try {
@@ -117,9 +164,10 @@
         articleId = "new";
         title = "";
         category = "";
-        updatedAt = getTodayInputValue();
+        publishedAt = todayLocalDate();
         content = "";
         status = "private";
+        titleImageTemplate = "diary";
         blogImages = [];
         return;
       }
@@ -146,9 +194,10 @@
         articleId = String(targetId);
         title = "";
         category = "";
-        updatedAt = "";
+        publishedAt = "";
         content = "";
         status = "private";
+        titleImageTemplate = "diary";
         blogImages = [];
         return;
       }
@@ -164,9 +213,10 @@
     articleId = String(detail.id);
     title = detail.title;
     category = detail.category;
-    updatedAt = detail.updated_at;
+    publishedAt = formatPublishedDate(detail.published_at);
     content = detail.content;
     status = detail.status;
+    titleImageTemplate = detail.title_image_template || "diary";
   };
 
   const buildBlogPayload = (nextStatus: "public" | "private" = status) => ({
@@ -174,7 +224,8 @@
     content,
     category: mode === "about" ? "" : category,
     status: nextStatus,
-    published_at: updatedAt,
+    title_image_template: mode === "about" ? "diary" : titleImageTemplate || "diary",
+    published_at: normalizePublishedDateForSave(publishedAt),
   });
 
   const reloadBlogImages = async (blogId: number) => {
@@ -189,7 +240,7 @@
   const getMarkdownImageUploadPath = () =>
     resolvedBlogId === null
       ? ""
-      : `${import.meta.env.DEV ? '/admin/api/' : 'admin/api/'}blogs/${resolvedBlogId}/images`;
+      : blogImageUploadPath(resolvedBlogId);
 
   const handleImageSelect = async (file: File) => {
     if (resolvedBlogId === null) {
@@ -220,7 +271,7 @@
     }
   };
 
-  const handleImageDelete = async (imageId: number) => {
+  const deleteImage = async (imageId: number) => {
     if (resolvedBlogId === null) {
       scrollToTop();
       showErrorToast("画像を保存するためには、一度記事を保存してください。");
@@ -244,6 +295,24 @@
         err instanceof Error ? err.message : "画像の削除に失敗しました",
       );
     }
+  };
+
+  const handleImageDelete = async (item: BlogImageItem) => {
+    if (resolvedBlogId === null) {
+      scrollToTop();
+      showErrorToast("画像を保存するためには、一度記事を保存してください。");
+      return;
+    }
+
+    if (isMarkdownImageReferenced(content, resolvedBlogId, item.id)) {
+      imageDeleteTarget = item;
+      imageDeleteMessage =
+        "本文で使用されている画像です。削除すると表示できなくなります。削除しますか？";
+      imageDeleteOpen = true;
+      return;
+    }
+
+    await deleteImage(item.id);
   };
 
   const copyTextToClipboard = async (text: string) => {
@@ -288,6 +357,39 @@
     }
   };
 
+  const handleImageInsert = (item: {
+    id: number;
+    imageUrl: string;
+    altText?: string;
+  }) => {
+    if (resolvedBlogId === null) {
+      return;
+    }
+
+    imageInsertRequest = {
+      id: ++imageInsertRequestSeq,
+      imageUrl: `${resolvedBlogId}/${item.id}.png`,
+      altText: item.altText,
+    };
+  };
+
+  const findMissingMarkdownImages = (markdown: string, blogId: number) => {
+    const existingImageIds = new Set(blogImages.map((image) => image.id));
+    const missing = new Set<string>();
+
+    for (const ref of getMarkdownImageRefs(markdown)) {
+      if (ref.blogId !== blogId) {
+        continue;
+      }
+
+      if (!existingImageIds.has(ref.imageId)) {
+        missing.add(ref.path);
+      }
+    }
+
+    return [...missing];
+  };
+
   const saveBlog = async () => {
     scrollToTop();
     saving = true;
@@ -309,7 +411,15 @@
         void refreshBlogCount();
       }
 
-      messageTone = "success";
+      const missingImages = findMissingMarkdownImages(content, saved.id);
+      if (missingImages.length > 0) {
+        messageTone = "warning";
+        message = `本文で参照している画像が見つかりません: ${missingImages.join(", ")}`;
+      } else {
+        message = "";
+        messageTone = "success";
+      }
+
       toastTitle = "保存完了";
       toastMessage =
         mode === "new" ? "記事を作成しました。" : "記事を保存しました。";
@@ -366,7 +476,7 @@
       const preview = await createBlogPreview(
         mode === "about" ? "about" : (resolvedBlogId as number),
       );
-      window.open(preview.url, "_blank", "noopener,noreferrer");
+      window.open(preview.displayUrl, "_blank", "noopener,noreferrer");
       toastTitle = "プレビュー生成";
       toastMessage = "プレビューを新しいタブで開きました。";
       toastTone = "success";
@@ -409,13 +519,33 @@
     }
   };
 
+  const confirmImageDelete = async () => {
+    if (imageDeleteTarget === null) {
+      imageDeleteOpen = false;
+      return;
+    }
+
+    const target = imageDeleteTarget;
+    imageDeleteOpen = false;
+    imageDeleteTarget = null;
+    imageDeleteMessage = "";
+    await deleteImage(target.id);
+  };
+
   const openDeleteDialog = () => {
     scrollToTop();
     deleteOpen = true;
   };
 
+  const closeImageDeleteDialog = () => {
+    imageDeleteOpen = false;
+    imageDeleteTarget = null;
+    imageDeleteMessage = "";
+  };
+
   onMount(() => {
     scrollToTop();
+    void loadTitleImageTemplates();
   });
 </script>
 
@@ -443,7 +573,7 @@
 {#if message}
   <FlashMessage
     tone={messageTone}
-    title={messageTone === "success" ? "完了" : "エラー"}
+    title={messageTone === "success" ? "完了" : messageTone === "warning" ? "注意" : "エラー"}
     {message}
   />
 {/if}
@@ -509,18 +639,28 @@
           {/if}
         </div>
         <div class="admin-field">
-          <label class="admin-label" for="updated-at">更新日</label>
+          <label class="admin-label" for="published-at">公開日</label>
           <input
-            id="updated-at"
+            id="published-at"
             class="admin-input"
             class:admin-input-error={Boolean(validationFields.published_at)}
             type="text"
-            bind:value={updatedAt}
+            placeholder="yyyy-mm-dd"
+            bind:value={publishedAt}
           />
           {#if validationFields.published_at}
             <p class="admin-error-message">{validationFields.published_at}</p>
           {/if}
         </div>
+      </div>
+
+      <div class="admin-field">
+        <span class="admin-label">タイトル画像テンプレート</span>
+        <TitleImageTemplateSelector
+          templates={titleImageTemplates}
+          bind:value={titleImageTemplate}
+          error={validationFields.title_image_template ?? ""}
+        />
       </div>
     {/if}
 
@@ -530,6 +670,7 @@
         id="blog-content"
         bind:value={content}
         error={validationFields.content ?? ""}
+        imageInsertRequest={imageInsertRequest}
         imageUploadPath={getMarkdownImageUploadPath()}
         onImageUploaded={() => {
           if (resolvedBlogId !== null) {
@@ -547,8 +688,9 @@
       buttonLabel="画像を選択"
       items={blogImages}
       onCopyItem={(item) => handleImageCopy(item)}
+      onInsertItem={(item) => handleImageInsert(item)}
       onSelectFile={handleImageSelect}
-      onDeleteItem={(item) => handleImageDelete(item.id)}
+      onDeleteItem={(item) => handleImageDelete(item)}
     />
   </div>
 
@@ -600,6 +742,16 @@
     onConfirm={confirmDelete}
   />
 {/if}
+
+<ConfirmDialog
+  open={imageDeleteOpen}
+  title="画像削除確認"
+  message={imageDeleteMessage}
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  onCancel={closeImageDeleteDialog}
+  onConfirm={confirmImageDelete}
+/>
 
 <style>
   .blog-edit-images {

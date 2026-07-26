@@ -5,15 +5,18 @@
     id: number;
     label: string;
     imageUrl: string;
+    displayUrl?: string;
     altText?: string;
   };
 
   export let title = "画像";
   export let note = "";
   export let buttonLabel = "画像を選択";
+  export let insertButtonLabel = "画像挿入";
   export let items: readonly ImageItem[] = [];
   export let onSelectFile: (file: File) => void | Promise<void> = () => {};
   export let onCopyItem: (item: ImageItem) => void | Promise<void> = () => {};
+  export let onInsertItem: (item: ImageItem) => void | Promise<void> = () => {};
   export let onDeleteItem: (item: ImageItem) => void | Promise<void> = () => {};
 
   let fileInput: HTMLInputElement | null = null;
@@ -75,12 +78,19 @@
           >
             <img
               class="aspect-[16/9] w-full object-cover"
-              src={item.imageUrl}
+              src={item.displayUrl ?? item.imageUrl}
               alt={item.altText ?? `image-${item.id}`}
               loading="lazy"
             />
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
+            <button
+              class="admin-button admin-button-secondary"
+              type="button"
+              on:click={() => onInsertItem(item)}
+            >
+              {insertButtonLabel}
+            </button>
             <button
               class="admin-button"
               type="button"

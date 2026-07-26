@@ -169,11 +169,12 @@ func (p *parser) parseParagraph(minIndent int) string {
 			break
 		}
 
-		lines = append(lines, strings.TrimSpace(content))
+		// 行末スペース 2 つは Markdown のハード改行記法なので残す。
+		lines = append(lines, strings.TrimLeft(content, " \t"))
 		p.pos++
 	}
 
-	return fmt.Sprintf("<p>%s</p>", renderInline(strings.Join(lines, " ")))
+	return fmt.Sprintf("<p>%s</p>", renderInlineParagraphLines(lines))
 }
 
 // 通常のリストとインデントされたネストリストを再帰的に処理する。
@@ -239,7 +240,7 @@ func (p *parser) parseList(indent int) string {
 	}
 
 	for _, item := range items {
-		body := renderInline(strings.Join(item.text, " "))
+		body := renderInlineParagraphLines(item.text)
 		if len(item.children) == 0 {
 			b.WriteString(fmt.Sprintf("<li>%s</li>\n", body))
 			continue
@@ -342,6 +343,24 @@ func renderInlineLines(lines []string) []string {
 		rendered = append(rendered, renderInline(line))
 	}
 	return rendered
+}
+
+// 段落内の行をインライン変換し、行末の半角スペース 2 つによる改行を保持する。
+func renderInlineParagraphLines(lines []string) string {
+	var b strings.Builder
+	for i, line := range lines {
+		hardBreak := strings.HasSuffix(line, "  ")
+		b.WriteString(renderInline(strings.TrimSpace(line)))
+		if i == len(lines)-1 {
+			continue
+		}
+		if hardBreak {
+			b.WriteString("<br>")
+		} else {
+			b.WriteByte(' ')
+		}
+	}
+	return b.String()
 }
 
 func renderImageHTML(match string) string {

@@ -1,4 +1,14 @@
 {{define "blog"}}
+<style>
+  @media (max-width: 860px) {
+    .post-detail pre,
+    .post-detail pre code {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+  }
+</style>
 {{if .Breadcrumbs}}
 <nav class="breadcrumb" aria-label="パンくずリスト">
   {{- range $i, $item := .Breadcrumbs -}}

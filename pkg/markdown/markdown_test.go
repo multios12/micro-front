@@ -119,6 +119,16 @@ func TestToHTML_SupportsTablesNestedListsAndDecorations(t *testing.T) {
 	}
 }
 
+func TestToHTML_UsesTwoTrailingSpacesAsHardLineBreak(t *testing.T) {
+	input := "1行目  \n2行目\n3行目"
+
+	got := ToHTML(input)
+	want := "<p>1行目<br>2行目 3行目</p>"
+	if got != want {
+		t.Fatalf("unexpected html: got %q, want %q", got, want)
+	}
+}
+
 func TestToHTML_HidesCarryOverMarkerLine(t *testing.T) {
 	input := strings.Join([]string{
 		"## お店",

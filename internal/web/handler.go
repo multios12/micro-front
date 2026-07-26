@@ -41,7 +41,7 @@ func (h Handler) Init(s *server.Server) {
 	s.Handle("/", http.FileServer(http.Dir(staticDir)))
 	s.HandleFunc("POST /admin/api/publish", h.handlerPostPublish)
 	s.HandleFunc("POST /admin/api/site/preview", h.handlerPostSitePreview)
-	s.Handle("GET /admin/preview/", http.StripPrefix("/admin/preview/", http.FileServer(http.Dir(previewDir))))
+	s.Handle("GET  /admin/preview/", http.StripPrefix("/admin/preview/", http.FileServer(http.Dir(previewDir))))
 	s.HandleFunc("POST /admin/api/blogs/{blog_id}/preview", h.handlerPostBlogPreview)
 }
 

@@ -108,6 +108,34 @@
       width: 100%; 
       max-width: none;
     }
+    code {
+      display: inline-block;
+      padding: 0.1em 0.45em;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      background: #111827;
+      color: #a7f3d0;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.7em;
+      line-height: 1.5;
+      text-shadow: 0 0 8px rgba(110, 231, 183, 0.3);
+    }
+    pre {
+      padding: 16px;
+      overflow-x: auto;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: #111827;
+      color: #a7f3d0;
+    }
+    pre code {
+      display: block;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      font-size: 0.7rem;
+      line-height: 1.7;
+    }
 
     .grid-2 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr); gap: 28px; }
     .chip {

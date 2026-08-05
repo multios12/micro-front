@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import AdminHeader from "../../components/AdminHeader.svelte";
   import ConfirmDialog from "../../components/ConfirmDialog.svelte";
   import FlashMessage from "../../components/FlashMessage.svelte";
@@ -35,6 +35,11 @@
     normalizePublishedDateForSave,
     todayLocalDate,
   } from "../../lib/date-format";
+  import {
+    createBlogDraftController,
+    type BlogDraft,
+    type BlogDraftValues,
+  } from "../../lib/blog-draft-controller";
 
   type BlogImageItem = {
     id: number;
@@ -80,15 +85,18 @@
   let imageDeleteMessage = "";
   let lastLoadedBlogId = "";
   let imageDeleteTarget: BlogImageItem | null = null;
-  let imageInsertRequest:
-    | {
-        id: number;
-        imageUrl: string;
-        altText?: string;
-      }
-    | null = null;
+  let imageInsertRequest: {
+    id: number;
+    imageUrl: string;
+    altText?: string;
+  } | null = null;
   let imageInsertRequestSeq = 0;
   let blogImages: BlogImageItem[] = [];
+  let draftRestoreOpen = false;
+  let draftStatus: "" | "saving" | "saved" | "error" = "";
+  let draftBaseUpdatedAt: string | undefined;
+  let draftValuesSignature = "";
+  let draftRestoreMessage = "";
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -101,6 +109,46 @@
   };
   const getTabFieldError = (index: number, key: "tab_label" | "tab_url") =>
     validationFields[`tabs[${index}].${key}`] ?? "";
+  /** 現在開いている編集対象に対応するローカル下書きキーを返します。 */
+  const getDraftKey = () => `blog:${mode === "new" ? "new" : blogId}`;
+  /** 現在のフォーム入力値を下書きとして保存可能な形式に変換します。 */
+  const getDraftValues = (): BlogDraftValues => ({
+    title,
+    category,
+    publishedAt,
+    content,
+    status,
+    titleImageTemplate,
+  });
+  /** ローカル下書きの値を編集フォームに復元します。 */
+  const applyDraft = (draft: BlogDraft) => {
+    ({ title, category, publishedAt, content, status, titleImageTemplate } =
+      draft.values);
+  };
+  const draftController = createBlogDraftController({
+    getValues: getDraftValues,
+    onRestoreAvailable: (hasServerConflict) => {
+      draftRestoreMessage = hasServerConflict
+        ? "サーバーの記事が更新されています。復元するとサーバー版とは異なる内容になります。"
+        : "このブラウザに未保存の下書きがあります。";
+      draftRestoreOpen = true;
+    },
+    onStatusChange: (status) => (draftStatus = status),
+  });
+  /** 復元確認中のローカル下書きを削除し、確認ダイアログを閉じます。 */
+  const discardPendingDraft = async () => {
+    await draftController.discardPendingDraft();
+    draftRestoreOpen = false;
+  };
+  /** 復元確認中のローカル下書きをフォームへ反映し、確認ダイアログを閉じます。 */
+  const restorePendingDraft = () => {
+    const draft = draftController.restorePendingDraft();
+    if (draft) {
+      applyDraft(draft);
+      draftBaseUpdatedAt = draft.baseUpdatedAt;
+    }
+    draftRestoreOpen = false;
+  };
   const mapBlogImages = (
     items: Awaited<ReturnType<typeof fetchBlogImages>>["items"],
   ) =>
@@ -140,6 +188,8 @@
     lastLoadedBlogId = blogId;
     void loadBlog();
   }
+  $: draftValuesSignature = JSON.stringify(getDraftValues());
+  $: draftController.onValuesChanged(draftValuesSignature);
 
   const loadTitleImageTemplates = async () => {
     try {
@@ -156,7 +206,11 @@
     validationFields = {};
     toastOpen = false;
     imageInsertRequest = null;
+    draftController.disable();
+    draftBaseUpdatedAt = undefined;
+    draftRestoreOpen = false;
     let targetId = Number.NaN;
+    let canEditDraft = false;
 
     try {
       if (mode === "new") {
@@ -169,25 +223,31 @@
         status = "private";
         titleImageTemplate = "diary";
         blogImages = [];
-        return;
+        canEditDraft = true;
+      } else {
+        targetId = resolveBlogEditTargetId(blogId);
+        if (!targetId || Number.isNaN(targetId)) {
+          throw new Error(
+            mode === "about"
+              ? "about 記事のIDが不正です"
+              : "記事のIDが不正です",
+          );
+        }
+
+        resolvedBlogId = targetId;
+        const detail = await fetchBlogDetail(targetId);
+        applyBlog(detail);
+        draftBaseUpdatedAt = detail.updated_at;
+        canEditDraft = true;
+        try {
+          const images = await fetchBlogImages(targetId);
+          blogImages = mapBlogImages(images.items);
+        } catch {
+          blogImages = [];
+        }
       }
 
-      targetId = resolveBlogEditTargetId(blogId);
-      if (!targetId || Number.isNaN(targetId)) {
-        throw new Error(
-          mode === "about" ? "about 記事のIDが不正です" : "記事のIDが不正です",
-        );
-      }
-
-      resolvedBlogId = targetId;
-      const detail = await fetchBlogDetail(targetId);
-      applyBlog(detail);
-      try {
-        const images = await fetchBlogImages(targetId);
-        blogImages = mapBlogImages(images.items);
-      } catch {
-        blogImages = [];
-      }
+      await draftController.prepare(getDraftKey(), draftBaseUpdatedAt);
     } catch (err) {
       if (mode === "about" && err instanceof ApiError && err.status === 404) {
         resolvedBlogId = targetId;
@@ -199,13 +259,18 @@
         status = "private";
         titleImageTemplate = "diary";
         blogImages = [];
-        return;
+        canEditDraft = true;
+        await draftController.prepare(getDraftKey(), draftBaseUpdatedAt);
+      } else {
+        showErrorToast(
+          err instanceof Error ? err.message : "記事の読み込みに失敗しました",
+        );
       }
-      showErrorToast(
-        err instanceof Error ? err.message : "記事の読み込みに失敗しました",
-      );
     } finally {
       loading = false;
+      if (canEditDraft) {
+        draftController.enable();
+      }
     }
   };
 
@@ -224,7 +289,8 @@
     content,
     category: mode === "about" ? "" : category,
     status: nextStatus,
-    title_image_template: mode === "about" ? "diary" : titleImageTemplate || "diary",
+    title_image_template:
+      mode === "about" ? "diary" : titleImageTemplate || "diary",
     published_at: normalizePublishedDateForSave(publishedAt),
   });
 
@@ -238,9 +304,7 @@
   };
 
   const getMarkdownImageUploadPath = () =>
-    resolvedBlogId === null
-      ? ""
-      : blogImageUploadPath(resolvedBlogId);
+    resolvedBlogId === null ? "" : blogImageUploadPath(resolvedBlogId);
 
   const handleImageSelect = async (file: File) => {
     if (resolvedBlogId === null) {
@@ -391,6 +455,15 @@
   };
 
   const saveBlog = async () => {
+    if (!navigator.onLine) {
+      await draftController.save();
+      toastTitle = "オフラインで保存済み";
+      toastMessage =
+        "サーバーには保存されていません。接続後に保存してください。";
+      toastTone = "warning";
+      toastOpen = true;
+      return;
+    }
     scrollToTop();
     saving = true;
     message = "";
@@ -425,6 +498,7 @@
         mode === "new" ? "記事を作成しました。" : "記事を保存しました。";
       toastTone = "success";
       toastOpen = true;
+      await draftController.clear();
     } catch (err) {
       showErrorToast(
         err instanceof Error ? err.message : "記事の保存に失敗しました",
@@ -547,6 +621,10 @@
     scrollToTop();
     void loadTitleImageTemplates();
   });
+
+  onDestroy(() => {
+    void draftController.flush();
+  });
 </script>
 
 <svelte:head>
@@ -573,8 +651,24 @@
 {#if message}
   <FlashMessage
     tone={messageTone}
-    title={messageTone === "success" ? "完了" : messageTone === "warning" ? "注意" : "エラー"}
+    title={messageTone === "success"
+      ? "完了"
+      : messageTone === "warning"
+        ? "注意"
+        : "エラー"}
     {message}
+  />
+{/if}
+
+{#if draftStatus}
+  <FlashMessage
+    tone={draftStatus === "error" ? "warning" : "success"}
+    title="ローカル下書き"
+    message={draftStatus === "saving"
+      ? "下書きを保存中です。"
+      : draftStatus === "saved"
+        ? "このブラウザに下書きを保存しました。"
+        : "下書きを保存できませんでした。"}
   />
 {/if}
 
@@ -670,7 +764,7 @@
         id="blog-content"
         bind:value={content}
         error={validationFields.content ?? ""}
-        imageInsertRequest={imageInsertRequest}
+        {imageInsertRequest}
         imageUploadPath={getMarkdownImageUploadPath()}
         onImageUploaded={() => {
           if (resolvedBlogId !== null) {
@@ -751,6 +845,17 @@
   cancelLabel="キャンセル"
   onCancel={closeImageDeleteDialog}
   onConfirm={confirmImageDelete}
+/>
+
+<ConfirmDialog
+  open={draftRestoreOpen}
+  title="ローカル下書きを復元しますか？"
+  message={draftRestoreMessage}
+  confirmLabel="復元する"
+  cancelLabel="下書きを破棄"
+  confirmVariant="primary"
+  onCancel={discardPendingDraft}
+  onConfirm={restorePendingDraft}
 />
 
 <style>

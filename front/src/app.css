@@ -185,6 +185,20 @@
     @apply w-full rounded-xl border border-slate-500/40 bg-white/5 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-amber-400/50 focus:bg-white/7;
   }
 
+  .admin-select {
+    color-scheme: dark;
+  }
+
+  .admin-select option {
+    color: theme(colors.slate.100);
+    background-color: theme(colors.slate.900);
+  }
+
+  .admin-select option:checked {
+    color: theme(colors.amber.100);
+    background-color: theme(colors.amber.500);
+  }
+
   .admin-input-error,
   .admin-select-error,
   .admin-textarea-error {

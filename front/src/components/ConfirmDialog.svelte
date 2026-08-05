@@ -4,6 +4,7 @@
   export let message = ''
   export let confirmLabel = '削除する'
   export let cancelLabel = 'キャンセル'
+  export let confirmVariant: 'primary' | 'danger' = 'danger'
   export let onConfirm: (() => void) | undefined
   export let onCancel: (() => void) | undefined
 </script>
@@ -19,7 +20,12 @@
       {/if}
       <div class="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
         <button class="admin-button" type="button" on:click={onCancel}>{cancelLabel}</button>
-        <button class="admin-button admin-button-danger" type="button" on:click={onConfirm}>{confirmLabel}</button>
+        <button
+          class="admin-button"
+          class:admin-button-danger={confirmVariant === 'danger'}
+          type="button"
+          on:click={onConfirm}
+        >{confirmLabel}</button>
       </div>
     </div>
   </div>

@@ -34,6 +34,7 @@
   let totalPages = 1
   let allDashboardRows: DashboardBlogRow[] = []
   let publishing = false
+  let siteUrl = ''
 
   const refreshPage = () => {
     const start = (currentPage - 1) * dashboardPageSize
@@ -82,6 +83,7 @@
       totalPages = dashboardData.totalPages
       dashboardStatCards = dashboardData.statCards
       dashboardSettings = dashboardData.settings
+      siteUrl = site.site_url
       allDashboardRows = mapDashboardBlogRows(blogs.items)
       dashboardBlogRows = allDashboardRows.slice(0, dashboardPageSize)
       dashboardPaginationItems = buildDashboardPaginationItems(1, totalPages, (page) => {
@@ -106,6 +108,20 @@
 
 <AdminHeader title="Dashboard">
   <svelte:fragment slot="actions">
+    {#if siteUrl}
+      <a
+        class="admin-button admin-button-secondary"
+        href={siteUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        サイトを表示
+      </a>
+    {:else}
+      <button class="admin-button admin-button-secondary" type="button" disabled>
+        サイトを表示
+      </button>
+    {/if}
     <button
       class={dashboardPublishAction.primary ? 'admin-button admin-button-primary' : 'admin-button'}
       type="button"

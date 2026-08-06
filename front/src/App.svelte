@@ -71,7 +71,7 @@
   <meta name="description" content="micro-front の管理画面" />
 </svelte:head>
 
-<AdminShell active={activeNav} blogCount={$blogCount} siteTitle={$siteTitle} siteUrl={$siteUrl}>
+<AdminShell active={activeNav} blogCount={$blogCount} siteTitle={$siteTitle}>
   {#if route === 'dashboard'}
     <DashboardPage />
   {:else if route === 'blogs'}

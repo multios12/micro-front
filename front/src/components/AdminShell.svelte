@@ -6,7 +6,6 @@
   export let active: NavKey = "dashboard";
   export let blogCount = 0;
   export let siteTitle = "micro-front";
-  export let siteUrl = "";
 
   const activeHash = () =>
     active === "about" ? "#/blog-edit/about" : `#/${active}`;
@@ -16,20 +15,12 @@
   <div class="admin-layout">
     <aside class="admin-sidebar">
       <div class="admin-sidebar-brand">
-        {#if siteUrl}
-          <a
-            class="admin-sidebar-brand-link block text-lg font-semibold text-white"
-            href={siteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {siteTitle}
-          </a>
-        {:else}
-          <strong class="block text-lg font-semibold text-white"
-            >{siteTitle}</strong
-          >
-        {/if}
+        <a
+          class="admin-sidebar-brand-link block text-lg font-semibold text-white"
+          href="/"
+        >
+          {siteTitle}
+        </a>
       </div>
 
       <div class="admin-sidebar-nav">
@@ -50,18 +41,9 @@
     ></a>
     <section class="admin-mobile-nav-panel">
       <div class="admin-mobile-header">
-        {#if siteUrl}
-          <a
-            class="admin-sidebar-brand-link text-lg font-semibold text-white"
-            href={siteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {siteTitle}
-          </a>
-        {:else}
-          <strong class="text-lg font-semibold text-white">{siteTitle}</strong>
-        {/if}
+        <a class="admin-sidebar-brand-link text-lg font-semibold text-white" href="/">
+          {siteTitle}
+        </a>
         <a
           class="admin-button h-10 w-10 justify-center p-0 text-lg"
           href={activeHash()}

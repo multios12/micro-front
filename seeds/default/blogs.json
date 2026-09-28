@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "sample-md確認用の記事",
-    "content": "![サンプル画像|50%](/admin/images/1/1.png)\n\n",
+    "content": "![サンプル画像|50%](/admin/images/1/1.jpg)\n\n",
     "use_sample_content": true,
     "category": "お知らせ",
     "status": "public",
@@ -11,7 +11,7 @@
   {
     "id": 2,
     "title": "画像サイズ指定の確認",
-    "content": "## 画像サイズ指定\n\nObsidian 風の記法で画像サイズを指定できます。\n\n![横幅半分|50%](/admin/images/2/2.png)\n\n`![alt|50%](url)` は本文幅に対する比率です。",
+    "content": "## 画像サイズ指定\n\nObsidian 風の記法で画像サイズを指定できます。\n\n![横幅半分|50%](/admin/images/2/2.jpg)\n\n`![alt|50%](url)` は本文幅に対する比率です。",
     "category": "開発メモ",
     "status": "public",
     "published_at": "2026-04-19"
@@ -19,7 +19,7 @@
   {
     "id": 3,
     "title": "公開サイトの導線を見直す",
-    "content": "## 導線メモ\n\nトップページから記事一覧へ自然に移動できるよう、見出しとカードの役割を整理しました。\n\n![導線の図|60%x220](/admin/images/3/3.png)",
+    "content": "## 導線メモ\n\nトップページから記事一覧へ自然に移動できるよう、見出しとカードの役割を整理しました。\n\n![導線の図|60%x220](/admin/images/3/3.jpg)",
     "category": "設計",
     "status": "public",
     "published_at": "2026-04-18"
@@ -27,7 +27,7 @@
   {
     "id": 4,
     "title": "カテゴリ一覧の表示確認",
-    "content": "## カテゴリ一覧\n\nカテゴリ別ページのパンくず、見出し、ページングを確認するための記事です。\n\n![カテゴリ画像|320](/admin/images/4/4.png)",
+    "content": "## カテゴリ一覧\n\nカテゴリ別ページのパンくず、見出し、ページングを確認するための記事です。\n\n![カテゴリ画像|320](/admin/images/4/4.jpg)",
     "category": "運用",
     "status": "public",
     "published_at": "2026-04-17"
@@ -35,7 +35,7 @@
   {
     "id": 5,
     "title": "未分類記事の表示",
-    "content": "## 未分類\n\nカテゴリを設定しない記事が一覧でどのように見えるかを確認します。\n\n![未分類画像|40%](/admin/images/5/5.png)",
+    "content": "## 未分類\n\nカテゴリを設定しない記事が一覧でどのように見えるかを確認します。\n\n![未分類画像|40%](/admin/images/5/5.jpg)",
     "category": "",
     "status": "public",
     "published_at": "2026-04-16"
@@ -43,7 +43,7 @@
   {
     "id": 6,
     "title": "Markdown 表の確認",
-    "content": "## 表のサンプル\n\n| 項目 | 内容 |\n| --- | --- |\n| 速度 | 軽量な静的HTML |\n| 編集 | 管理画面から更新 |\n\n![表の画像|50%](/admin/images/6/6.png)",
+    "content": "## 表のサンプル\n\n| 項目 | 内容 |\n| --- | --- |\n| 速度 | 軽量な静的HTML |\n| 編集 | 管理画面から更新 |\n\n![表の画像|50%](/admin/images/6/6.jpg)",
     "category": "お知らせ",
     "status": "public",
     "published_at": "2026-04-15"
@@ -51,7 +51,7 @@
   {
     "id": 7,
     "title": "引用とリストの確認",
-    "content": "## 引用\n\n> これは引用の表示確認です。\n> 複数行でも読みやすさを確認します。\n\n- ひとつめ\n- ふたつめ\n\n![引用画像|300x180](/admin/images/7/7.png)",
+    "content": "## 引用\n\n> これは引用の表示確認です。\n> 複数行でも読みやすさを確認します。\n\n- ひとつめ\n- ふたつめ\n\n![引用画像|300x180](/admin/images/7/7.jpg)",
     "category": "開発メモ",
     "status": "public",
     "published_at": "2026-04-14"
@@ -59,7 +59,7 @@
   {
     "id": 8,
     "title": "パンくずリストの確認",
-    "content": "## パンくず\n\n記事詳細ページで `Home / Blogs / カテゴリ / 記事タイトル` の並びを確認します。\n\n![パンくず画像|55%](/admin/images/8/8.png)",
+    "content": "## パンくず\n\n記事詳細ページで `Home / Blogs / カテゴリ / 記事タイトル` の並びを確認します。\n\n![パンくず画像|55%](/admin/images/8/8.jpg)",
     "category": "設計",
     "status": "public",
     "published_at": "2026-04-13"
@@ -67,7 +67,7 @@
   {
     "id": 9,
     "title": "公開前の記事サンプル",
-    "content": "## 非公開\n\nこのレコードは非公開記事の表示確認用です。\n\n![非公開画像|50%](/admin/images/9/9.png)",
+    "content": "## 非公開\n\nこのレコードは非公開記事の表示確認用です。\n\n![非公開画像|50%](/admin/images/9/9.jpg)",
     "category": "運用",
     "status": "private",
     "published_at": "2026-04-12"
@@ -139,7 +139,7 @@
   {
     "id": 18,
     "title": "開発メモ 02",
-    "content": "## 開発メモ\n\n画像はアップロード時に PNG として保存されます。",
+    "content": "## 開発メモ\n\n画像はアップロード時に JPEG として保存されます。",
     "category": "開発メモ",
     "status": "public",
     "published_at": "2026-04-03"

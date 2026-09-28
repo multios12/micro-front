@@ -2,7 +2,9 @@ package publish
 
 import (
 	"context"
-	"encoding/base64"
+	"image"
+	"image/color"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -104,10 +106,10 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateImage: %v", err)
 	}
-	if err := writeTestPNG(filepath.Join(dataDir, "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".png")); err != nil {
-		t.Fatalf("writeTestPNG: %v", err)
+	if err := writeTestJPEG(filepath.Join(dataDir, "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".jpg")); err != nil {
+		t.Fatalf("writeTestJPEG: %v", err)
 	}
-	if _, err := s.UpdateBlog(ctx, blog1.ID, store.BlogEntitty{Title: blog1.Title, Content: "# First\n\n![photo](" + strconv.FormatInt(blog1.ID, 10) + "/" + strconv.FormatInt(img.ID, 10) + ".png)", Summary: blog1.Summary, Category: blog1.Category, Status: blog1.Status, PublishedAt: blog1.PublishedAt}); err != nil {
+	if _, err := s.UpdateBlog(ctx, blog1.ID, store.BlogEntitty{Title: blog1.Title, Content: "# First\n\n![photo](" + strconv.FormatInt(blog1.ID, 10) + "/" + strconv.FormatInt(img.ID, 10) + ".jpg)", Summary: blog1.Summary, Category: blog1.Category, Status: blog1.Status, PublishedAt: blog1.PublishedAt}); err != nil {
 		t.Fatalf("UpdateBlog 1: %v", err)
 	}
 	blog1, err = s.GetBlog(ctx, blog1.ID)
@@ -142,7 +144,7 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 		t.Fatalf("Run blogs: %v", err)
 	}
 
-	for _, path := range []string{filepath.Join(uc.PublishDir, "index.html"), filepath.Join(uc.PublishDir, "blogs", "index.html"), filepath.Join(uc.PublishDir, "blogs", "page2.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "index.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "page2.html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog1.ID, 10)+".html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog2.ID, 10)+".html"), filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".png"), filepath.Join(uc.PublishDir, "assets", "title-images", strconv.FormatInt(blog1.ID, 10)+".svg"), filepath.Join(uc.PublishDir, "assets", "title-images", strconv.FormatInt(blog2.ID, 10)+".svg"), filepath.Join(uc.PublishDir, "robots.txt"), filepath.Join(uc.PublishDir, "sitemap.xml")} {
+	for _, path := range []string{filepath.Join(uc.PublishDir, "index.html"), filepath.Join(uc.PublishDir, "blogs", "index.html"), filepath.Join(uc.PublishDir, "blogs", "page2.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "index.html"), filepath.Join(uc.PublishDir, "blogs", "category", "news", "page2.html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog1.ID, 10)+".html"), filepath.Join(uc.PublishDir, "blogs", strconv.FormatInt(blog2.ID, 10)+".html"), filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blog1.ID, 10), strconv.FormatInt(img.ID, 10)+".jpg"), filepath.Join(uc.PublishDir, "assets", "title-images", strconv.FormatInt(blog1.ID, 10)+".svg"), filepath.Join(uc.PublishDir, "assets", "title-images", strconv.FormatInt(blog2.ID, 10)+".svg"), filepath.Join(uc.PublishDir, "robots.txt"), filepath.Join(uc.PublishDir, "sitemap.xml")} {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("expected file %s: %v", path, err)
 		}
@@ -165,7 +167,7 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFile blog page: %v", err)
 	}
-	if !strings.Contains(string(blogPage), "../assets/images/"+strconv.FormatInt(blog1.ID, 10)+"/"+strconv.FormatInt(img.ID, 10)+".png") {
+	if !strings.Contains(string(blogPage), "../assets/images/"+strconv.FormatInt(blog1.ID, 10)+"/"+strconv.FormatInt(img.ID, 10)+".jpg") {
 		t.Fatalf("blog page did not rewrite image URL:\n%s", blogPage)
 	}
 	if !strings.Contains(string(blogPage), "src=\"../assets/title-images/"+strconv.FormatInt(blog1.ID, 10)+".svg\"") {
@@ -235,12 +237,12 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateImage: %v", err)
 	}
-	if err := writeTestPNG(filepath.Join(dataDir, "images", strconv.FormatInt(blog.ID, 10), strconv.FormatInt(img.ID, 10)+".png")); err != nil {
-		t.Fatalf("writeTestPNG: %v", err)
+	if err := writeTestJPEG(filepath.Join(dataDir, "images", strconv.FormatInt(blog.ID, 10), strconv.FormatInt(img.ID, 10)+".jpg")); err != nil {
+		t.Fatalf("writeTestJPEG: %v", err)
 	}
 	if _, err := s.UpdateBlog(ctx, blog.ID, store.BlogEntitty{
 		Title:       blog.Title,
-		Content:     "# Preview\n\n![photo](" + strconv.FormatInt(blog.ID, 10) + "/" + strconv.FormatInt(img.ID, 10) + ".png)",
+		Content:     "# Preview\n\n![photo](" + strconv.FormatInt(blog.ID, 10) + "/" + strconv.FormatInt(img.ID, 10) + ".jpg)",
 		Summary:     blog.Summary,
 		Category:    blog.Category,
 		Status:      blog.Status,
@@ -278,7 +280,7 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFile blog preview: %v", err)
 	}
-	if !strings.Contains(string(blogPreviewBody), "../assets/images/"+strconv.FormatInt(blog.ID, 10)+"/"+strconv.FormatInt(img.ID, 10)+".png") {
+	if !strings.Contains(string(blogPreviewBody), "../assets/images/"+strconv.FormatInt(blog.ID, 10)+"/"+strconv.FormatInt(img.ID, 10)+".jpg") {
 		t.Fatalf("PreviewBlog did not rewrite image URL:\n%s", blogPreviewBody)
 	}
 
@@ -314,14 +316,16 @@ func formatBlogFileName(id int64) string {
 	return strconv.FormatInt(id, 10) + ".html"
 }
 
-func writeTestPNG(path string) error {
-	const pngData = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO1m7W8AAAAASUVORK5CYII="
-	data, err := base64.StdEncoding.DecodeString(pngData)
-	if err != nil {
-		return err
-	}
+func writeTestJPEG(path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0o644)
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
+	img.Set(0, 0, color.White)
+	return jpeg.Encode(f, img, nil)
 }

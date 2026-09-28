@@ -4,9 +4,9 @@
     {{if .Category}}
     <p class="meta">{{.Category}}</p>
     {{end}}
+    <p class="meta">{{dateOnly .PublishedAt}}</p>
     <h3>{{.Title}}</h3>
     <p>{{.Summary}}</p>
-    <p class="meta">{{dateOnly .PublishedAt}}</p>
   </div>
   {{if .TitleImageURL}}<img class="title-image-thumb blog-list-card-image" src="{{.TitleImageURL}}" alt="" loading="lazy">{{end}}
 </a>

@@ -10,6 +10,7 @@ import (
 
 	"micro-front/internal/blogs"
 	"micro-front/internal/config"
+	"micro-front/internal/imagemigration"
 	"micro-front/internal/images"
 	"micro-front/internal/publish"
 	"micro-front/internal/seed"
@@ -32,6 +33,9 @@ func run(ctx context.Context, args []string) error {
 	if len(args) > 0 && args[0] == "sample" {
 		return runSample(ctx, args[1:])
 	}
+	if len(args) > 0 && args[0] == "migrate-images-to-jpeg" {
+		return runMigrateImagesToJPEG(ctx, cfg, args[1:])
+	}
 
 	st, err := store.New(cfg.DataDir)
 	if err != nil {
@@ -48,6 +52,32 @@ func run(ctx context.Context, args []string) error {
 	web.Handler{Store: st, DataDir: cfg.DataDir, PublishDir: cfg.PublicStaticDir}.Init(&srv)
 
 	return srv.Run(ctx)
+}
+
+func runMigrateImagesToJPEG(ctx context.Context, cfg config.Config, args []string) error {
+	fs := flag.NewFlagSet("migrate-images-to-jpeg", flag.ContinueOnError)
+	fs.SetOutput(log.Writer())
+	deleteSource := fs.Bool("delete-source", false, "delete PNG files after successful conversion")
+	quality := fs.Int("quality", 85, "JPEG quality (1-100)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	st, err := store.New(cfg.DataDir)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+
+	result, err := imagemigration.Run(ctx, st, cfg.DataDir, imagemigration.Options{
+		DeleteSource: *deleteSource,
+		Quality:      *quality,
+	})
+	if err != nil {
+		return err
+	}
+	log.Printf("image migration complete: converted=%d skipped=%d deleted=%d updated_rows=%d", result.Converted, result.Skipped, result.Deleted, result.UpdatedRows)
+	return nil
 }
 
 func runSeed(ctx context.Context, cfg config.Config, args []string) error {

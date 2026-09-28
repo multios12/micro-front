@@ -8,8 +8,8 @@ import (
 	"image"
 	"image/draw"
 	_ "image/gif"
-	_ "image/jpeg"
-	"image/png"
+	"image/jpeg"
+	_ "image/png"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -48,14 +48,14 @@ func (uc Usecase) Upload(ctx context.Context, blogID int64, altText string, file
 		return ImagesUploadResponse{}, "", nil, err
 	}
 
-	if err := savePNG(uc.DataDir, blogID, record.ID, src); err != nil {
+	if err := saveJPEG(uc.DataDir, blogID, record.ID, src); err != nil {
 		_ = uc.Store.DeleteImage(ctx, blogID, record.ID)
 		return ImagesUploadResponse{}, "", nil, errImageUploadFailed
 	}
 
 	return ImagesUploadResponse{
 		Result:  "success",
-		URL:     fmt.Sprintf("/admin/images/%d/%d.png", blogID, record.ID),
+		URL:     fmt.Sprintf("/admin/images/%d/%d.jpg", blogID, record.ID),
 		AltText: altText,
 	}, "", nil, nil
 }
@@ -79,7 +79,7 @@ func (uc Usecase) List(ctx context.Context, blogID int64) (ImagesListResponse, e
 		items = append(items, ImagesListItemResponse{
 			ID:        img.ID,
 			BlogID:    img.BlogID,
-			URL:       fmt.Sprintf("/admin/images/%d/%d.png", blogID, img.ID),
+			URL:       fmt.Sprintf("/admin/images/%d/%d.jpg", blogID, img.ID),
 			AltText:   img.AltText,
 			CreatedAt: img.CreatedAt,
 			UpdatedAt: img.UpdatedAt,
@@ -94,7 +94,7 @@ func (uc Usecase) Delete(ctx context.Context, blogID, imageID int64) (ImagesDele
 	if err := uc.Store.DeleteImage(ctx, blogID, imageID); err != nil {
 		return ImagesDeleteResponse{}, err
 	}
-	_ = os.Remove(filepath.Join(uc.DataDir, "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(imageID, 10)+".png"))
+	_ = os.Remove(filepath.Join(uc.DataDir, "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(imageID, 10)+".jpg"))
 	return ImagesDeleteResponse{
 		ID:     imageID,
 		BlogID: blogID,
@@ -104,29 +104,29 @@ func (uc Usecase) Delete(ctx context.Context, blogID, imageID int64) (ImagesDele
 
 // AdminImagePath は管理画面で参照する画像ファイルの保存先を解決します。
 func (uc Usecase) AdminImagePath(blogID int64, imageName string) (string, error) {
-	if !strings.HasSuffix(imageName, ".png") {
+	if !strings.HasSuffix(imageName, ".jpg") {
 		return "", errors.New("not found")
 	}
-	imageID, err := strconv.ParseInt(strings.TrimSuffix(imageName, ".png"), 10, 64)
+	imageID, err := strconv.ParseInt(strings.TrimSuffix(imageName, ".jpg"), 10, 64)
 	if err != nil {
 		return "", errors.New("not found")
 	}
-	return filepath.Join(uc.DataDir, "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(imageID, 10)+".png"), nil
+	return filepath.Join(uc.DataDir, "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(imageID, 10)+".jpg"), nil
 }
 
-// savePNG は画像を最大 1920x1080 に収めて PNG 保存します。
-func savePNG(dataDir string, blogID, imageID int64, src image.Image) error {
+// saveJPEG は画像を最大 1920x1080 に収めて JPEG 保存します。
+func saveJPEG(dataDir string, blogID, imageID int64, src image.Image) error {
 	dst := resizeToFit(src, 1920, 1080)
 	dir := filepath.Join(dataDir, "images", strconv.FormatInt(blogID, 10))
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	f, err := os.Create(filepath.Join(dir, strconv.FormatInt(imageID, 10)+".png"))
+	f, err := os.Create(filepath.Join(dir, strconv.FormatInt(imageID, 10)+".jpg"))
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	return png.Encode(f, dst)
+	return jpeg.Encode(f, dst, &jpeg.Options{Quality: 85})
 }
 
 // resizeToFit は元画像の縦横比を保ったまま指定サイズ以内に縮小します。

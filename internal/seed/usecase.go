@@ -3,10 +3,11 @@ package seed
 import (
 	"context"
 	"fmt"
-	"io"
+	"image"
+	"image/jpeg"
+	_ "image/png"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"micro-front/internal/store"
 	"micro-front/internal/validate"
@@ -133,7 +134,11 @@ func copyImage(seedDir, dataDir string, item ImageSeed) error {
 	}
 	defer in.Close()
 
-	dstPath := filepath.Join(dataDir, "images", fmt.Sprintf("%d", item.BlogID), fmt.Sprintf("%d.png", item.ID))
+	src, _, err := image.Decode(in)
+	if err != nil {
+		return err
+	}
+	dstPath := filepath.Join(dataDir, "images", fmt.Sprintf("%d", item.BlogID), fmt.Sprintf("%d.jpg", item.ID))
 	if err := os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
 		return err
 	}
@@ -143,11 +148,5 @@ func copyImage(seedDir, dataDir string, item ImageSeed) error {
 	}
 	defer out.Close()
 
-	if _, err := io.Copy(out, in); err != nil {
-		return err
-	}
-	if !strings.HasSuffix(strings.ToLower(dstPath), ".png") {
-		return fmt.Errorf("seed image destination must be png: %s", dstPath)
-	}
-	return nil
+	return jpeg.Encode(out, src, &jpeg.Options{Quality: 85})
 }

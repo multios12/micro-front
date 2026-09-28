@@ -191,7 +191,7 @@ func (uc Usecase) Delete(ctx context.Context, id int64) (BlogsDeleteResponse, er
 	}
 
 	for _, img := range images {
-		_ = os.Remove(filepath.Join(uc.DataDir, "images", strconv.FormatInt(blog.ID, 10), strconv.FormatInt(img.ID, 10)+".png"))
+		_ = os.Remove(filepath.Join(uc.DataDir, "images", strconv.FormatInt(blog.ID, 10), strconv.FormatInt(img.ID, 10)+".jpg"))
 	}
 
 	return BlogsDeleteResponse{

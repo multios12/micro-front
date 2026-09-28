@@ -24,7 +24,7 @@ export const createBlogEditViewModel = (blogId: string): BlogEditViewModel => {
     cancelHref: mode === 'about' ? '#/dashboard' : '#/blogs',
     saveHref: mode === 'about' ? '#/blog-edit/about' : mode === 'new' ? '#/blog-edit' : `#/blog-edit/${blogId}`,
     showPublishButton: mode === 'blog',
-    imageNote: '画像サイズを1920x1080以下に変換して、PNGで表示します。',
+    imageNote: '画像サイズを1920x1080以下に変換して、JPEGで表示します。',
     content:
       mode === 'about'
         ? `## about
@@ -35,7 +35,7 @@ export const createBlogEditViewModel = (blogId: string): BlogEditViewModel => {
 - 管理者プロフィール
 - リンク一覧
 
-![sample](/admin/images/41/1.png)`
+![sample](/admin/images/41/1.jpg)`
         : mode === 'new'
           ? ''
           : `## 公開サイトの導線を見直す
@@ -48,7 +48,7 @@ Latest セクションから記事一覧へ自然に遷移できるように調�
 - 記事一覧でのカード選択範囲
 - カテゴリページとの役割分担
 
-![sample](/admin/images/42/3.png)`,
+![sample](/admin/images/42/3.jpg)`,
     deleteMessage:
       mode === 'about'
         ? 'about 記事を削除しますか。削除後は元に戻せません。'
@@ -81,7 +81,7 @@ export function createBlogEditLabels(blogId: string) {
   return {
     headerTitle: mode === 'about' ? 'ABOUT' : mode === 'new' ? 'NEW BLOG' : 'BLOG EDIT',
     cancelHref: mode === 'about' ? '#/dashboard' : '#/blogs',
-    imageNote: '画像サイズを1920x1080以下に変換して、PNGで表示します。',
+    imageNote: '画像サイズを1920x1080以下に変換して、JPEGで表示します。',
     deleteMessage:
       mode === 'about'
         ? 'about 記事を削除しますか。削除後は元に戻せません。'

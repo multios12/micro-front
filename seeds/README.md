@@ -27,7 +27,7 @@ go run ./cmd/micro-front seed --reset=false
 - `blogs.json`: 記事データ
 - `images.json`: 画像メタデータとコピー元ファイル
 - `content/`: 長めの Markdown 本文
-- `files/images/`: seed 時に `data/images/{blog_id}/{image_id}.png` へコピーする PNG
+- `files/images/`: seed 時に `data/images/{blog_id}/{image_id}.jpg` へ変換して保存する画像
 
 `blogs.json` の `content_file` は seed ディレクトリからの相対パスを指定する。
 `use_sample_content: true` を指定すると `docs/sample-md.md` を本文として使う。

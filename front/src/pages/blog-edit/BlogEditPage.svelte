@@ -161,12 +161,12 @@
     }));
   const getMarkdownImageRefs = (markdown: string) => {
     const pattern =
-      /!\[[^\]]*]\((?:\/admin\/images\/)?(\d+)\/(\d+)\.png(?:\s+[^)]*)?\)/g;
+      /!\[[^\]]*]\((?:\/admin\/images\/)?(\d+)\/(\d+)\.jpg(?:\s+[^)]*)?\)/g;
 
     return [...markdown.matchAll(pattern)].map((match) => ({
       blogId: Number(match[1]),
       imageId: Number(match[2]),
-      path: `${match[1]}/${match[2]}.png`,
+      path: `${match[1]}/${match[2]}.jpg`,
     }));
   };
   const isMarkdownImageReferenced = (
@@ -432,7 +432,7 @@
 
     imageInsertRequest = {
       id: ++imageInsertRequestSeq,
-      imageUrl: `${resolvedBlogId}/${item.id}.png`,
+      imageUrl: `${resolvedBlogId}/${item.id}.jpg`,
       altText: item.altText,
     };
   };

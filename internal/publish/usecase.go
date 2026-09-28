@@ -39,7 +39,7 @@ var listBodyTemplate = mustParseTemplate("blog-list", "templates/list.tmpl")
 var aboutBodyTemplate = mustParseTemplate("about", "templates/about.tmpl")
 var blogBodyTemplate = mustParseTemplate("blog", "templates/blog.tmpl")
 
-var publicImagePattern = regexp.MustCompile(`src="(?:/admin/images/)?(\d+)/(\d+)\.png"`)
+var publicImagePattern = regexp.MustCompile(`src="(?:/admin/images/)?(\d+)/(\d+)\.jpg"`)
 
 const previewTTL = 24 * time.Hour
 
@@ -810,7 +810,7 @@ func publicMarkdownHTML(pageFile string, blogID int64, content string) string {
 		if len(parts) != 3 {
 			return match
 		}
-		target := filepath.ToSlash(filepath.Join("assets", "images", parts[1], parts[2]+".png"))
+		target := filepath.ToSlash(filepath.Join("assets", "images", parts[1], parts[2]+".jpg"))
 		return `src="` + relURL(pageFile, target) + `"`
 	})
 }
@@ -862,7 +862,7 @@ func (uc Usecase) renderLeadImageFigure(ctx context.Context, pageFile string, bl
 	if strings.TrimSpace(alt) == "" {
 		alt = fallback
 	}
-	src := relURL(pageFile, filepath.ToSlash(filepath.Join("assets", "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(img.ID, 10)+".png")))
+	src := relURL(pageFile, filepath.ToSlash(filepath.Join("assets", "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(img.ID, 10)+".jpg")))
 	return `<figure class="mock-figure"><img class="mock-image" alt="` + esc(alt) + `" src="` + src + `"></figure>`, nil
 }
 
@@ -949,8 +949,8 @@ func (uc Usecase) copyPublicImagesForBlog(ctx context.Context, blogID int64) err
 		return err
 	}
 	for _, img := range images {
-		src := filepath.Join(uc.Store.DataDir, "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(img.ID, 10)+".png")
-		dst := filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(img.ID, 10)+".png")
+		src := filepath.Join(uc.Store.DataDir, "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(img.ID, 10)+".jpg")
+		dst := filepath.Join(uc.PublishDir, "assets", "images", strconv.FormatInt(blogID, 10), strconv.FormatInt(img.ID, 10)+".jpg")
 		if err := copyFile(src, dst); err != nil {
 			return err
 		}

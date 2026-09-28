@@ -91,6 +91,27 @@ JSON と Markdown からデータを DB に投入します。
 詳しくは、`seeds/README.md` を参照してください。
 
 
+## サブコマンド `migrate-images-to-jpeg`
+
+既存の `DATA_DIR/images` 配下にある PNG 画像を、一度だけ JPEG へ移行するためのコマンドです。
+記事本文とサイト説明に含まれる管理画像URLも `.png` から `.jpg` へ更新します。
+
+まずPNGを残した状態で変換します。
+
+```sh
+./bin/micro-front migrate-images-to-jpeg
+```
+
+表示と公開処理を確認した後、PNGを削除する場合は再度次のように実行します。
+既存JPEGが正常であることを確認してからPNGを削除するため、安全に再実行できます。
+
+```sh
+./bin/micro-front migrate-images-to-jpeg --delete-source
+```
+
+JPEG品質の既定値は85です。必要な場合は `--quality` で1から100の範囲を指定できます。
+
+
 ## ドキュメント・設計書
 
 - 開発時の起動・ビルド・コマンド引数: [docs/development.md](docs/development.md)

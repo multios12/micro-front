@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/disintegration/imaging"
+
 	"micro-front/internal/validate"
 )
 
@@ -36,7 +38,8 @@ func (uc Usecase) Upload(ctx context.Context, blogID int64, altText string, file
 		}, nil
 	}
 
-	src, _, err := image.Decode(file)
+	// EXIF Orientation に従って回転・反転してからリサイズします。
+	src, err := imaging.Decode(file, imaging.AutoOrientation(true))
 	if err != nil {
 		return ImagesUploadResponse{}, "INVALID_IMAGE_FILE", map[string]string{
 			"file": "画像ファイルを選択してください。",
@@ -126,6 +129,7 @@ func saveJPEG(dataDir string, blogID, imageID int64, src image.Image) error {
 		return err
 	}
 	defer f.Close()
+	// 画素から再エンコードするため、元画像の EXIF 情報は保存しません。
 	return jpeg.Encode(f, dst, &jpeg.Options{Quality: 85})
 }
 

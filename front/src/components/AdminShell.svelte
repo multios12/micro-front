@@ -1,7 +1,7 @@
 <script lang="ts">
   import AdminNavigation from "./AdminNavigation.svelte";
 
-  type NavKey = "dashboard" | "blogs" | "site" | "about";
+  type NavKey = "dashboard" | "blogs" | "categories" | "site" | "about";
 
   export let active: NavKey = "dashboard";
   export let blogCount = 0;

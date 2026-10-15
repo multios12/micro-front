@@ -2,12 +2,14 @@ package seed
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
 	_ "image/png"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"micro-front/internal/store"
 	"micro-front/internal/validate"
@@ -31,6 +33,9 @@ func (uc Usecase) Run(ctx context.Context, opts Options) error {
 	if err := uc.seedSite(ctx, opts.SeedDir); err != nil {
 		return err
 	}
+	if err := uc.seedCategories(ctx, opts.SeedDir); err != nil {
+		return err
+	}
 	if err := uc.seedBlogs(ctx, opts.SeedDir); err != nil {
 		return err
 	}
@@ -38,10 +43,23 @@ func (uc Usecase) Run(ctx context.Context, opts Options) error {
 }
 
 func (uc Usecase) reset(ctx context.Context) error {
-	if _, err := uc.Store.DB.ExecContext(ctx, `DELETE FROM images`); err != nil {
+	tx, err := uc.Store.DB.BeginTx(ctx, nil)
+	if err != nil {
 		return err
 	}
-	if _, err := uc.Store.DB.ExecContext(ctx, `DELETE FROM blogs`); err != nil {
+	defer tx.Rollback()
+	// 外部キー制約に従い、記事と小見出しを先に削除する。
+	for _, stmt := range []string{
+		`DELETE FROM images`,
+		`DELETE FROM blogs`,
+		`DELETE FROM categories WHERE parent_id IS NOT NULL`,
+		`DELETE FROM categories`,
+	} {
+		if _, err := tx.ExecContext(ctx, stmt); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 	return os.RemoveAll(filepath.Join(uc.DataDir, "images"))
@@ -69,7 +87,22 @@ func (uc Usecase) seedBlogs(ctx context.Context, seedDir string) error {
 	if err != nil {
 		return err
 	}
+	// キーはseedファイル内の参照名としてのみ解決する。
+	categories, categoryErr := loadJSON[[]CategorySeed](filepath.Join(seedDir, "categories.json"))
+	if categoryErr != nil && !errors.Is(categoryErr, os.ErrNotExist) {
+		return categoryErr
+	}
+	aliases := make(map[string]string)
+	for _, category := range categories {
+		aliases[category.CategoryKey] = strings.TrimSpace(category.Name)
+	}
 	for _, item := range blogs {
+		if name, ok := aliases[item.Category]; ok {
+			item.Category = name
+		}
+		if name, ok := aliases[item.ParentCategory]; ok {
+			item.ParentCategory = name
+		}
 		content := item.Content
 		switch {
 		case item.UseSampleContent:
@@ -87,12 +120,13 @@ func (uc Usecase) seedBlogs(ctx context.Context, seedDir string) error {
 		}
 
 		blog := store.BlogEntitty{
-			Title:       item.Title,
-			Content:     content,
-			Summary:     validate.SummaryFromContent(content),
-			Category:    item.Category,
-			Status:      item.Status,
-			PublishedAt: item.PublishedAt,
+			Title:          item.Title,
+			Content:        content,
+			Summary:        validate.SummaryFromContent(content),
+			Category:       item.Category,
+			ParentCategory: item.ParentCategory,
+			Status:         item.Status,
+			PublishedAt:    item.PublishedAt,
 		}
 		if item.ID > 0 {
 			if _, err := uc.Store.CreateBlogWithID(ctx, blog, item.ID); err != nil {

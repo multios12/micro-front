@@ -26,6 +26,7 @@ export type SiteApiRequest = {
 }
 
 export type BlogListApiItem = {
+  parent_category: string
   id: number
   title: string
   summary: string
@@ -43,7 +44,22 @@ export type BlogListApiResponse = {
   total_pages: number
 }
 
+export type CategoryApiItem = {
+  id: number
+  parent_id: number | null
+  is_heading: boolean
+  name: string
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type CategoryListApiResponse = {
+  items: CategoryApiItem[]
+}
+
 export type BlogDetailApiResponse = {
+  parent_category: string
   id: number
   title: string
   content: string
@@ -56,6 +72,7 @@ export type BlogDetailApiResponse = {
 }
 
 export type BlogUpsertApiRequest = {
+  parent_category?: string
   title: string
   content: string
   category: string
@@ -260,6 +277,34 @@ async function requestFormData<T>(path: string, init: RequestInit & { body: Form
 
 export async function fetchSiteSettings(): Promise<SiteApiResponse> {
   return requestJson<SiteApiResponse>(adminApiPath('site'))
+}
+
+export async function fetchCategoryList(): Promise<CategoryListApiResponse> {
+  return requestJson<CategoryListApiResponse>(adminApiPath('categories'))
+}
+
+export async function createCategory(request: {
+  parent_id: number | null
+  is_heading: boolean
+  name: string
+  sort_order: number
+}): Promise<CategoryApiItem> {
+  return requestJson<CategoryApiItem>(adminApiPath('categories'), { method: 'POST', body: request })
+}
+
+export async function deleteCategory(id: number): Promise<{ id: number; result: string }> {
+  return requestJson<{ id: number; result: string }>(adminApiPath(`categories/${id}`), { method: 'DELETE' })
+}
+
+export async function moveCategory(id: number, direction: 'up' | 'down'): Promise<{ result: string }> {
+  return requestJson<{ result: string }>(adminApiPath(`categories/${id}/move`), { method: 'POST', body: { direction } })
+}
+
+export async function updateCategory(id: number, request: {
+  name: string
+  sort_order: number
+}): Promise<CategoryApiItem> {
+  return requestJson<CategoryApiItem>(adminApiPath(`categories/${id}`), { method: 'PUT', body: request })
 }
 
 export async function updateSiteSettings(request: SiteApiRequest): Promise<SiteApiResponse> {

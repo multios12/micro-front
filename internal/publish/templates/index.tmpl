@@ -36,12 +36,11 @@
     .meta { font-size: 0.68rem; color: rgba(107, 107, 107, 0.68); }
     .sidebar { display: grid; gap: 16px; }
     .category-tree { display: block; }
-    .category-group { margin: 0; padding: 0 0 2px; border-bottom: 1.5px solid var(--line); }
-    .category-group:last-child { border-bottom: 0; }
+    .category-group { margin: 0; padding: 0 0 2px; }
     .category-group > summary {
       cursor: pointer;
       list-style: none;
-      padding: 0 0 4px;
+      padding: 10px 12px;
     }
     .category-group > summary::-webkit-details-marker { display: none; }
     .category-root,
@@ -53,7 +52,9 @@
       padding: 10px 12px;
       background: rgba(255, 255, 255, 0.86);
     }
-    .category-branch { display: grid; gap: 2px; margin-top: 2px; padding-left: 10px; }
+    .category-branch { display: grid; gap: 2px; margin: 2px 0 8px 12px; padding-left: 12px; border-left: 2px solid var(--line); }
+    summary.category-root::after { content: "▾"; color: var(--muted); }
+    .category-group:not([open]) > summary.category-root::after { content: "▸"; }
     .category-label { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .category-name {
       text-decoration: underline;
@@ -62,7 +63,7 @@
       text-underline-offset: 3px;
     }
     .category-count { color: var(--muted); font-size: 0.85rem; }
-    .category-root-link { font-weight: 700; }
+    .category-root { font-weight: 700; }
     .category-root-link:hover { background: rgba(217, 119, 6, 0.04); }
     @media (max-width: 860px) {
       .panel.grid-2 { grid-template-columns: 1fr; }
@@ -104,9 +105,9 @@
             <a class="post-card post-card-link blog-list-card" href="{{.URL}}" aria-label="{{.Title}}を開く">
               <div class="blog-list-card-body">
                 {{if .Category}}<p class="meta">{{.Category}}</p>{{else}}<p class="meta">ARTICLE</p>{{end}}
+                <p class="meta">{{dateOnly .PublishedAt}}</p>
                 <h3>{{.Title}}</h3>
                 <p>{{.Summary}}</p>
-                <p class="meta">{{dateOnly .PublishedAt}}</p>
               </div>
               {{if .TitleImageURL}}<img class="title-image-thumb blog-list-card-image" src="{{.TitleImageURL}}" alt="" loading="lazy">{{end}}
             </a>
@@ -136,6 +137,10 @@
                   {{end}}
                 </div>
               </details>
+              {{else if .IsHeading}}
+              <div class="category-root">
+                <span class="category-label"><span class="category-name">{{.Name}}</span><span class="category-count">({{.Count}})</span></span>
+              </div>
               {{else}}
               <a class="category-root category-root-link" href="{{.URL}}">
                 <span class="category-label"><span class="category-name">{{.Name}}</span><span class="category-count">({{.Count}})</span></span>

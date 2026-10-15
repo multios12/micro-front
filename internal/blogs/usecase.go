@@ -42,6 +42,7 @@ func (uc Usecase) List(ctx context.Context, page, perPage int, status string) (B
 			ID:                 blog.ID,
 			Title:              blog.Title,
 			Summary:            blog.Summary,
+			ParentCategory:     blog.ParentCategory,
 			Category:           blog.Category,
 			Status:             blog.Status,
 			TitleImageTemplate: blog.TitleImageTemplate,
@@ -73,6 +74,7 @@ func (uc Usecase) Get(ctx context.Context, id int64) (BlogsDetailResponse, error
 		Title:              blog.Title,
 		Content:            blog.Content,
 		Summary:            blog.Summary,
+		ParentCategory:     blog.ParentCategory,
 		Category:           blog.Category,
 		Status:             blog.Status,
 		TitleImageTemplate: blog.TitleImageTemplate,
@@ -84,6 +86,7 @@ func (uc Usecase) Get(ctx context.Context, id int64) (BlogsDetailResponse, error
 // Create は設計書 3.5 の記事新規作成処理を行います。
 func (uc Usecase) Create(ctx context.Context, req BlogsCreateRequest) (BlogsCreateResponse, string, map[string]string, error) {
 	blog, code, fields := buildBlog(req.Title, req.Content, req.Category, req.Status, req.TitleImageTemplate, req.PublishedAt, true)
+	setBlogParentCategory(&blog, req.ParentCategory)
 	if len(fields) > 0 {
 		return BlogsCreateResponse{}, code, fields, nil
 	}
@@ -103,6 +106,7 @@ func (uc Usecase) Create(ctx context.Context, req BlogsCreateRequest) (BlogsCrea
 		Title:              created.Title,
 		Content:            created.Content,
 		Summary:            created.Summary,
+		ParentCategory:     created.ParentCategory,
 		Category:           created.Category,
 		Status:             created.Status,
 		TitleImageTemplate: created.TitleImageTemplate,
@@ -116,9 +120,11 @@ func (uc Usecase) Update(ctx context.Context, id int64, req BlogsUpdateRequest) 
 	if id == aboutBlogID {
 		req.Title = "about"
 		req.Category = ""
+		req.ParentCategory = nil
 	}
 
 	blog, code, fields := buildBlog(req.Title, req.Content, req.Category, req.Status, req.TitleImageTemplate, req.PublishedAt, id != aboutBlogID)
+	setBlogParentCategory(&blog, req.ParentCategory)
 	if len(fields) > 0 {
 		return BlogsUpdateResponse{}, code, fields, nil
 	}
@@ -138,6 +144,7 @@ func (uc Usecase) Update(ctx context.Context, id int64, req BlogsUpdateRequest) 
 				Title:              created.Title,
 				Content:            created.Content,
 				Summary:            created.Summary,
+				ParentCategory:     created.ParentCategory,
 				Category:           created.Category,
 				Status:             created.Status,
 				TitleImageTemplate: created.TitleImageTemplate,
@@ -151,6 +158,9 @@ func (uc Usecase) Update(ctx context.Context, id int64, req BlogsUpdateRequest) 
 		return BlogsUpdateResponse{}, "", nil, err
 	}
 
+	if req.ParentCategory == nil && blog.Category == existing.Category && id != aboutBlogID {
+		blog.ParentCategory = existing.ParentCategory
+	}
 	duplicate, err := uc.Store.GetBlogByTitle(ctx, blog.Title)
 	if err == nil && duplicate.ID != existing.ID {
 		return BlogsUpdateResponse{}, "", nil, errBlogTitleConflict
@@ -167,6 +177,7 @@ func (uc Usecase) Update(ctx context.Context, id int64, req BlogsUpdateRequest) 
 		Title:              updated.Title,
 		Content:            updated.Content,
 		Summary:            updated.Summary,
+		ParentCategory:     updated.ParentCategory,
 		Category:           updated.Category,
 		Status:             updated.Status,
 		TitleImageTemplate: updated.TitleImageTemplate,
@@ -233,12 +244,6 @@ func buildBlog(title, content, category, status, titleImageTemplate, publishedAt
 	} else if validate.Length(content) > 20000 {
 		fields["content"] = "本文は20000文字以内で入力してください。"
 	}
-	if validate.Length(category) > 20 {
-		fields["category"] = "カテゴリは20文字以内で入力してください。"
-	}
-	if strings.TrimSpace(category) != "" && !validate.IsCategory(category) {
-		fields["category"] = "カテゴリの形式が不正です。"
-	}
 	if status == "" {
 		status = "private"
 	}
@@ -277,4 +282,10 @@ func buildBlog(title, content, category, status, titleImageTemplate, publishedAt
 		TitleImageTemplate: titleImageTemplate,
 		PublishedAt:        publishedAt,
 	}, "", nil
+}
+
+func setBlogParentCategory(blog *store.BlogEntitty, value *string) {
+	if value != nil {
+		blog.ParentCategory = strings.TrimSpace(*value)
+	}
 }

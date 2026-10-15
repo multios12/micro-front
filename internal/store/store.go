@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,15 +23,22 @@ func New(dataDir string) (*Store, error) {
 		return nil, fmt.Errorf("create data dir: %w", err)
 	}
 
-	dbPath := filepath.Join(dataDir, "app.db")
-	db, err := sql.Open("sqlite", dbPath)
+	dbPath, err := filepath.Abs(filepath.Join(dataDir, "app.db"))
+	if err != nil {
+		return nil, fmt.Errorf("resolve sqlite path: %w", err)
+	}
+	uriPath := filepath.ToSlash(dbPath)
+	if !strings.HasPrefix(uriPath, "/") {
+		// Windowsのドライブパスも file:///C:/... の形式にする。
+		uriPath = "/" + uriPath
+	}
+	dsn := url.URL{Scheme: "file", Path: uriPath}
+	query := url.Values{}
+	query.Add("_pragma", "foreign_keys(1)")
+	dsn.RawQuery = query.Encode()
+	db, err := sql.Open("sqlite", dsn.String())
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)
-	}
-
-	if _, err := db.Exec(`PRAGMA foreign_keys = ON`); err != nil {
-		_ = db.Close()
-		return nil, fmt.Errorf("enable foreign keys: %w", err)
 	}
 
 	s := &Store{DB: db, DataDir: dataDir}
@@ -68,6 +76,7 @@ func (s *Store) initSchema() error {
 			content TEXT NOT NULL,
 			summary TEXT NOT NULL,
 			category TEXT,
+			parent_category TEXT NOT NULL DEFAULT '',
 			status TEXT NOT NULL DEFAULT 'private' CHECK (status IN ('public', 'private')),
 			title_image_template TEXT NOT NULL DEFAULT 'diary',
 			published_at TEXT NOT NULL,
@@ -100,6 +109,25 @@ func (s *Store) initSchema() error {
 	}
 	if _, err := s.DB.Exec(`ALTER TABLE blogs ADD COLUMN title_image_template TEXT NOT NULL DEFAULT 'diary'`); err != nil && !strings.Contains(err.Error(), "duplicate column name") {
 		return fmt.Errorf("migrate blogs schema: %w", err)
+	}
+	if err := s.migrateCategories(); err != nil {
+		return fmt.Errorf("migrate categories: %w", err)
+	}
+	if err := s.migrateBlogParentCategory(); err != nil {
+		return fmt.Errorf("migrate blog parent category: %w", err)
+	}
+	if err := s.migrateCategoryHeading(); err != nil {
+		return fmt.Errorf("migrate category heading: %w", err)
+	}
+	if err := s.migrateCategoryNameScope(); err != nil {
+		return fmt.Errorf("migrate category name scope: %w", err)
+	}
+	if err := s.migrateBlogCategoryLinks(); err != nil {
+		return fmt.Errorf("migrate blog category links: %w", err)
+	}
+
+	if err := s.migrateRemoveCategoryKey(); err != nil {
+		return fmt.Errorf("remove category key: %w", err)
 	}
 
 	_, err := s.DB.Exec(`

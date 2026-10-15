@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Info, LayoutDashboard, Newspaper, PanelTop } from "lucide-svelte";
+  import { FolderTree, Info, LayoutDashboard, Newspaper, PanelTop } from "lucide-svelte";
   import Icon from "./MDInput/Icon.svelte";
 
-  type NavKey = "dashboard" | "blogs" | "site" | "about";
+  type NavKey = "dashboard" | "blogs" | "categories" | "site" | "about";
 
   export let active: NavKey = "dashboard";
   export let blogCount = 0;
@@ -28,6 +28,7 @@
       badge: String(blogCount),
       icon: Newspaper,
     },
+    { key: "categories", label: "Categories", href: "#/categories", icon: FolderTree },
     { key: "site", label: "Site", href: "#/site", icon: PanelTop },
     { key: "about", label: "About", href: "#/blog-edit/about", icon: Info },
   ];
@@ -44,6 +45,7 @@
           : "border-transparent text-slate-200 hover:border-slate-500/50 hover:bg-white/5"
       }`}
       href={item.href}
+      aria-current={active === item.key ? 'page' : undefined}
     >
       <span class="flex items-center gap-2">
         <Icon icon={item.icon} />

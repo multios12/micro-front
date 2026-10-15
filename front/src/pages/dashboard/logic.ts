@@ -1,4 +1,5 @@
 import { formatPublishedDate } from '../../lib/date-format'
+import { formatCategory } from '../../lib/category-format'
 
 export type DashboardStatCard = {
   label: string
@@ -58,6 +59,7 @@ export function mapDashboardBlogRows(items: Array<{
   title: string
   summary: string
   category: string
+  parent_category?: string
   status: 'public' | 'private'
   published_at: string
   updated_at: string
@@ -66,7 +68,7 @@ export function mapDashboardBlogRows(items: Array<{
     id: item.id,
     title: item.title,
     summary: item.summary,
-    category: item.category || '未分類',
+    category: formatCategory(item.category, item.parent_category),
     status: item.status,
     publishedAt: formatPublishedDate(item.published_at),
     updatedAt: item.updated_at,
@@ -136,6 +138,7 @@ export function createDashboardData(args: {
     title: string
     summary: string
     category: string
+    parent_category?: string
     status: 'public' | 'private'
     published_at: string
     updated_at: string

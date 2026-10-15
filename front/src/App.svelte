@@ -4,14 +4,15 @@
   import AdminShell from './components/AdminShell.svelte'
   import BlogEditPage from './pages/blog-edit/BlogEditPage.svelte'
   import BlogsPage from './pages/blogs/BlogsPage.svelte'
+  import CategoriesPage from './pages/categories/CategoriesPage.svelte'
   import DashboardPage from './pages/dashboard/DashboardPage.svelte'
   import SitePage from './pages/site/SitePage.svelte'
   import { fetchSiteSettings } from './lib/admin-api'
   import { blogCount, refreshBlogCount } from './lib/blog-count'
   import { siteTitle, siteUrl } from './lib/site-title'
 
-  type Route = 'dashboard' | 'blogs' | 'site' | 'blog-edit'
-  type NavKey = 'dashboard' | 'blogs' | 'site' | 'about'
+  type Route = 'dashboard' | 'blogs' | 'categories' | 'site' | 'blog-edit'
+  type NavKey = 'dashboard' | 'blogs' | 'categories' | 'site' | 'about'
 
   let route: Route = 'dashboard'
   let blogId = 'new'
@@ -20,7 +21,7 @@
       return { route: 'blog-edit', blogId: 'about' }
     }
 
-    const match = hash.match(/^#\/(dashboard|blogs|site|blog-edit)(?:\/([^/]+))?\/?$/)
+    const match = hash.match(/^#\/(dashboard|blogs|categories|site|blog-edit)(?:\/([^/]+))?\/?$/)
     if (!match) {
       return null
     }
@@ -76,6 +77,8 @@
     <DashboardPage />
   {:else if route === 'blogs'}
     <BlogsPage />
+  {:else if route === 'categories'}
+    <CategoriesPage />
   {:else if route === 'site'}
     <SitePage />
   {:else if route === 'blog-edit'}

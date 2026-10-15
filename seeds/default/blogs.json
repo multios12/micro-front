@@ -12,7 +12,8 @@
     "id": 2,
     "title": "画像サイズ指定の確認",
     "content": "## 画像サイズ指定\n\nObsidian 風の記法で画像サイズを指定できます。\n\n![横幅半分|50%](/admin/images/2/2.jpg)\n\n`![alt|50%](url)` は本文幅に対する比率です。",
-    "category": "開発メモ",
+    "parent_category": "開発メモ",
+    "category": "画像",
     "status": "public",
     "published_at": "2026-04-19"
   },
@@ -20,7 +21,8 @@
     "id": 3,
     "title": "公開サイトの導線を見直す",
     "content": "## 導線メモ\n\nトップページから記事一覧へ自然に移動できるよう、見出しとカードの役割を整理しました。\n\n![導線の図|60%x220](/admin/images/3/3.jpg)",
-    "category": "設計",
+    "parent_category": "設計",
+    "category": "導線",
     "status": "public",
     "published_at": "2026-04-18"
   },
@@ -28,7 +30,8 @@
     "id": 4,
     "title": "カテゴリ一覧の表示確認",
     "content": "## カテゴリ一覧\n\nカテゴリ別ページのパンくず、見出し、ページングを確認するための記事です。\n\n![カテゴリ画像|320](/admin/images/4/4.jpg)",
-    "category": "運用",
+    "parent_category": "運用",
+    "category": "公開作業",
     "status": "public",
     "published_at": "2026-04-17"
   },
@@ -100,7 +103,8 @@
     "id": 13,
     "title": "開発メモ 01",
     "content": "## 開発メモ\n\nMarkdown の変換仕様を追加したときは、サンプルとテストを一緒に更新します。",
-    "category": "開発メモ",
+    "parent_category": "開発メモ",
+    "category": "Markdown",
     "status": "public",
     "published_at": "2026-04-08"
   },

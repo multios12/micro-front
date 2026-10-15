@@ -9,6 +9,11 @@
   import TitleImageTemplateSelector from "../../components/TitleImageTemplateSelector.svelte";
   import Toast from "../../components/Toast.svelte";
   import {
+    buildBlogCategoryOptions,
+    categoryOptionLabel,
+    categorySelectionValue,
+  } from "./category-options";
+  import {
     createBlogEditLabels,
     resolveBlogEditMode,
     resolveBlogEditTargetId,
@@ -22,13 +27,17 @@
     blogImageUploadPath,
     fetchBlogDetail,
     fetchBlogImages,
+    fetchCategoryList,
     extractValidationFields,
     fetchTitleImageTemplates,
     publish,
     uploadBlogImage,
     updateBlog,
   } from "../../lib/admin-api";
-  import type { TitleImageTemplateApiItem } from "../../lib/admin-api";
+  import type {
+    CategoryApiItem,
+    TitleImageTemplateApiItem,
+  } from "../../lib/admin-api";
   import { refreshBlogCount } from "../../lib/blog-count";
   import {
     formatPublishedDate,
@@ -71,6 +80,44 @@
   let articleId = "";
   let title = "";
   let category = "";
+  let parentCategory = "";
+  let categories: CategoryApiItem[] = [];
+  let categoriesLoading = true;
+  let categoriesError = "";
+
+  $: categoryOptions = buildBlogCategoryOptions(categories);
+  $: selectedCategory = categorySelectionValue(parentCategory, category);
+  $: currentCategoryMissing =
+    selectedCategory !== "" &&
+    !categoryOptions.some((option) => option.value === selectedCategory);
+
+  const loadCategories = async () => {
+    categoriesLoading = true;
+    categoriesError = "";
+    try {
+      categories = (await fetchCategoryList()).items;
+    } catch (err) {
+      categoriesError =
+        err instanceof Error
+          ? err.message
+          : "カテゴリ一覧の取得に失敗しました。";
+    } finally {
+      categoriesLoading = false;
+    }
+  };
+
+  const selectCategory = (value: string) => {
+    if (value === "") {
+      parentCategory = "";
+      category = "";
+      return;
+    }
+    const option = categoryOptions.find((option) => option.value === value);
+    if (option) {
+      parentCategory = option.parentCategory;
+      category = option.category;
+    }
+  };
   let publishedAt = "";
   let content = "";
   let status: "public" | "private" = "private";
@@ -115,6 +162,7 @@
   const getDraftValues = (): BlogDraftValues => ({
     title,
     category,
+    parentCategory,
     publishedAt,
     content,
     status,
@@ -124,6 +172,7 @@
   const applyDraft = (draft: BlogDraft) => {
     ({ title, category, publishedAt, content, status, titleImageTemplate } =
       draft.values);
+    parentCategory = draft.values.parentCategory ?? "";
   };
   const draftController = createBlogDraftController({
     getValues: getDraftValues,
@@ -188,7 +237,16 @@
     lastLoadedBlogId = blogId;
     void loadBlog();
   }
-  $: draftValuesSignature = JSON.stringify(getDraftValues());
+  $: {
+    title;
+    category;
+    parentCategory;
+    publishedAt;
+    content;
+    status;
+    titleImageTemplate;
+    draftValuesSignature = JSON.stringify(getDraftValues());
+  }
   $: draftController.onValuesChanged(draftValuesSignature);
 
   const loadTitleImageTemplates = async () => {
@@ -209,6 +267,7 @@
     draftController.disable();
     draftBaseUpdatedAt = undefined;
     draftRestoreOpen = false;
+    if (mode !== "about") void loadCategories();
     let targetId = Number.NaN;
     let canEditDraft = false;
 
@@ -218,6 +277,7 @@
         articleId = "new";
         title = "";
         category = "";
+        parentCategory = "";
         publishedAt = todayLocalDate();
         content = "";
         status = "private";
@@ -254,6 +314,7 @@
         articleId = String(targetId);
         title = "";
         category = "";
+        parentCategory = "";
         publishedAt = "";
         content = "";
         status = "private";
@@ -278,6 +339,7 @@
     articleId = String(detail.id);
     title = detail.title;
     category = detail.category;
+    parentCategory = detail.parent_category ?? "";
     publishedAt = formatPublishedDate(detail.published_at);
     content = detail.content;
     status = detail.status;
@@ -288,6 +350,7 @@
     title: mode === "about" ? "about" : title,
     content,
     category: mode === "about" ? "" : category,
+    parent_category: mode === "about" ? "" : parentCategory,
     status: nextStatus,
     title_image_template:
       mode === "about" ? "diary" : titleImageTemplate || "diary",
@@ -721,15 +784,59 @@
       <div class="admin-grid-2">
         <div class="admin-field">
           <label class="admin-label" for="category">カテゴリ</label>
-          <input
+          <select
             id="category"
-            class="admin-input"
-            class:admin-input-error={Boolean(validationFields.category)}
-            type="text"
-            bind:value={category}
-          />
-          {#if validationFields.category}
-            <p class="admin-error-message">{validationFields.category}</p>
+            class="admin-select"
+            class:admin-select-error={Boolean(
+              validationFields.category || validationFields.parent_category,
+            )}
+            bind:value={selectedCategory}
+            disabled={loading || saving || categoriesLoading}
+            aria-invalid={Boolean(
+              validationFields.category || validationFields.parent_category,
+            )}
+            aria-describedby={validationFields.category ||
+            validationFields.parent_category
+              ? "category-error"
+              : undefined}
+            on:change={(event) => selectCategory(event.currentTarget.value)}
+          >
+            <option value="">未分類</option>
+            {#each categoryOptions as option (option.value)}
+              <option value={option.value}>{option.label}</option>
+            {/each}
+            {#if currentCategoryMissing && category}
+              <option value={selectedCategory}
+                >{categoryOptionLabel(
+                  parentCategory,
+                  category,
+                )}（現在の設定）</option
+              >
+            {:else if currentCategoryMissing}
+              <option value={selectedCategory} disabled hidden>カテゴリを選択してください</option>
+            {/if}
+          </select>
+          {#if categoriesLoading}
+            <p class="admin-note" role="status">
+              カテゴリ一覧を読み込んでいます。
+            </p>
+          {:else if categoriesError}
+            <p class="admin-error-message" role="alert">{categoriesError}</p>
+            <button class="admin-button" type="button" on:click={loadCategories}
+              >カテゴリを再読み込み</button
+            >
+          {/if}
+          {#if validationFields.category || validationFields.parent_category}
+            <div id="category-error">
+              {#if validationFields.category}
+                <p class="admin-error-message">{validationFields.category}</p>
+              {/if}
+              {#if validationFields.parent_category}
+                <p class="admin-error-message">
+                  {validationFields.parent_category}
+                </p>
+              {/if}
+            </div>
           {/if}
         </div>
         <div class="admin-field">

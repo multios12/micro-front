@@ -23,9 +23,20 @@ type BlogSeed struct {
 	Content          string `json:"content"`
 	ContentFile      string `json:"content_file"`
 	Category         string `json:"category"`
+	ParentCategory   string `json:"parent_category"`
 	Status           string `json:"status"`
 	PublishedAt      string `json:"published_at"`
 	UseSampleContent bool   `json:"use_sample_content"`
+}
+
+// CategorySeed のキーはファイル内だけの参照名で、DBには保存しません。
+// ParentKey は親の CategoryKey を参照します。空の場合は親見出しです。
+type CategorySeed struct {
+	IsHeading   *bool  `json:"is_heading"`
+	Name        string `json:"name"`
+	CategoryKey string `json:"category_key"`
+	ParentKey   string `json:"parent_key"`
+	SortOrder   int    `json:"sort_order"`
 }
 
 type ImageSeed struct {

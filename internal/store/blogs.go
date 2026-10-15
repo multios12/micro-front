@@ -44,7 +44,7 @@ func (s *Store) ListBlogs(ctx context.Context, filter BlogListFilter) (BlogListR
 	queryArgs = append(queryArgs, filter.PerPage, offset)
 
 	rows, err := s.DB.QueryContext(ctx, fmt.Sprintf(`
-		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
+		SELECT id, title, content, summary, category, parent_category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		%s
 		ORDER BY published_at DESC, id DESC
@@ -83,7 +83,7 @@ func (s *Store) ListBlogs(ctx context.Context, filter BlogListFilter) (BlogListR
 
 func (s *Store) ListBlogsAll(ctx context.Context) ([]BlogEntitty, error) {
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
+		SELECT id, title, content, summary, category, parent_category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE title <> 'about'
 		ORDER BY published_at DESC, id DESC
@@ -106,7 +106,7 @@ func (s *Store) ListBlogsAll(ctx context.Context) ([]BlogEntitty, error) {
 
 func (s *Store) ListPublicBlogs(ctx context.Context) ([]BlogEntitty, error) {
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
+		SELECT id, title, content, summary, category, parent_category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE status = 'public' AND title <> 'about'
 		ORDER BY published_at DESC, id DESC
@@ -129,7 +129,7 @@ func (s *Store) ListPublicBlogs(ctx context.Context) ([]BlogEntitty, error) {
 
 func (s *Store) GetBlog(ctx context.Context, id int64) (BlogEntitty, error) {
 	row := s.DB.QueryRowContext(ctx, `
-		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
+		SELECT id, title, content, summary, category, parent_category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE id = ?
 	`, id)
@@ -138,7 +138,7 @@ func (s *Store) GetBlog(ctx context.Context, id int64) (BlogEntitty, error) {
 
 func (s *Store) GetBlogByTitle(ctx context.Context, title string) (BlogEntitty, error) {
 	row := s.DB.QueryRowContext(ctx, `
-		SELECT id, title, content, summary, category, status, title_image_template, published_at, updated_at
+		SELECT id, title, content, summary, category, parent_category, status, title_image_template, published_at, updated_at
 		FROM blogs
 		WHERE title = ?
 	`, title)
@@ -146,43 +146,55 @@ func (s *Store) GetBlogByTitle(ctx context.Context, title string) (BlogEntitty, 
 }
 
 func (s *Store) CreateBlog(ctx context.Context, blog BlogEntitty) (BlogEntitty, error) {
-	now := time.Now().UTC().Format("2006-01-02 15:04:05")
-	result, err := s.DB.ExecContext(ctx, `
-		INSERT INTO blogs (title, content, summary, category, status, title_image_template, published_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now)
-	if err != nil {
-		return BlogEntitty{}, err
-	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return BlogEntitty{}, err
-	}
-	return s.GetBlog(ctx, id)
+	return s.saveBlog(ctx, blog, nil, false)
 }
 
 func (s *Store) CreateBlogWithID(ctx context.Context, blog BlogEntitty, id int64) (BlogEntitty, error) {
-	now := time.Now().UTC().Format("2006-01-02 15:04:05")
-	if _, err := s.DB.ExecContext(ctx, `
-		INSERT INTO blogs (id, title, content, summary, category, status, title_image_template, published_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, id, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now); err != nil {
-		return BlogEntitty{}, err
-	}
-	return s.GetBlog(ctx, id)
+	return s.saveBlog(ctx, blog, &id, false)
 }
 
 func (s *Store) UpdateBlog(ctx context.Context, id int64, blog BlogEntitty) (BlogEntitty, error) {
-	now := time.Now().UTC().Format("2006-01-02 15:04:05")
-	_, err := s.DB.ExecContext(ctx, `
-		UPDATE blogs
-		SET title = ?, content = ?, summary = ?, category = ?, status = ?, title_image_template = ?, published_at = ?, updated_at = ?
-		WHERE id = ?
-	`, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now, id)
+	return s.saveBlog(ctx, blog, &id, true)
+}
+
+func (s *Store) saveBlog(ctx context.Context, blog BlogEntitty, id *int64, update bool) (BlogEntitty, error) {
+	tx, err := s.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return BlogEntitty{}, err
 	}
-	return s.GetBlog(ctx, id)
+	defer tx.Rollback()
+	if update {
+		var exists bool
+		if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM blogs WHERE id=?)`, id).Scan(&exists); err != nil {
+			return BlogEntitty{}, err
+		}
+		if !exists {
+			return BlogEntitty{}, sql.ErrNoRows
+		}
+	}
+	ids, err := syncBlogCategories(ctx, tx, &blog)
+	if err != nil {
+		return BlogEntitty{}, err
+	}
+	now := time.Now().UTC().Format("2006-01-02 15:04:05")
+	const returning = ` RETURNING id,title,content,summary,category,parent_category,status,title_image_template,published_at,updated_at`
+	var row *sql.Row
+	if update {
+		row = tx.QueryRowContext(ctx, `UPDATE blogs SET title=?,content=?,summary=?,category=?,parent_category=?,status=?,title_image_template=?,published_at=?,updated_at=?,category_id=?,parent_category_id=? WHERE id=?`+returning,
+			blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.ParentCategory, blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now, ids.Category, ids.Parent, id)
+	} else {
+		row = tx.QueryRowContext(ctx, `INSERT INTO blogs (id,title,content,summary,category,parent_category,status,title_image_template,published_at,updated_at,category_id,parent_category_id)
+   VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`+returning,
+			id, blog.Title, blog.Content, blog.Summary, nullString(blog.Category), blog.ParentCategory, blog.Status, defaultTitleImageTemplate(blog.TitleImageTemplate), blog.PublishedAt, now, ids.Category, ids.Parent)
+	}
+	saved, err := scanBlog(row)
+	if err != nil {
+		return BlogEntitty{}, err
+	}
+	if err := tx.Commit(); err != nil {
+		return BlogEntitty{}, err
+	}
+	return saved, nil
 }
 
 func (s *Store) DeleteBlog(ctx context.Context, id int64) error {
@@ -193,7 +205,7 @@ func (s *Store) DeleteBlog(ctx context.Context, id int64) error {
 func scanBlog(rows interface{ Scan(dest ...any) error }) (BlogEntitty, error) {
 	var blog BlogEntitty
 	var category sql.NullString
-	err := rows.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.Status, &blog.TitleImageTemplate, &blog.PublishedAt, &blog.UpdatedAt)
+	err := rows.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.ParentCategory, &blog.Status, &blog.TitleImageTemplate, &blog.PublishedAt, &blog.UpdatedAt)
 	if err != nil {
 		return BlogEntitty{}, err
 	}
@@ -205,7 +217,7 @@ func scanBlog(rows interface{ Scan(dest ...any) error }) (BlogEntitty, error) {
 func scanBlogRow(row *sql.Row) (BlogEntitty, error) {
 	var blog BlogEntitty
 	var category sql.NullString
-	err := row.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.Status, &blog.TitleImageTemplate, &blog.PublishedAt, &blog.UpdatedAt)
+	err := row.Scan(&blog.ID, &blog.Title, &blog.Content, &blog.Summary, &category, &blog.ParentCategory, &blog.Status, &blog.TitleImageTemplate, &blog.PublishedAt, &blog.UpdatedAt)
 	if err != nil {
 		return BlogEntitty{}, err
 	}

@@ -194,7 +194,11 @@ func (uc Usecase) renderIndexWithLimit(ctx context.Context, topLimit int) error 
 	if err != nil {
 		return err
 	}
-	page, err := renderIndexDocument(IndexPageData{SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, SiteDescriptionHTML: template.HTML(markdown.ToHTML(settings.SiteDescription)), HomeURL: "./index.html", Tabs: pageTabs("index.html", tabs), LatestPosts: buildIndexBlogCards(limit(blogs, topLimit)), Categories: buildIndexCategories(blogs), FootInformation: settings.FootInformation, Copyright: settings.Copyright})
+	categories, err := uc.Store.ListCategories(ctx)
+	if err != nil {
+		return err
+	}
+	page, err := renderIndexDocument(IndexPageData{SiteTitle: settings.SiteTitle, SiteSubtitle: settings.SiteSubtitle, SiteDescription: settings.SiteDescription, SiteDescriptionHTML: template.HTML(markdown.ToHTML(settings.SiteDescription)), HomeURL: "./index.html", Tabs: pageTabs("index.html", tabs), LatestPosts: buildIndexBlogCards(limit(blogs, topLimit)), Categories: buildIndexCategories(blogs, categories), FootInformation: settings.FootInformation, Copyright: settings.Copyright})
 	if err != nil {
 		return err
 	}
@@ -653,75 +657,49 @@ func formatDateOnly(value string) string {
 	}
 	return value
 }
-func buildIndexCategories(blogs []store.BlogEntitty) []IndexCategoryGroup {
-	groups := groupBlogsByCategory(blogs)
-	if len(groups) == 0 {
-		return nil
-	}
-	type categoryNode struct {
-		name  string
-		count int
-		url   string
-	}
-	byRoot := map[string][]categoryNode{}
-	rootOrder := make([]string, 0, len(groups))
-	for category, items := range groups {
-		root, child := splitIndexCategory(category)
-		node := categoryNode{name: category, count: len(items), url: relURL("index.html", filepath.ToSlash(filepath.Join("blogs", "category", categorySlug(category), "index.html")))}
-		if child == "" || root == category {
-			root = category
+
+// buildIndexCategories は登録された階層・表示順で公開記事のあるカテゴリを返します。
+func buildIndexCategories(blogs []store.BlogEntitty, categories []store.CategoryEntity) []IndexCategoryGroup {
+	type selection struct{ parent, name string }
+	counts := make(map[selection]int)
+	parentCounts := make(map[string]int)
+	for _, blog := range blogs {
+		if blog.Title == "about" {
+			continue
 		}
-		if _, ok := byRoot[root]; !ok {
-			rootOrder = append(rootOrder, root)
+		counts[selection{blog.ParentCategory, blog.Category}]++
+		if blog.ParentCategory != "" {
+			parentCounts[blog.ParentCategory]++
 		}
-		byRoot[root] = append(byRoot[root], node)
 	}
-	sort.Strings(rootOrder)
-	out := make([]IndexCategoryGroup, 0, len(rootOrder))
-	for _, root := range rootOrder {
-		children := byRoot[root]
-		sort.Slice(children, func(i, j int) bool {
-			if children[i].name == children[j].name {
-				return children[i].url < children[j].url
+	children := make(map[int64][]store.CategoryEntity)
+	for _, category := range categories {
+		if category.ParentID != nil {
+			children[*category.ParentID] = append(children[*category.ParentID], category)
+		}
+	}
+	var out []IndexCategoryGroup
+	for _, category := range categories {
+		if category.ParentID != nil {
+			continue
+		}
+		if category.IsHeading || len(children[category.ID]) > 0 {
+			group := IndexCategoryGroup{Name: category.Name, Count: parentCounts[category.Name], Open: true, IsHeading: true}
+			for _, child := range children[category.ID] {
+				count := counts[selection{category.Name, child.Name}]
+				if count == 0 {
+					continue
+				}
+				group.Children = append(group.Children, IndexCategoryCard{Name: child.Name, Count: count, URL: relURL("index.html", filepath.ToSlash(filepath.Join("blogs", "category", categorySlug(child.Name), "index.html")))})
 			}
-			return children[i].name < children[j].name
-		})
-		group := IndexCategoryGroup{Name: root}
-		if len(children) == 1 && children[0].name == root {
-			group.Count = children[0].count
-			group.URL = children[0].url
-			group.Open = false
-		} else {
-			group.Open = true
-			for _, child := range children {
-				group.Children = append(group.Children, IndexCategoryCard{Name: child.name, Count: child.count, URL: child.url})
-				group.Count += child.count
+			if group.Count > 0 {
+				out = append(out, group)
 			}
+		} else if count := counts[selection{"", category.Name}]; count > 0 {
+			out = append(out, IndexCategoryGroup{Name: category.Name, Count: count, URL: relURL("index.html", filepath.ToSlash(filepath.Join("blogs", "category", categorySlug(category.Name), "index.html")))})
 		}
-		out = append(out, group)
 	}
 	return out
-}
-func splitIndexCategory(category string) (string, string) {
-	category = strings.TrimSpace(category)
-	if category == "" {
-		return "", ""
-	}
-	if strings.Contains(category, "/") {
-		parts := strings.Split(category, "/")
-		if len(parts) >= 2 {
-			root := strings.Join(parts[:len(parts)-1], "/")
-			return root, category
-		}
-	}
-	if strings.Count(category, "-") >= 1 {
-		parts := strings.Split(category, "-")
-		if len(parts) >= 2 {
-			root := strings.Join(parts[:len(parts)-1], "-")
-			return root, category
-		}
-	}
-	return category, ""
 }
 func pageTabs(pageFile string, tabs []store.Tab) []PageTab {
 	activeTarget := activeTabTarget(pageFile)

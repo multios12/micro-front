@@ -1,6 +1,7 @@
 export type BlogDraftValues = {
   title: string
   category: string
+  parentCategory?: string
   publishedAt: string
   content: string
   status: 'public' | 'private'

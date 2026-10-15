@@ -19,6 +19,7 @@ type BlogsListItemResponse struct {
 	ID                 int64  `json:"id"`
 	Title              string `json:"title"`
 	Summary            string `json:"summary"`
+	ParentCategory     string `json:"parent_category"`
 	Category           string `json:"category"`
 	Status             string `json:"status"`
 	TitleImageTemplate string `json:"title_image_template"`
@@ -41,6 +42,7 @@ type BlogsDetailResponse struct {
 	Title              string `json:"title"`
 	Content            string `json:"content"`
 	Summary            string `json:"summary"`
+	ParentCategory     string `json:"parent_category"`
 	Category           string `json:"category"`
 	Status             string `json:"status"`
 	TitleImageTemplate string `json:"title_image_template"`
@@ -50,12 +52,13 @@ type BlogsDetailResponse struct {
 
 // BlogsCreateRequest は記事新規作成APIのリクエストです。
 type BlogsCreateRequest struct {
-	Title              string `json:"title"`
-	Content            string `json:"content"`
-	Category           string `json:"category"`
-	Status             string `json:"status"`
-	TitleImageTemplate string `json:"title_image_template"`
-	PublishedAt        string `json:"published_at"`
+	Title              string  `json:"title"`
+	Content            string  `json:"content"`
+	ParentCategory     *string `json:"parent_category"`
+	Category           string  `json:"category"`
+	Status             string  `json:"status"`
+	TitleImageTemplate string  `json:"title_image_template"`
+	PublishedAt        string  `json:"published_at"`
 }
 
 // BlogsCreateResponse は記事新規作成APIのレスポンスです。
@@ -64,6 +67,7 @@ type BlogsCreateResponse struct {
 	Title              string `json:"title"`
 	Content            string `json:"content"`
 	Summary            string `json:"summary"`
+	ParentCategory     string `json:"parent_category"`
 	Category           string `json:"category"`
 	Status             string `json:"status"`
 	TitleImageTemplate string `json:"title_image_template"`
@@ -73,12 +77,13 @@ type BlogsCreateResponse struct {
 
 // BlogsUpdateRequest は記事更新APIのリクエストです。
 type BlogsUpdateRequest struct {
-	Title              string `json:"title"`
-	Content            string `json:"content"`
-	Category           string `json:"category"`
-	Status             string `json:"status"`
-	TitleImageTemplate string `json:"title_image_template"`
-	PublishedAt        string `json:"published_at"`
+	Title              string  `json:"title"`
+	Content            string  `json:"content"`
+	ParentCategory     *string `json:"parent_category"`
+	Category           string  `json:"category"`
+	Status             string  `json:"status"`
+	TitleImageTemplate string  `json:"title_image_template"`
+	PublishedAt        string  `json:"published_at"`
 }
 
 // BlogsUpdateResponse は記事更新APIのレスポンスです。
@@ -87,6 +92,7 @@ type BlogsUpdateResponse struct {
 	Title              string `json:"title"`
 	Content            string `json:"content"`
 	Summary            string `json:"summary"`
+	ParentCategory     string `json:"parent_category"`
 	Category           string `json:"category"`
 	Status             string `json:"status"`
 	TitleImageTemplate string `json:"title_image_template"`

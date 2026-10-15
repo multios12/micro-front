@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:26-alpine
 RUN apk  --no-cache --update add go git tzdata ripgrep && \
     cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     apk del tzdata && \

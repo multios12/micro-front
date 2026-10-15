@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"micro-front/internal/blogs"
+	"micro-front/internal/categories"
 	"micro-front/internal/config"
 	"micro-front/internal/imagemigration"
 	"micro-front/internal/images"
@@ -47,6 +48,7 @@ func run(ctx context.Context, args []string) error {
 
 	site.Handler{Store: st}.Init(&srv)
 	blogs.Handler{Store: st, DataDir: cfg.DataDir}.Init(&srv)
+	categories.Handler{Store: st}.Init(&srv)
 	images.Handler{Store: st, DataDir: cfg.DataDir}.Init(&srv)
 	titleimage.Handler{}.Init(&srv)
 	web.Handler{Store: st, DataDir: cfg.DataDir, PublishDir: cfg.PublicStaticDir}.Init(&srv)

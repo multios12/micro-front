@@ -56,11 +56,12 @@ type IndexCategoryCard struct {
 
 // IndexCategoryGroup はトップページのカテゴリグループです。
 type IndexCategoryGroup struct {
-	Name     string
-	Count    int
-	URL      string
-	Children []IndexCategoryCard
-	Open     bool
+	IsHeading bool
+	Name      string
+	Count     int
+	URL       string
+	Children  []IndexCategoryCard
+	Open      bool
 }
 
 // BlogListPageData は一覧ページテンプレートに渡すデータです。

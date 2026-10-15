@@ -8,6 +8,18 @@ type Store struct {
 	DataDir string
 }
 
+// CategoryEntity は親見出しまたは小見出しのDBモデルです。
+// IsHeading は子の有無にかかわらず親見出しであることを表します。
+type CategoryEntity struct {
+	ID        int64  `json:"id"`
+	ParentID  *int64 `json:"parent_id"`
+	IsHeading bool   `json:"is_heading"`
+	Name      string `json:"name"`
+	SortOrder int    `json:"sort_order"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 // Tab はサイト上部のタブメニュー1件を表します。
 type Tab struct {
 	TabLabel string `json:"tab_label"`
@@ -33,6 +45,7 @@ type BlogEntitty struct {
 	Title              string         `json:"title"`
 	Content            string         `json:"content"`
 	Summary            string         `json:"summary"`
+	ParentCategory     string         `json:"parent_category"`
 	Category           string         `json:"category"`
 	Status             string         `json:"status"`
 	TitleImageTemplate string         `json:"title_image_template"`

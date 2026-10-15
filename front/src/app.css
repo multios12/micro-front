@@ -62,7 +62,7 @@
   }
 
   .admin-main {
-    @apply grid min-w-0 gap-4;
+    @apply grid min-w-0 content-start gap-4;
   }
 
   .admin-topbar {
@@ -79,7 +79,7 @@
   }
 
   .admin-topbar-actions {
-    @apply flex flex-wrap items-center gap-2;
+    @apply flex min-h-[42px] flex-wrap items-center gap-2;
   }
 
   .admin-panel,

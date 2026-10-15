@@ -7,6 +7,7 @@ import (
 
 	"micro-front/internal/apiutil"
 	"micro-front/internal/server"
+	"micro-front/internal/store"
 )
 
 func (h Handler) Init(s *server.Server) {
@@ -68,6 +69,10 @@ func (h Handler) handlerPostBlogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
+		if errors.Is(err, store.ErrBlogCategoryNotFound) {
+			apiutil.WriteValidationErrorCode(w, "CATEGORY_NOT_FOUND", map[string]string{"category": "選択したカテゴリが見つかりません。一覧を再読み込みして選択し直してください。"})
+			return
+		}
 		if errors.Is(err, errBlogTitleConflict) {
 			apiutil.WriteConflict(w, "BLOG_TITLE_CONFLICT", "同じタイトルの記事がすでに存在します", map[string]string{
 				"title": "同じタイトルの記事がすでに存在します",
@@ -102,6 +107,10 @@ func (h Handler) handlerPutBlog(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, errBlogNotFound) {
 			apiutil.WriteNotFound(w, "blog not found")
+			return
+		}
+		if errors.Is(err, store.ErrBlogCategoryNotFound) {
+			apiutil.WriteValidationErrorCode(w, "CATEGORY_NOT_FOUND", map[string]string{"category": "選択したカテゴリが見つかりません。一覧を再読み込みして選択し直してください。"})
 			return
 		}
 		if errors.Is(err, errBlogTitleConflict) {

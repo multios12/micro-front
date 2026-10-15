@@ -1,0 +1,14 @@
+[
+  { "name": "お知らせ", "category_key": "お知らせ", "sort_order": 10 },
+  { "name": "開発メモ", "category_key": "開発メモ", "sort_order": 20 },
+  { "name": "Markdown", "category_key": "開発メモ-Markdown", "parent_key": "開発メモ", "sort_order": 10 },
+  { "name": "画像", "category_key": "開発メモ-画像", "parent_key": "開発メモ", "sort_order": 20 },
+  { "name": "設計", "category_key": "設計", "sort_order": 30 },
+  { "name": "導線", "category_key": "設計-導線", "parent_key": "設計", "sort_order": 10 },
+  { "name": "運用", "category_key": "運用", "sort_order": 40 },
+  { "name": "公開作業", "category_key": "運用-公開作業", "parent_key": "運用", "sort_order": 10 },
+  { "name": "お知らせ", "category_key": "親なし-お知らせ", "is_heading": false, "sort_order": 10 },
+  { "name": "開発メモ", "category_key": "親なし-開発メモ", "is_heading": false, "sort_order": 20 },
+  { "name": "設計", "category_key": "親なし-設計", "is_heading": false, "sort_order": 30 },
+  { "name": "運用", "category_key": "親なし-運用", "is_heading": false, "sort_order": 40 }
+]

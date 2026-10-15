@@ -23,6 +23,9 @@ func TestPublish_RendersMarkdownWithPkgMarkdown(t *testing.T) {
 		t.Fatalf("store.New: %v", err)
 	}
 	t.Cleanup(func() { _ = s.Close() })
+	if _, err := s.CreateCategory(ctx, store.CategoryEntity{Name: "news"}); err != nil {
+		t.Fatal(err)
+	}
 
 	blog, err := s.CreateBlog(ctx, store.BlogEntitty{
 		Title:       "sample-post",
@@ -97,6 +100,9 @@ func TestPublishBlogs_RegeneratesPagesAndAssets(t *testing.T) {
 		t.Fatalf("store.New: %v", err)
 	}
 	t.Cleanup(func() { _ = s.Close() })
+	if _, err := s.CreateCategory(ctx, store.CategoryEntity{Name: "news"}); err != nil {
+		t.Fatal(err)
+	}
 
 	blog1, err := s.CreateBlog(ctx, store.BlogEntitty{Title: "first-post", Content: "# First", Summary: "first summary", Category: "news", Status: "public", PublishedAt: "2026-04-19 00:00:00"})
 	if err != nil {
@@ -221,6 +227,9 @@ func TestPreviewURLs_AreRelative(t *testing.T) {
 		t.Fatalf("store.New: %v", err)
 	}
 	t.Cleanup(func() { _ = s.Close() })
+	if _, err := s.CreateCategory(ctx, store.CategoryEntity{Name: "news"}); err != nil {
+		t.Fatal(err)
+	}
 
 	blog, err := s.CreateBlog(ctx, store.BlogEntitty{
 		Title:       "preview-post",

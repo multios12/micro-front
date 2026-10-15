@@ -1,10 +1,7 @@
 {{define "blog-card"}}
 <a class="post-card post-card-link blog-list-card" href="{{.URL}}" aria-label="{{.Title}}を開く">
   <div class="blog-list-card-body">
-    {{if .Category}}
-    <p class="meta">{{.Category}}</p>
-    {{end}}
-    <p class="meta">{{dateOnly .PublishedAt}}</p>
+    <p class="meta blog-list-meta"><span>{{dateOnly .PublishedAt}}</span>{{if .Category}}<span class="blog-list-category">{{.Category}}</span>{{end}}</p>
     <h3>{{.Title}}</h3>
     <p>{{.Summary}}</p>
   </div>

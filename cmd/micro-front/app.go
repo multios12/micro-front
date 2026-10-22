@@ -38,6 +38,11 @@ func run(ctx context.Context, args []string) error {
 		return runMigrateImagesToJPEG(ctx, cfg, args[1:])
 	}
 
+	links, err := config.LoadAdminNavLinks()
+	if err != nil {
+		return err
+	}
+
 	st, err := store.New(cfg.DataDir)
 	if err != nil {
 		return err
@@ -51,7 +56,7 @@ func run(ctx context.Context, args []string) error {
 	categories.Handler{Store: st}.Init(&srv)
 	images.Handler{Store: st, DataDir: cfg.DataDir}.Init(&srv)
 	titleimage.Handler{}.Init(&srv)
-	web.Handler{Store: st, DataDir: cfg.DataDir, PublishDir: cfg.PublicStaticDir}.Init(&srv)
+	web.Handler{Store: st, DataDir: cfg.DataDir, PublishDir: cfg.PublicStaticDir, AdminNavLinks: links}.Init(&srv)
 
 	return srv.Run(ctx)
 }

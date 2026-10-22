@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"micro-front/internal/apiutil"
+	"micro-front/internal/config"
 	"micro-front/internal/publish"
 	"micro-front/internal/server"
 )
@@ -36,6 +37,7 @@ func (h Handler) Init(s *server.Server) {
 	h.PreviewDir = previewDir
 	h.DataDir = dataDir
 	s.HandleFunc("GET  /{$}", serveAdminHTML)
+	s.HandleFunc("GET /admin/api/navigation", h.handlerGetNavigation)
 	s.HandleFunc("GET  /", http.FileServer(http.Dir(staticDir)).ServeHTTP)
 	s.HandleFunc("POST /admin/api/publish", h.handlerPostPublish)
 	s.HandleFunc("POST /admin/api/site/preview", h.handlerPostSitePreview)
@@ -169,4 +171,12 @@ func (h Handler) handlerPostBlogPreview(w http.ResponseWriter, r *http.Request) 
 	}
 
 	apiutil.WriteJSON(w, http.StatusOK, resp)
+}
+
+func (h Handler) handlerGetNavigation(w http.ResponseWriter, r *http.Request) {
+	links := h.AdminNavLinks
+	if links == nil {
+		links = []config.AdminNavLink{}
+	}
+	apiutil.WriteJSON(w, http.StatusOK, map[string]any{"links": links})
 }

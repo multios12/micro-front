@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "googlebot",
+      "name": "Googlebot",
+      "description": "Googlebotを示すUser-Agent",
+      "pattern": "(?i)Googlebot",
+      "enabled": true
+    },
+    {
+      "id": "bingbot",
+      "name": "Bingbot",
+      "description": "Bingbotを示すUser-Agent",
+      "pattern": "(?i)Bingbot",
+      "enabled": true
+    },
+    {
+      "id": "gptbot",
+      "name": "GPTBot",
+      "description": "GPTBotを示すUser-Agent",
+      "pattern": "(?i)GPTBot",
+      "enabled": true
+    },
+    {
+      "id": "claudebot",
+      "name": "ClaudeBot",
+      "description": "ClaudeBotを示すUser-Agent",
+      "pattern": "(?i)ClaudeBot",
+      "enabled": true
+    },
+    {
+      "id": "deepseekbot",
+      "name": "DeepSeekBot",
+      "description": "DeepSeekBotを示すUser-Agent",
+      "pattern": "(?i)DeepSeekBot",
+      "enabled": true
+    },
+    {
+      "id": "applebot",
+      "name": "Applebot",
+      "description": "Applebotを示すUser-Agent",
+      "pattern": "(?i)Applebot",
+      "enabled": true
+    },
+    {
+      "id": "duckduckbot",
+      "name": "DuckDuckBot",
+      "description": "DuckDuckBotを示すUser-Agent",
+      "pattern": "(?i)DuckDuckBot",
+      "enabled": true
+    },
+    {
+      "id": "amazonbot",
+      "name": "Amazonbot",
+      "description": "Amazonbotを示すUser-Agent",
+      "pattern": "(?i)Amazonbot",
+      "enabled": true
+    },
+    {
+      "id": "bytespider",
+      "name": "Bytespider",
+      "description": "Bytespiderを示すUser-Agent",
+      "pattern": "(?i)Bytespider",
+      "enabled": true
+    },
+    {
+      "id": "petalbot",
+      "name": "PetalBot",
+      "description": "PetalBotを示すUser-Agent",
+      "pattern": "(?i)PetalBot",
+      "enabled": true
+    },
+    {
+      "id": "yandexbot",
+      "name": "YandexBot",
+      "description": "YandexBotを示すUser-Agent",
+      "pattern": "(?i)YandexBot",
+      "enabled": true
+    },
+    {
+      "id": "baiduspider",
+      "name": "Baiduspider",
+      "description": "Baiduspiderを示すUser-Agent",
+      "pattern": "(?i)Baiduspider",
+      "enabled": true
+    },
+    {
+      "id": "generic",
+      "description": "クローラーを示すUser-Agent",
+      "pattern": "(?i)(bot|crawler|spider|slurp|facebookexternalhit|bingpreview)",
+      "enabled": true,
+      "name": "その他のクローラー"
+    }
+  ]
+}

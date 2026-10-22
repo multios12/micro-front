@@ -48,6 +48,25 @@ docker run --rm -p 3000:3000 -v "$(pwd)/data:/app/data" micro-front-run
 http://localhost:3000
 ```
 
+## 管理画面の追加ナビゲーション
+
+環境変数 `ADMIN_NAV_LINKS` にタイトルとURLのJSON配列を指定すると、PC・モバイルの既存メニュー末尾にリンクを追加します。同じタブで移動します。
+
+```sh
+export ADMIN_NAV_LINKS='[{"title":"アクセス集計","url":"/access-report/"}]'
+./micro-front
+```
+
+未設定・空文字の場合は追加リンクなしです。表示順は配列順です。タイトルは空にできません。URLは `/` 始まりの同一ドメイン内パスを指定し、`//` 始まりは使用できません。不正な設定はサーバー起動時にエラーになります。変更後は再起動してください。
+
+access-report の既定出力先 `data/access-report/index.html` は管理画面サーバーから配信されません。このサーバーで配信する場合は、静的ファイル配信先 `web/static/` に合わせて生成します（実行ディレクトリ基準）。
+
+```sh
+./bin/access-report --input /var/log/caddy/access.log.json --host example.com --output ./web/static/access-report/index.html
+```
+
+同一ドメインの別サーバーで配信済みの場合は、その配信パスを指定してください。
+
 ## 公開用HTMLの作成
 
 管理画面のダッシュボードから、 `公開` ボタンを押してください。
@@ -111,6 +130,10 @@ JSON と Markdown からデータを DB に投入します。
 
 JPEG品質の既定値は85です。必要な場合は `--quality` で1から100の範囲を指定できます。
 
+
+## アクセスレポートCLI
+
+CaddyのJSONアクセスログから静的HTMLレポートを生成する独立CLIです。使い方・引数・環境変数・運用方法は [access-report README](cmd/access-report/README.md)、ビルドなどは[開発者向けガイド](cmd/access-report/DEVELOPMENT.md)を参照してください。
 
 ## ドキュメント・設計書
 

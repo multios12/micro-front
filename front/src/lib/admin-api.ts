@@ -435,3 +435,8 @@ export async function createSitePreview(): Promise<PreviewViewResponse> {
     displayUrl: adminResourcePath(response.url),
   }
 }
+
+export type AdminNavLink = { title: string; url: string }
+export async function fetchAdminNavigation(): Promise<{ links: AdminNavLink[] }> {
+ return requestJson(adminApiPath('navigation'))
+}

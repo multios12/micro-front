@@ -1,4 +1,7 @@
 <script lang="ts">
+ import type { AdminNavLink } from "../lib/admin-api";
+ export let extraLinks: AdminNavLink[] = [];
+ export let navigationError = "";
   import AdminNavigation from "./AdminNavigation.svelte";
 
   type NavKey = "dashboard" | "blogs" | "categories" | "site" | "about";
@@ -24,7 +27,7 @@
       </div>
 
       <div class="admin-sidebar-nav">
-        <AdminNavigation {active} {blogCount} />
+        <AdminNavigation {active} {blogCount} {extraLinks} {navigationError} />
       </div>
     </aside>
 
@@ -54,7 +57,7 @@
       </div>
 
       <nav class="flex-1">
-        <AdminNavigation {active} {blogCount} />
+        <AdminNavigation {active} {blogCount} {extraLinks} {navigationError} />
       </nav>
     </section>
   </div>

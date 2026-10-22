@@ -7,13 +7,15 @@
   import CategoriesPage from './pages/categories/CategoriesPage.svelte'
   import DashboardPage from './pages/dashboard/DashboardPage.svelte'
   import SitePage from './pages/site/SitePage.svelte'
-  import { fetchSiteSettings } from './lib/admin-api'
+  import { fetchAdminNavigation, type AdminNavLink, fetchSiteSettings } from './lib/admin-api'
   import { blogCount, refreshBlogCount } from './lib/blog-count'
   import { siteTitle, siteUrl } from './lib/site-title'
 
   type Route = 'dashboard' | 'blogs' | 'categories' | 'site' | 'blog-edit'
   type NavKey = 'dashboard' | 'blogs' | 'categories' | 'site' | 'about'
 
+  let extraLinks: AdminNavLink[] = []
+  let navigationError = ''
   let route: Route = 'dashboard'
   let blogId = 'new'
   const parseRoute = (hash: string): { route: Route; blogId?: string } | null => {
@@ -56,6 +58,12 @@
       }
     })()
 
+    void fetchAdminNavigation().then(result => {
+      extraLinks = result.links
+    }).catch(() => {
+      navigationError = '追加ナビゲーションの読み込みに失敗しました。再読み込みしてください。'
+    })
+
     void refreshBlogCount()
 
     syncRoute()
@@ -72,7 +80,7 @@
   <meta name="description" content="micro-front の管理画面" />
 </svelte:head>
 
-<AdminShell active={activeNav} blogCount={$blogCount} siteTitle={$siteTitle}>
+<AdminShell active={activeNav} blogCount={$blogCount} siteTitle={$siteTitle} {extraLinks} {navigationError}>
   {#if route === 'dashboard'}
     <DashboardPage />
   {:else if route === 'blogs'}

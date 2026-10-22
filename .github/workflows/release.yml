@@ -99,6 +99,13 @@ jobs:
             binname="micro-front.exe"
           fi
           go build -o "$outdir/$binname" ./cmd/micro-front
+          reportname="access-report"
+          if [ "$GOOS" = "windows" ]; then
+            reportname="access-report.exe"
+          fi
+          go build -o "$outdir/$reportname" ./cmd/access-report
+          mkdir -p "$outdir/config"
+          cp config/access-report-crawlers.json "$outdir/config/"
 
       - name: Package artifact
         shell: bash

@@ -3,16 +3,18 @@ package web
 import (
 	"html/template"
 
+	"micro-front/internal/config"
 	"micro-front/internal/store"
 )
 
 // Handler は静的HTML出力APIと公開ファイル配信の HTTP ハンドラです。
 type Handler struct {
-	Store      *store.Store
-	DataDir    string
-	StaticDir  string
-	PublishDir string
-	PreviewDir string
+	AdminNavLinks []config.AdminNavLink
+	Store         *store.Store
+	DataDir       string
+	StaticDir     string
+	PublishDir    string
+	PreviewDir    string
 }
 
 // PageTemplateData は公開ページ共通レイアウトに渡すデータです。

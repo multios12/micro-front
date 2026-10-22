@@ -1,0 +1,680 @@
+<!doctype html>
+<!-- docs/mocks/access-report/index.html をコピーし、集計データの表示部分をテンプレート化。 -->
+<html lang="ja">
+  <head>
+<meta name="access-report-revision" content="{{.Revision}}" />
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>アクセスレポート | micro-front</title>
+    {{template "styles" .}}
+  </head>
+  <body>
+    <div class="shell">
+      <main class="main" id="overview">
+        <header class="topbar panel">
+          <div>
+            <p class="eyebrow">ACCESS REPORT</p>
+            <h1>アクセスレポート</h1>
+            <p class="sub" style="margin-top: 6px">{{.Host}}</p>
+          </div>
+        </header>
+        <fieldset class="view-tabs">
+          <legend class="visually-hidden">レポートの種類</legend>
+          <input
+            class="ranking-choice"
+            type="radio"
+            name="report-view"
+            id="view-choice-access"
+            aria-controls="view-access"
+            checked
+          />
+          <label for="view-choice-access">アクセスレポート</label>
+          <input
+            class="ranking-choice"
+            type="radio"
+            name="report-view"
+            id="view-choice-security"
+            aria-controls="view-security"
+          />
+          <label for="view-choice-security">クローラー・404</label>
+          <div
+            class="view-panel"
+            id="view-access"
+            role="region"
+            aria-label="アクセスレポート"
+          >
+            <fieldset class="report-tabs">
+              <legend class="visually-hidden">
+                アクセスレポートの表示期間
+              </legend>
+              <input
+                class="ranking-choice"
+                type="radio"
+                name="report-period"
+                id="period-month"
+                aria-controls="report-month"
+                checked
+              />
+              <label for="period-month">過去1か月</label>
+              <input
+                class="ranking-choice"
+                type="radio"
+                name="report-period"
+                id="period-all"
+                aria-controls="report-all"
+              />
+              <label for="period-all">全期間</label>
+              {{with .Month}}<div
+                class="report-period"
+                id="report-month"
+                role="region"
+                aria-label="過去1か月のアクセスレポート"
+              >
+                <section class="period panel" aria-label="過去1か月の集計期間">
+                  <div>
+                    <span class="sub">対象記事アクセスの観測期間</span>
+                    <strong>{{.ObservedFrom}} <span class="muted">—</span> {{.ObservedTo}}</strong>
+                  </div>
+                  <div class="sub">{{$.Timezone}}<br />過去1か月を集計</div>
+                </section>
+                <div class="metrics">
+                  <section class="metric panel">
+                    <h2 class="label">記事アクセス数</h2>
+                    <div class="value">{{number .Accesses}} <small>件</small>
+                    </div>
+                    <p class="sub">GET · 200 / 304</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">ユニークアクセス数</h2>
+                    <div class="value">{{number .Unique}} <small>件</small>
+                    </div>
+                    <p class="sub">選択期間内のアクセス元の重複を除外</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">アクセスのあった記事</h2>
+                    <div class="value">{{number .ArticleCount}} <small>記事</small>
+                    </div>
+                    <p class="sub">記事詳細ページのみ</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">1日あたりのアクセス</h2>
+                    <div class="value">{{printf "%.1f" .Average}} <small>件</small>
+                    </div>
+                    <p class="sub">表示期間 {{.DayCount}}日間の平均（0件の日を含む）</p>
+                  </section>
+                </div>
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>日別アクセス</h2>
+                    <p>記事アクセスの合計 / {{$.Timezone}}</p>
+                  </div>
+                  <div
+                    class="chart"
+                    role="img"
+                    aria-label="日別アクセス数。最多は1日{{.Peak}}件。正確な値は日別データを参照。"
+                  >{{range .Days}}<div class="day">
+                      <span class="bar-area">
+                        <span
+                          class="bar"
+                          style="height: {{.AccessHeight}}%"
+                          title="{{.Day}}: アクセス数 {{.Accesses}}件"
+                        ></span>
+                        <span
+                          class="bar unique-bar"
+                          style="height: {{.UniqueHeight}}%"
+                          title="{{.Day}}: ユニークアクセス数 {{.Unique}}件"
+                        ></span>
+                      </span>
+                      <span class="tick">{{.Tick}}</span>
+                    </div>{{end}}</div>
+                  <div class="chart-note">
+                    <span>
+                      <span class="legend-total">アクセス数</span>
+                      <span class="legend-unique">ユニークアクセス数</span>
+                    </span>
+                    <span>最多 {{number .Peak}}件 / 日</span>
+                  </div>
+                  <details>
+                    <summary>日別データを表で確認</summary>
+                    <div class="daily-table">
+                      <table>
+                        <caption>0件の日を含む全{{.DayCount}}日</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">日付（{{$.Timezone}}）</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                            <th scope="col" class="numeric">
+                              ユニークアクセス数
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .Days}}<tr>
+                            <th scope="row">{{.Day}}</th>
+                            <td class="numeric">{{number .Accesses}}</td>
+                            <td class="numeric">{{number .Unique}}</td>
+                          </tr>{{else}}<tr><td colspan="3">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>
+                </section>
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>記事ランキング</h2>
+                    <p>アクセス数の多い順 · 全{{.ArticleCount}}記事</p>
+                  </div>
+                  <div class="table-scroll">
+                    <table>
+                      <caption>
+                        記事タイトルと公開パスを表示しています。
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">順位</th>
+                          <th scope="col">記事</th>
+                          <th scope="col" class="numeric">アクセス数</th>
+                          <th scope="col" class="numeric">
+                            ユニークアクセス数
+                          </th>
+                          <th scope="col">期間内に占める割合</th>
+                        </tr>
+                      </thead>
+                      <tbody>{{range .Top}}<tr>
+                          <td class="rank">{{printf "%02d" .Rank}}</td>
+                          <th scope="row">
+                            <span class="article-label">{{.Title}}</span>
+                            <span class="path">{{.Path}}</span>
+                          </th>
+                          <td class="numeric"><strong>{{number .Accesses}}</strong></td>
+                          <td class="numeric">{{number .Unique}}</td>
+                          <td class="share">
+                            <span>{{printf "%.1f" .Share}}%</span>
+                            <span class="track">
+                              <span style="width: {{printf "%.1f" .Share}}%"></span>
+                            </span>
+                          </td>
+                        </tr>{{else}}<tr><td colspan="5">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                    </table>
+                  </div>
+                  {{if .More}}<details class="ranking-more">
+                    <summary>21位以降を表示（残り{{number (len .More)}}記事）</summary>
+                    <div class="table-scroll">
+                      <table>
+                        <caption class="visually-hidden">
+                          記事ランキングの21位以降
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">順位</th>
+                            <th scope="col">記事</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                            <th scope="col" class="numeric">
+                              ユニークアクセス数
+                            </th>
+                            <th scope="col">期間内に占める割合</th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .More}}<tr>
+                            <td class="rank">{{printf "%02d" .Rank}}</td>
+                            <th scope="row">
+                              <span class="article-label">{{.Title}}</span>
+                              <span class="path">{{.Path}}</span>
+                            </th>
+                            <td class="numeric"><strong>{{number .Accesses}}</strong></td>
+                            <td class="numeric">{{number .Unique}}</td>
+                            <td class="share">
+                              <span>{{printf "%.1f" .Share}}%</span>
+                              <span class="track">
+                                <span style="width: {{printf "%.1f" .Share}}%"></span>
+                              </span>
+                            </td>
+                          </tr>{{else}}<tr><td colspan="5">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>{{end}}
+                </section>
+              </div>{{end}}
+              {{with .All}}<div
+                class="report-period"
+                id="report-all"
+                role="region"
+                aria-label="全期間のアクセスレポート"
+              >
+                <section class="period panel" aria-label="全期間の集計期間">
+                  <div>
+                    <span class="sub">対象記事アクセスの観測期間</span>
+                    <strong>{{.ObservedFrom}} <span class="muted">—</span> {{.ObservedTo}}</strong>
+                  </div>
+                  <div class="sub">{{$.Timezone}}<br />全期間を集計</div>
+                </section>
+                <div class="metrics">
+                  <section class="metric panel">
+                    <h2 class="label">記事アクセス数</h2>
+                    <div class="value">{{number .Accesses}} <small>件</small>
+                    </div>
+                    <p class="sub">GET · 200 / 304</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">ユニークアクセス数</h2>
+                    <div class="value">{{number .Unique}} <small>件</small>
+                    </div>
+                    <p class="sub">選択期間内のアクセス元の重複を除外</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">アクセスのあった記事</h2>
+                    <div class="value">{{number .ArticleCount}} <small>記事</small>
+                    </div>
+                    <p class="sub">記事詳細ページのみ</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">1日あたりのアクセス</h2>
+                    <div class="value">{{printf "%.1f" .Average}} <small>件</small>
+                    </div>
+                    <p class="sub">表示期間 {{.DayCount}}日間の平均（0件の日を含む）</p>
+                  </section>
+                </div>
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>日別アクセス</h2>
+                    <p>記事アクセスの合計 / {{$.Timezone}}</p>
+                  </div>
+                  <div
+                    class="chart"
+                    role="img"
+                    aria-label="日別アクセス数。最多は1日{{.Peak}}件。正確な値は日別データを参照。"
+                  >{{range .Days}}<div class="day">
+                      <span class="bar-area">
+                        <span
+                          class="bar"
+                          style="height: {{.AccessHeight}}%"
+                          title="{{.Day}}: アクセス数 {{.Accesses}}件"
+                        ></span>
+                        <span
+                          class="bar unique-bar"
+                          style="height: {{.UniqueHeight}}%"
+                          title="{{.Day}}: ユニークアクセス数 {{.Unique}}件"
+                        ></span>
+                      </span>
+                      <span class="tick">{{.Tick}}</span>
+                    </div>{{end}}</div>
+                  <div class="chart-note">
+                    <span>
+                      <span class="legend-total">アクセス数</span>
+                      <span class="legend-unique">ユニークアクセス数</span>
+                    </span>
+                    <span>最多 {{number .Peak}}件 / 日</span>
+                  </div>
+                  <details>
+                    <summary>日別データを表で確認</summary>
+                    <div class="daily-table">
+                      <table>
+                        <caption>0件の日を含む全{{.DayCount}}日</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">日付（{{$.Timezone}}）</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                            <th scope="col" class="numeric">
+                              ユニークアクセス数
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .Days}}<tr>
+                            <th scope="row">{{.Day}}</th>
+                            <td class="numeric">{{number .Accesses}}</td>
+                            <td class="numeric">{{number .Unique}}</td>
+                          </tr>{{else}}<tr><td colspan="3">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>
+                </section>
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>記事ランキング</h2>
+                    <p>アクセス数の多い順 · 全{{.ArticleCount}}記事</p>
+                  </div>
+                  <div class="table-scroll">
+                    <table>
+                      <caption>
+                        記事タイトルと公開パスを表示しています。
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">順位</th>
+                          <th scope="col">記事</th>
+                          <th scope="col" class="numeric">アクセス数</th>
+                          <th scope="col" class="numeric">
+                            ユニークアクセス数
+                          </th>
+                          <th scope="col">期間内に占める割合</th>
+                        </tr>
+                      </thead>
+                      <tbody>{{range .Top}}<tr>
+                          <td class="rank">{{printf "%02d" .Rank}}</td>
+                          <th scope="row">
+                            <span class="article-label">{{.Title}}</span>
+                            <span class="path">{{.Path}}</span>
+                          </th>
+                          <td class="numeric"><strong>{{number .Accesses}}</strong></td>
+                          <td class="numeric">{{number .Unique}}</td>
+                          <td class="share">
+                            <span>{{printf "%.1f" .Share}}%</span>
+                            <span class="track">
+                              <span style="width: {{printf "%.1f" .Share}}%"></span>
+                            </span>
+                          </td>
+                        </tr>{{else}}<tr><td colspan="5">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                    </table>
+                  </div>
+                  {{if .More}}<details class="ranking-more">
+                    <summary>21位以降を表示（残り{{number (len .More)}}記事）</summary>
+                    <div class="table-scroll">
+                      <table>
+                        <caption class="visually-hidden">
+                          記事ランキングの21位以降
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">順位</th>
+                            <th scope="col">記事</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                            <th scope="col" class="numeric">
+                              ユニークアクセス数
+                            </th>
+                            <th scope="col">期間内に占める割合</th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .More}}<tr>
+                            <td class="rank">{{printf "%02d" .Rank}}</td>
+                            <th scope="row">
+                              <span class="article-label">{{.Title}}</span>
+                              <span class="path">{{.Path}}</span>
+                            </th>
+                            <td class="numeric"><strong>{{number .Accesses}}</strong></td>
+                            <td class="numeric">{{number .Unique}}</td>
+                            <td class="share">
+                              <span>{{printf "%.1f" .Share}}%</span>
+                              <span class="track">
+                                <span style="width: {{printf "%.1f" .Share}}%"></span>
+                              </span>
+                            </td>
+                          </tr>{{else}}<tr><td colspan="5">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>{{end}}
+                </section>
+              </div>{{end}}
+            </fieldset>
+          </div>
+          <div
+            class="view-panel"
+            id="view-security"
+            role="region"
+            aria-label="クローラー・404"
+          >
+            <fieldset class="security-tabs">
+              <legend class="visually-hidden">クローラー・404の表示期間</legend>
+              <input
+                class="ranking-choice"
+                type="radio"
+                name="security-period"
+                id="security-choice-month"
+                aria-controls="security-month"
+                checked
+              />
+              <label for="security-choice-month">過去1か月</label>
+              <input
+                class="ranking-choice"
+                type="radio"
+                name="security-period"
+                id="security-choice-all"
+                aria-controls="security-all"
+              />
+              <label for="security-choice-all">全期間</label>
+              {{with .Month}}<div
+                class="security-period"
+                id="security-month"
+                role="region"
+                aria-label="過去1か月のクローラー・404"
+              >
+                <section class="period panel">
+                  <div>
+                    <span class="sub">集計期間</span>
+                    <strong>{{.From}} <span class="muted">—</span> {{.To}}</strong>
+                  </div>
+                  <div class="sub">{{$.Host}}<br />{{$.Timezone}}</div>
+                </section>
+                <div class="security-metrics">
+                  <section class="metric panel">
+                    <h2 class="label">クローラーによるアクセス</h2>
+                    <div class="value">{{number .CrawlerTotal}} <small>件</small>
+                    </div>
+                    <p class="sub">User-Agent {{number .CrawlerCount}}種類 · 全パス・全ステータス</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">404レスポンス</h2>
+                    <div class="value">{{number .NotFoundTotal}} <small>件</small>
+                    </div>
+                    <p class="sub">{{number .NotFoundCount}}パス · 全メソッド</p>
+                  </section>
+                </div>
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>クローラーによるアクセス</h2>
+                    <p>User-Agentによる推定 · アクセス数の多い順</p>
+                  </div>
+                  <div class="table-scroll security-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">クローラー名 / User-Agent</th>
+                          <th scope="col" class="numeric">アクセス数</th>
+                        </tr>
+                      </thead>
+                      <tbody>{{range .CrawlerTop}}<tr>
+                          <th scope="row"><span class="article-label">{{.Name}}</span><span class="path">{{.Label}}</span></th>
+                          <td class="numeric">{{number .Count}}</td>
+                        </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                    </table>
+                  </div>
+                  {{if .CrawlerMore}}<details class="security-more">
+                    <summary>21件目以降を表示（残り{{number (len .CrawlerMore)}}件）</summary>
+                    <div class="table-scroll security-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th scope="col">クローラー名 / User-Agent</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .CrawlerMore}}<tr>
+                            <th scope="row"><span class="article-label">{{.Name}}</span><span class="path">{{.Label}}</span></th>
+                            <td class="numeric">{{number .Count}}</td>
+                          </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>{{end}}
+                  <p class="sub" style="margin-top: 16px">判定ルール：{{$.RulesLabel}}</p>
+                </section>
+<section class="content panel">
+  <div class="section-head"><h2>脆弱性スキャンの疑い</h2><p>{{number .ScanCount}}アクセス元 · IP単位の推定</p></div>
+  <p class="sub" style="margin-bottom: 16px">1日{{number $.ScanMin404}}件以上の404、かつ{{number $.ScanMinPaths}}種類以上のパス。件数・観測日時は選択期間内の404を集計（{{$.Timezone}}）。</p>
+  {{template "scan-table" .ScanTop}}
+  {{if .ScanMore}}<details class="security-more"><summary>21件目以降を表示（残り{{number (len .ScanMore)}}アクセス元）</summary>{{template "scan-table" .ScanMore}}</details>{{end}}
+</section>
+
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>404ページの一覧</h2>
+                    <p>クエリ文字列を除いて集約 · アクセス数の多い順</p>
+                  </div>
+                  <div class="table-scroll security-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">リクエストパス</th>
+                          <th scope="col" class="numeric">アクセス数</th>
+                        </tr>
+                      </thead>
+                      <tbody>{{range .NotFoundTop}}<tr>
+                          <th scope="row">{{.Label}}</th>
+                          <td class="numeric">{{number .Count}}</td>
+                        </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                    </table>
+                  </div>
+                  {{if .NotFoundMore}}<details class="security-more">
+                    <summary>21件目以降を表示（残り{{number (len .NotFoundMore)}}件）</summary>
+                    <div class="table-scroll security-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th scope="col">リクエストパス</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .NotFoundMore}}<tr>
+                            <th scope="row">{{.Label}}</th>
+                            <td class="numeric">{{number .Count}}</td>
+                          </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>{{end}}
+                </section>
+              </div>{{end}}
+              {{with .All}}<div
+                class="security-period"
+                id="security-all"
+                role="region"
+                aria-label="全期間のクローラー・404"
+              >
+                <section class="period panel">
+                  <div>
+                    <span class="sub">集計期間</span>
+                    <strong>{{.From}} <span class="muted">—</span> {{.To}}</strong>
+                  </div>
+                  <div class="sub">{{$.Host}}<br />{{$.Timezone}}</div>
+                </section>
+                <div class="security-metrics">
+                  <section class="metric panel">
+                    <h2 class="label">クローラーによるアクセス</h2>
+                    <div class="value">{{number .CrawlerTotal}} <small>件</small>
+                    </div>
+                    <p class="sub">User-Agent {{number .CrawlerCount}}種類 · 全パス・全ステータス</p>
+                  </section>
+                  <section class="metric panel">
+                    <h2 class="label">404レスポンス</h2>
+                    <div class="value">{{number .NotFoundTotal}} <small>件</small>
+                    </div>
+                    <p class="sub">{{number .NotFoundCount}}パス · 全メソッド</p>
+                  </section>
+                </div>
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>クローラーによるアクセス</h2>
+                    <p>User-Agentによる推定 · アクセス数の多い順</p>
+                  </div>
+                  <div class="table-scroll security-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">クローラー名 / User-Agent</th>
+                          <th scope="col" class="numeric">アクセス数</th>
+                        </tr>
+                      </thead>
+                      <tbody>{{range .CrawlerTop}}<tr>
+                          <th scope="row"><span class="article-label">{{.Name}}</span><span class="path">{{.Label}}</span></th>
+                          <td class="numeric">{{number .Count}}</td>
+                        </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                    </table>
+                  </div>
+                  {{if .CrawlerMore}}<details class="security-more">
+                    <summary>21件目以降を表示（残り{{number (len .CrawlerMore)}}件）</summary>
+                    <div class="table-scroll security-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th scope="col">クローラー名 / User-Agent</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .CrawlerMore}}<tr>
+                            <th scope="row"><span class="article-label">{{.Name}}</span><span class="path">{{.Label}}</span></th>
+                            <td class="numeric">{{number .Count}}</td>
+                          </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>{{end}}
+                  <p class="sub" style="margin-top: 16px">判定ルール：{{$.RulesLabel}}</p>
+                </section>
+<section class="content panel">
+  <div class="section-head"><h2>脆弱性スキャンの疑い</h2><p>{{number .ScanCount}}アクセス元 · IP単位の推定</p></div>
+  <p class="sub" style="margin-bottom: 16px">1日{{number $.ScanMin404}}件以上の404、かつ{{number $.ScanMinPaths}}種類以上のパス。件数・観測日時は選択期間内の404を集計（{{$.Timezone}}）。</p>
+  {{template "scan-table" .ScanTop}}
+  {{if .ScanMore}}<details class="security-more"><summary>21件目以降を表示（残り{{number (len .ScanMore)}}アクセス元）</summary>{{template "scan-table" .ScanMore}}</details>{{end}}
+</section>
+
+                <section class="content panel">
+                  <div class="section-head">
+                    <h2>404ページの一覧</h2>
+                    <p>クエリ文字列を除いて集約 · アクセス数の多い順</p>
+                  </div>
+                  <div class="table-scroll security-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">リクエストパス</th>
+                          <th scope="col" class="numeric">アクセス数</th>
+                        </tr>
+                      </thead>
+                      <tbody>{{range .NotFoundTop}}<tr>
+                          <th scope="row">{{.Label}}</th>
+                          <td class="numeric">{{number .Count}}</td>
+                        </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                    </table>
+                  </div>
+                  {{if .NotFoundMore}}<details class="security-more">
+                    <summary>21件目以降を表示（残り{{number (len .NotFoundMore)}}件）</summary>
+                    <div class="table-scroll security-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th scope="col">リクエストパス</th>
+                            <th scope="col" class="numeric">アクセス数</th>
+                          </tr>
+                        </thead>
+                        <tbody>{{range .NotFoundMore}}<tr>
+                            <th scope="row">{{.Label}}</th>
+                            <td class="numeric">{{number .Count}}</td>
+                          </tr>{{else}}<tr><td colspan="2">該当するアクセスはありません。</td></tr>{{end}}</tbody>
+                      </table>
+                    </div>
+                  </details>{{end}}
+                </section>
+              </div>{{end}}
+            </fieldset>
+          </div>
+        </fieldset>
+        <footer class="footer"><span>micro-front / access-report</span></footer>
+      </main>
+    </div>
+  </body>
+</html>
+
+{{define "scan-table"}}
+<div class="table-scroll"><table>
+  <thead><tr><th scope="col">アクセス元 / 対象パス・UA</th><th scope="col" class="numeric">期間内404</th><th scope="col" class="numeric">検出日数</th><th scope="col">観測日時</th></tr></thead>
+  <tbody>{{range .}}<tr>
+    <th scope="row" style="overflow-wrap: anywhere"><span class="article-label">{{.IP}}</span>
+      <details><summary>対象パス・User-Agent</summary>
+        <p class="sub" style="margin-top: 12px">対象パス（上位5件）</p>
+        {{range .Paths}}<p class="path">{{.Label}} · {{number .Count}}件</p>{{end}}
+        <p class="sub" style="margin-top: 12px">User-Agent（上位5件）</p>
+        {{range .Agents}}<p class="path">{{if .Name}}{{.Name}} · {{end}}{{.Label}} · {{number .Count}}件</p>{{end}}
+      </details>
+    </th>
+    <td class="numeric"><strong>{{number .Count}}件</strong><br /><span class="sub">{{number .PathCount}}パス</span></td>
+    <td class="numeric">{{number .DetectedDays}}日<br /><span class="sub">最多 {{number .Peak}}件 / 日</span></td>
+    <td><span class="path">{{.First}}</span><br /><span class="sub">〜</span><br /><span class="path">{{.Last}}</span></td>
+  </tr>{{else}}<tr><td colspan="4">条件に該当するアクセス元はありません。</td></tr>{{end}}</tbody>
+</table></div>
+{{end}}

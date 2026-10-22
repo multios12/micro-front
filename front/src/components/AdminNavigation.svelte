@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { FolderTree, Info, LayoutDashboard, Newspaper, PanelTop } from "lucide-svelte";
+ import type { AdminNavLink } from "../lib/admin-api";
+ export let extraLinks: AdminNavLink[] = [];
+ export let navigationError = "";
+  import { FolderTree, Link, Info, LayoutDashboard, Newspaper, PanelTop } from "lucide-svelte";
   import Icon from "./MDInput/Icon.svelte";
 
   type NavKey = "dashboard" | "blogs" | "categories" | "site" | "about";
@@ -60,4 +63,10 @@
       {/if}
     </a>
   {/each}
+ {#each extraLinks as link}
+ <a class="flex items-center gap-2 rounded-2xl border border-transparent px-4 py-4 font-medium text-slate-200 transition hover:border-slate-500/50 hover:bg-white/5" href={link.url}>
+ <Icon icon={Link} /><span>{link.title}</span>
+ </a>
+ {/each}
+ {#if navigationError}<p role="alert" class="px-4 text-sm text-amber-200">{navigationError}</p>{/if}
 </nav>

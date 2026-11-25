@@ -133,6 +133,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v7
         with:
+          pattern: micro-front-*
           path: release-assets
 
       - name: Create GitHub Release

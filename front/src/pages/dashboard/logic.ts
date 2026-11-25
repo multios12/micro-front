@@ -23,6 +23,7 @@ export type DashboardBlogRow = {
   id: number
   title: string
   summary: string
+  characterCount?: number
   category: string
   status: 'public' | 'private'
   publishedAt: string
@@ -58,6 +59,7 @@ export function mapDashboardBlogRows(items: Array<{
   id: number
   title: string
   summary: string
+  character_count?: number
   category: string
   parent_category?: string
   status: 'public' | 'private'
@@ -68,6 +70,7 @@ export function mapDashboardBlogRows(items: Array<{
     id: item.id,
     title: item.title,
     summary: item.summary,
+    characterCount: item.character_count,
     category: formatCategory(item.category, item.parent_category),
     status: item.status,
     publishedAt: formatPublishedDate(item.published_at),
@@ -137,6 +140,7 @@ export function createDashboardData(args: {
     id: number
     title: string
     summary: string
+    character_count?: number
     category: string
     parent_category?: string
     status: 'public' | 'private'

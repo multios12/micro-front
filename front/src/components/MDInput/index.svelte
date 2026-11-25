@@ -59,6 +59,32 @@
   let pendingImageCursor = $state(0);
   let lastHandledImageInsertRequestId = $state(0);
 
+  const resizeTextarea = (element: HTMLTextAreaElement) => {
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
+  };
+
+  $effect(() => {
+    value;
+    if (textarea !== null) {
+      resizeTextarea(textarea);
+    }
+  });
+
+  $effect(() => {
+    const element = textarea;
+    if (element === null) return;
+    let width = element.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (element.clientWidth !== width) {
+        width = element.clientWidth;
+        resizeTextarea(element);
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  });
+
   const handleInput = (event: Event) => {
     const target = event.currentTarget as HTMLTextAreaElement;
     onTextChange?.(target.value);
@@ -614,6 +640,7 @@
 <div class="md-input" class:md-input-error={Boolean(error)}>
   <Toolbar
     bind:value={paragraph}
+    characterCount={Array.from(value).length}
     bold={isBold}
     italic={isItalic}
     link={isLink}
@@ -711,10 +738,11 @@
   }
 
   .md-input-area {
+    box-sizing: border-box;
     flex: 1 1 auto;
     width: 100%;
     min-height: 22rem;
-    resize: vertical;
+    resize: none;
     padding: 0.9rem 1rem;
     border: 0;
     border-radius: 0;
@@ -728,7 +756,7 @@
     line-height: 1.65;
     tab-size: 2;
     white-space: pre-wrap;
-    overflow: auto;
+    overflow: hidden;
   }
 
   .md-input-area.md-input-area-error {

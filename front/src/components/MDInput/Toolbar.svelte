@@ -36,6 +36,7 @@
 
   interface Props {
     value?: ParagraphKind;
+    characterCount?: number;
     bold?: boolean;
     italic?: boolean;
     link?: boolean;
@@ -50,6 +51,7 @@
 
   let {
     value = $bindable("normal"),
+    characterCount = 0,
     bold = false,
     italic = false,
     link = false,
@@ -175,13 +177,14 @@
   >
     <Icon icon={Link2} />
   </button>
+  <span class="md-character-count">{characterCount.toLocaleString("ja-JP")} 文字</span>
 </div>
 
 <style>
   .md-toolbar {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.5rem;
     overflow: visible;
     padding: 0.55rem 0.65rem;
@@ -196,6 +199,15 @@
 
   .md-paragraph-select {
     position: relative;
+  }
+
+  .md-character-count {
+    margin-left: auto;
+    flex: 0 0 auto;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .md-paragraph-backdrop {

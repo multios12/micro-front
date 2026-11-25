@@ -136,7 +136,7 @@ func TestBlogParentCategoryAPI(t *testing.T) {
 	}
 	parentName := "parent"
 	created, code, fields, err := uc.Create(ctx, BlogsCreateRequest{
-		Title: "親見出し確認", Content: "本文", Category: "child", ParentCategory: &parentName,
+		Title: "親見出し確認", Content: "本文\n😀", Category: "child", ParentCategory: &parentName,
 		Status: "public", PublishedAt: "2026-10-15",
 	})
 	if err != nil || code != "" || len(fields) > 0 || created.ParentCategory != "parent" {
@@ -149,6 +149,9 @@ func TestBlogParentCategoryAPI(t *testing.T) {
 	list, _, _, err := uc.List(ctx, 1, 20, "")
 	if err != nil || len(list.Items) != 1 || list.Items[0].ParentCategory != "parent" {
 		t.Fatalf("list: %#v %v", list, err)
+	}
+	if list.Items[0].CharacterCount != 4 {
+		t.Fatalf("character count = %d, want 4", list.Items[0].CharacterCount)
 	}
 	// 旧クライアントが親見出しを送らなくても、同じカテゴリなら保存済み値を維持する。
 	updated, _, fields, err := uc.Update(ctx, created.ID, BlogsUpdateRequest{

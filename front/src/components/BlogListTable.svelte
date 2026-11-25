@@ -7,6 +7,7 @@
     id: number;
     title: string;
     summary: string;
+    characterCount?: number;
     category: string;
     status: "public" | "private";
     publishedAt: string;
@@ -45,6 +46,9 @@
       <div class="grid gap-1">
         <div class="admin-label">タイトル</div>
         <div class="text-lg font-semibold text-white">{row.title}</div>
+        {#if row.characterCount !== undefined}
+          <div class="text-xs text-slate-400">{row.characterCount.toLocaleString("ja-JP")} 文字</div>
+        {/if}
       </div>
       <div class="mt-3 grid gap-1">
         <div class="admin-label">カテゴリ</div>
@@ -115,6 +119,9 @@
           </td>
           <td>
             <strong class="block text-slate-100">{row.title}</strong>
+            {#if row.characterCount !== undefined}
+              <span class="mt-1 block text-xs text-slate-400">{row.characterCount.toLocaleString("ja-JP")} 文字</span>
+            {/if}
             <span class="mt-1 block text-sm text-slate-400"
               >{truncateSummary(row.summary)}</span
             >

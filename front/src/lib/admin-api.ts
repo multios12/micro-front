@@ -30,6 +30,7 @@ export type BlogListApiItem = {
   id: number
   title: string
   summary: string
+  character_count?: number
   category: string
   status: 'public' | 'private'
   published_at: string

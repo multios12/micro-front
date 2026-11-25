@@ -14,7 +14,7 @@
     },
     {
       "name": "Open Front in Edge",
-      "type": "pwa-msedge",
+      "type": "msedge",
       "request": "launch",
       "url": "http://127.0.0.1:3000/",
       "webRoot": "${workspaceFolder}/front",

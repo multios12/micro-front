@@ -19,6 +19,7 @@ type BlogsListItemResponse struct {
 	ID                 int64  `json:"id"`
 	Title              string `json:"title"`
 	Summary            string `json:"summary"`
+	CharacterCount     int    `json:"character_count"`
 	ParentCategory     string `json:"parent_category"`
 	Category           string `json:"category"`
 	Status             string `json:"status"`

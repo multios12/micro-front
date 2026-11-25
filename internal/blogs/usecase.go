@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"micro-front/internal/store"
 	"micro-front/internal/titleimage"
@@ -42,6 +43,7 @@ func (uc Usecase) List(ctx context.Context, page, perPage int, status string) (B
 			ID:                 blog.ID,
 			Title:              blog.Title,
 			Summary:            blog.Summary,
+			CharacterCount:     utf8.RuneCountInString(blog.Content),
 			ParentCategory:     blog.ParentCategory,
 			Category:           blog.Category,
 			Status:             blog.Status,
